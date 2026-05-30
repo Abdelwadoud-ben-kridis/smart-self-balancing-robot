@@ -29,8 +29,7 @@
 | Power traces | ✅ COMPLETE — 0.8mm min, VBAT_SWITCHED 2.0mm |
 | Signal traces | ✅ COMPLETE — F.Signal + B.Signal |
 | DRC | ✅ COMPLETE — 0 violations, 0 unconnected |
-| ⚠ J6.P5 net | ❌ MUST FIX — currently +5V, must be +6V_SERVO in schematic |
-| Gerber export | ⬜ PENDING (fix J6.P5 first) |
+| Gerber export | ✅ COMPLETE |
 
 ---
 
