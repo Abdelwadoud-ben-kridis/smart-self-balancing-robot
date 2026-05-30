@@ -13,7 +13,7 @@ Two-floor robot body (18×15cm).
 > - Power chain corrected — PCB generates +3V3 internally; ESP32 receives 5V from PCB
 > - Encoder filter corrected — series RC (1kΩ + 10nF), not pull-up + 1nF
 > - PCA9685 logic VCC = +5V (not 3V3)
-> - ⚠ J6.P5 flagged as pending fix (+5V → +6V_SERVO in schematic)
+
 
 ---
 
