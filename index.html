@@ -2271,6 +2271,491 @@ footer.foot {
   border-radius: 4px;
   color: var(--text);
 }
+
+/* =====================================================================
+   PCB SHOWCASE (Section 11)
+====================================================================== */
+.pcb-hero-card {
+  position: relative;
+  background: var(--bg-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 40px;
+  overflow: hidden;
+  margin-bottom: 40px;
+}
+.pcb-hero-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.06;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 19px, var(--cyan) 19px, var(--cyan) 20px),
+    repeating-linear-gradient(90deg, transparent, transparent 19px, var(--cyan) 19px, var(--cyan) 20px);
+  pointer-events: none;
+}
+.pcb-hero-card .pcb-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--green);
+  background: rgba(135,169,107,0.1);
+  border: 1px solid rgba(135,169,107,0.3);
+  border-radius: 6px;
+  padding: 5px 14px;
+  margin-bottom: 20px;
+}
+.pcb-badge .dot-g {
+  width: 7px; height: 7px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.pcb-board-specs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+.pcb-board-specs .spec-chip {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+}
+.pcb-board-specs .spec-chip .label {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: 6px;
+}
+.pcb-board-specs .spec-chip .val {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Component Explorer */
+.comp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 40px;
+}
+.comp-card {
+  background: var(--bg-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 22px;
+  transition: transform .3s, border-color .3s, box-shadow .3s;
+  position: relative;
+  overflow: hidden;
+}
+.comp-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(77,212,232,0.3);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+.comp-card .cat-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+.cat-tag.mcu { color: var(--cyan); background: rgba(77,212,232,0.1); border: 1px solid rgba(77,212,232,0.25); }
+.cat-tag.driver { color: var(--accent); background: rgba(217,119,87,0.1); border: 1px solid rgba(217,119,87,0.25); }
+.cat-tag.sensor { color: var(--accent-3); background: rgba(245,217,73,0.1); border: 1px solid rgba(245,217,73,0.25); }
+.cat-tag.power { color: var(--green); background: rgba(135,169,107,0.1); border: 1px solid rgba(135,169,107,0.25); }
+.comp-card h4 {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 6px;
+}
+.comp-card p {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* PCB Downloads */
+.dl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 24px;
+}
+.dl-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 18px;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color .25s, transform .25s;
+}
+.dl-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+.dl-card .dl-icon {
+  width: 40px; height: 40px;
+  display: grid;
+  place-items: center;
+  background: rgba(217,119,87,0.1);
+  border: 1px solid rgba(217,119,87,0.25);
+  border-radius: 8px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.dl-card .dl-info .dl-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+.dl-card .dl-info .dl-ext {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-mute);
+}
+
+/* Signal Flow */
+.signal-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  flex-wrap: wrap;
+  padding: 30px 0;
+}
+.sf-node {
+  background: var(--bg-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 16px 22px;
+  text-align: center;
+  min-width: 110px;
+}
+.sf-node .sf-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: 4px;
+}
+.sf-node .sf-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.sf-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0 6px;
+}
+.sf-arrow .sf-line {
+  width: 40px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--cyan), var(--accent));
+  position: relative;
+}
+.sf-arrow .sf-line::after {
+  content: "";
+  position: absolute;
+  right: -4px;
+  top: -3px;
+  border: 4px solid transparent;
+  border-left: 6px solid var(--accent);
+}
+.sf-arrow .sf-proto {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-mute);
+  letter-spacing: 0.08em;
+}
+
+/* =====================================================================
+   3D MODELS SHOWCASE (Section 12)
+====================================================================== */
+.stl-viewer-wrap {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+@media (max-width: 900px) {
+  .stl-viewer-wrap { grid-template-columns: 1fr; }
+}
+.stl-viewer-card {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.stl-viewer-card canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: radial-gradient(ellipse at center, #1e2028 0%, #14181f 100%);
+}
+.stl-toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--glass-border);
+  background: var(--bg-2);
+}
+.stl-toolbar button {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  padding: 6px 14px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color .2s, border-color .2s;
+}
+.stl-toolbar button:hover {
+  color: var(--text);
+  border-color: var(--cyan);
+}
+.stl-toolbar button.active {
+  color: var(--cyan);
+  border-color: var(--cyan);
+}
+.stl-loader-bar {
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 160px;
+  text-align: center;
+  transition: opacity .4s;
+}
+.stl-loader-bar.done { opacity: 0; pointer-events: none; }
+.stl-loader-bar .stl-pct {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+.stl-loader-bar .stl-track {
+  height: 2px;
+  background: var(--glass-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.stl-loader-bar .stl-fill {
+  height: 100%;
+  background: var(--cyan);
+  width: 0%;
+  transition: width .15s;
+}
+
+/* Meta panel */
+.model-meta {
+  background: var(--bg-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 26px;
+}
+.model-meta h4 {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin: 0 0 18px;
+}
+.model-meta .meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--glass-border);
+  font-size: 13px;
+}
+.model-meta .meta-row:last-child { border-bottom: none; }
+.model-meta .meta-row .mk { color: var(--text-dim); }
+.model-meta .meta-row .mv { color: var(--text); font-family: var(--font-mono); font-size: 12px; }
+
+/* Model download cards */
+.model-dl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 40px;
+}
+.model-dl-card {
+  background: var(--bg-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 22px;
+  text-decoration: none;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color .25s, transform .25s;
+}
+.model-dl-card:hover {
+  border-color: var(--cyan);
+  transform: translateY(-3px);
+}
+.model-dl-card .mdl-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+.model-dl-card .mdl-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.model-dl-card .mdl-badges {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+.model-dl-card .mdl-badges span {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  color: var(--text-mute);
+}
+.model-dl-card .mdl-badges .fmt { color: var(--cyan); border-color: rgba(77,212,232,0.25); }
+
+/* Assembly stats */
+.assy-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+.assy-stat {
+  background: var(--bg-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 22px;
+  text-align: center;
+}
+.assy-stat .as-val {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+.assy-stat .as-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 6px;
+}
+
+/* =====================================================================
+   BEHIND THE DESIGN (Section 13)
+====================================================================== */
+.design-decisions {
+  position: relative;
+  padding-left: 40px;
+}
+.design-decisions::before {
+  content: "";
+  position: absolute;
+  left: 16px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, var(--cyan), var(--accent), var(--accent-3), var(--green));
+  border-radius: 2px;
+}
+.decision-card {
+  position: relative;
+  background: var(--bg-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 28px 28px 28px 32px;
+  margin-bottom: 24px;
+  transition: border-color .3s, transform .3s;
+}
+.decision-card:hover {
+  border-color: rgba(77,212,232,0.3);
+  transform: translateX(4px);
+}
+.decision-card::before {
+  content: "";
+  position: absolute;
+  left: -33px;
+  top: 32px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--cyan);
+  background: var(--bg);
+}
+.decision-card:nth-child(2)::before { border-color: var(--accent); }
+.decision-card:nth-child(3)::before { border-color: var(--accent-3); }
+.decision-card:nth-child(4)::before { border-color: var(--green); }
+.decision-card .dc-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--text-mute);
+  margin-bottom: 8px;
+}
+.decision-card h4 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 10px;
+  font-style: italic;
+}
+.decision-card p {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.7;
+  margin: 0;
+}
+@media (max-width: 640px) {
+  .design-decisions { padding-left: 28px; }
+  .design-decisions::before { left: 10px; }
+  .decision-card::before { left: -25px; }
+  .signal-flow { flex-direction: column; gap: 12px; }
+  .sf-arrow { transform: rotate(90deg); }
+}
 </style>
 </head>
 <body>
@@ -2312,6 +2797,9 @@ footer.foot {
     <a href="#milestones" class="tb-link"><span class="n">08</span>milestones</a>
     <a href="#vision" class="tb-link"><span class="n">09</span>vision</a>
     <a href="#code" class="tb-link"><span class="n">10</span>code</a>
+    <a href="#pcb" class="tb-link"><span class="n">11</span>pcb</a>
+    <a href="#models" class="tb-link"><span class="n">12</span>models</a>
+    <a href="#design" class="tb-link"><span class="n">13</span>design</a>
   </nav>
   <div class="tb-cell hide-md"><span class="k">Doc</span><span class="v">PRB-SBR-001</span></div>
   <div class="tb-cell hide-md"><span class="k">Rev</span><span class="v acc">A · May 2026</span></div>
@@ -2330,6 +2818,9 @@ footer.foot {
     <a href="#milestones" class="nav-link" data-hover>Milestones</a>
     <a href="#vision" class="nav-link" data-hover>Vision</a>
     <a href="#code" class="nav-link" data-hover>Code</a>
+    <a href="#pcb" class="nav-link" data-hover>PCB</a>
+    <a href="#models" class="nav-link" data-hover>Models</a>
+    <a href="#design" class="nav-link" data-hover>Design</a>
   </div>
 </nav>
 
@@ -3584,6 +4075,277 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
   </div>
 </section>
 
+<!-- ===================== 11 PCB ===================== -->
+<section id="pcb" class="has-marks" data-screen-label="11 PCB">
+  <span class="marks-tl"></span><span class="marks-tr"></span><span class="marks-bl"></span><span class="marks-br"></span>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-figure"><b>11</b></div>
+      <div class="eyebrow reveal">Fig. 11 · PCB</div>
+      <h2 class="section-title reveal d1">Custom 4-layer board replaces forty jumper wires.</h2>
+      <p class="section-sub reveal d2">A purpose-built PCB consolidates the ESP32, dual L298N drivers, IMU, servo controller, and six ToF sensors onto a single 100&times;80&nbsp;mm board with clean power planes and controlled-impedance signal routing.</p>
+    </div>
+
+    <!-- A) PCB Hero Card -->
+    <div class="pcb-hero-card reveal">
+      <div class="pcb-badge"><span class="dot-g"></span> Prototype &middot; Rev A</div>
+      <h3 style="font-family:var(--font-display); font-size:26px; font-weight:600; color:var(--text); margin:0 0 8px; font-style:italic; position:relative;">Robot Main Controller Board</h3>
+      <p style="font-size:14px; color:var(--text-dim); max-width:540px; position:relative;">4-layer stackup with dedicated ground and power planes. HASL lead-free finish, designed in KiCad 8.</p>
+      <div class="pcb-board-specs" style="position:relative;">
+        <div class="spec-chip">
+          <div class="label">Layers</div>
+          <div class="val">4-layer</div>
+        </div>
+        <div class="spec-chip">
+          <div class="label">Dimensions</div>
+          <div class="val">100&times;80 mm</div>
+        </div>
+        <div class="spec-chip">
+          <div class="label">MCU</div>
+          <div class="val">ESP32</div>
+        </div>
+        <div class="spec-chip">
+          <div class="label">Thickness</div>
+          <div class="val">1.6 mm</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B) Component Explorer -->
+    <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:0 0 18px;">Component Explorer</h4>
+    <div class="comp-grid">
+      <div class="comp-card reveal">
+        <span class="cat-tag mcu">MCU</span>
+        <h4>ESP32-WROOM-32D</h4>
+        <p>Dual-core 240 MHz main controller. Runs the 100 Hz balance PID loop and UART bridge to Pi 5.</p>
+      </div>
+      <div class="comp-card reveal d1">
+        <span class="cat-tag driver">Driver</span>
+        <h4>2&times; L298N Motor Driver</h4>
+        <p>Dual H-bridge for the JGA25-370 drive motors. PWM speed control with encoder feedback.</p>
+      </div>
+      <div class="comp-card reveal d2">
+        <span class="cat-tag sensor">Sensor</span>
+        <h4>MPU-9250 IMU</h4>
+        <p>9-axis inertial measurement unit. Provides pitch, roll, and yaw for the balance controller at 100 Hz.</p>
+      </div>
+      <div class="comp-card reveal d3">
+        <span class="cat-tag driver">Driver</span>
+        <h4>PCA9685 Servo Driver</h4>
+        <p>16-channel PWM driver on I2C. Controls four MG996R servos for the articulated leg linkages.</p>
+      </div>
+      <div class="comp-card reveal">
+        <span class="cat-tag sensor">Sensor</span>
+        <h4>4&times; VL53L0X ToF Sensors</h4>
+        <p>Time-of-flight distance sensors on I2C multiplexer. Obstacle avoidance at 0&ndash;1200 mm range.</p>
+      </div>
+      <div class="comp-card reveal d1">
+        <span class="cat-tag power">Power</span>
+        <h4>Buck Converters</h4>
+        <p>Step-down regulators providing 5 V and 6 V rails from the 11.1 V 3S LiPo pack.</p>
+      </div>
+      <div class="comp-card reveal d2">
+        <span class="cat-tag power">Power</span>
+        <h4>BMS Module</h4>
+        <p>3S battery management system with over-discharge, over-charge, and short-circuit protection.</p>
+      </div>
+    </div>
+
+    <!-- C) PCB Specifications Table -->
+    <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:0 0 14px;">Board Specifications</h4>
+    <div class="spec-table reveal" style="margin-bottom:40px;">
+      <div class="row"><span class="k">Board dimensions</span><span class="v mono">100 &times; 80 mm</span></div>
+      <div class="row"><span class="k">Layers</span><span class="v">4-layer stackup</span></div>
+      <div class="row"><span class="k">Copper weight</span><span class="v mono">1 oz outer &middot; 0.5 oz inner</span></div>
+      <div class="row"><span class="k">Surface finish</span><span class="v">HASL lead-free</span></div>
+      <div class="row"><span class="k">Min trace / space</span><span class="v mono">0.2 mm / 0.2 mm</span></div>
+      <div class="row"><span class="k">Via size</span><span class="v mono">0.3 mm drill / 0.6 mm pad</span></div>
+      <div class="row"><span class="k">Communication</span><span class="v">I2C, UART, SPI, PWM</span></div>
+    </div>
+
+    <!-- D) Downloadable Files -->
+    <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:0 0 14px;">Design Files</h4>
+    <div class="dl-grid reveal">
+      <a class="dl-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/raw/main/pcb/robot%20pcb.kicad_pro" target="_blank" rel="noopener">
+        <div class="dl-icon">PRO</div>
+        <div class="dl-info">
+          <div class="dl-name">KiCad Project</div>
+          <div class="dl-ext">.kicad_pro</div>
+        </div>
+      </a>
+      <a class="dl-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/raw/main/pcb/robot%20pcb.kicad_sch" target="_blank" rel="noopener">
+        <div class="dl-icon">SCH</div>
+        <div class="dl-info">
+          <div class="dl-name">Schematic</div>
+          <div class="dl-ext">.kicad_sch</div>
+        </div>
+      </a>
+      <a class="dl-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/raw/main/pcb/robot%20pcb.kicad_pcb" target="_blank" rel="noopener">
+        <div class="dl-icon">PCB</div>
+        <div class="dl-info">
+          <div class="dl-name">Board Layout</div>
+          <div class="dl-ext">.kicad_pcb</div>
+        </div>
+      </a>
+      <a class="dl-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/raw/main/pcb/pcbBOM" target="_blank" rel="noopener">
+        <div class="dl-icon">BOM</div>
+        <div class="dl-info">
+          <div class="dl-name">Bill of Materials</div>
+          <div class="dl-ext">pcbBOM</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- E) Signal Flow -->
+    <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:40px 0 14px;">Signal Flow</h4>
+    <div class="signal-flow reveal">
+      <div class="sf-node">
+        <div class="sf-label">Sensors</div>
+        <div class="sf-name">IMU &middot; ToF</div>
+      </div>
+      <div class="sf-arrow">
+        <span class="sf-proto">I2C / SPI</span>
+        <div class="sf-line"></div>
+      </div>
+      <div class="sf-node" style="border-color:rgba(77,212,232,0.3);">
+        <div class="sf-label">MCU</div>
+        <div class="sf-name" style="color:var(--cyan);">ESP32</div>
+      </div>
+      <div class="sf-arrow">
+        <span class="sf-proto">PWM / GPIO</span>
+        <div class="sf-line"></div>
+      </div>
+      <div class="sf-node">
+        <div class="sf-label">Drivers</div>
+        <div class="sf-name">L298N &middot; PCA9685</div>
+      </div>
+      <div class="sf-arrow">
+        <span class="sf-proto">DC / Servo</span>
+        <div class="sf-line"></div>
+      </div>
+      <div class="sf-node">
+        <div class="sf-label">Actuators</div>
+        <div class="sf-name">Motors &middot; Servos</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 12 MODELS ===================== -->
+<section id="models" class="has-marks" data-screen-label="12 Models">
+  <span class="marks-tl"></span><span class="marks-tr"></span><span class="marks-bl"></span><span class="marks-br"></span>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-figure"><b>12</b></div>
+      <div class="eyebrow reveal">Fig. 12 · 3D Models</div>
+      <h2 class="section-title reveal d1">Every printed part, viewable in the browser.</h2>
+      <p class="section-sub reveal d2">Interact with the full assembly STL directly. Orbit, zoom, and inspect the 24-part print-ready model including servo mounts, bearing seats, and the articulated leg linkages.</p>
+    </div>
+
+    <!-- A) Interactive 3D Viewer + B) Metadata -->
+    <div class="stl-viewer-wrap reveal">
+      <div class="stl-viewer-card">
+        <canvas id="stl-viewer-3d"></canvas>
+        <div class="stl-loader-bar" id="stl-loader">
+          <div class="stl-pct" id="stl-pct">Loading STL&hellip;</div>
+          <div class="stl-track"><div class="stl-fill" id="stl-fill"></div></div>
+        </div>
+        <div class="stl-toolbar">
+          <button id="stl-reset">Reset View</button>
+          <button id="stl-wire">Wireframe</button>
+          <button id="stl-fs">Fullscreen</button>
+        </div>
+      </div>
+      <div class="model-meta">
+        <h4>Model Metadata</h4>
+        <div class="meta-row"><span class="mk">Material</span><span class="mv">PLA / PETG</span></div>
+        <div class="meta-row"><span class="mk">Total weight</span><span class="mv">~471 g</span></div>
+        <div class="meta-row"><span class="mk">Print time</span><span class="mv">~18 hrs</span></div>
+        <div class="meta-row"><span class="mk">Infill</span><span class="mv">30%</span></div>
+        <div class="meta-row"><span class="mk">Supports</span><span class="mv">Yes (legs, overhangs)</span></div>
+        <div class="meta-row"><span class="mk">Dimensions</span><span class="mv">180&times;150&times;220 mm</span></div>
+      </div>
+    </div>
+
+    <!-- C) Model download cards -->
+    <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:0 0 18px;">Available Files</h4>
+    <div class="model-dl-grid reveal">
+      <a class="model-dl-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/raw/main/3d/self%20balancing%20robot_.stl" target="_blank" rel="noopener">
+        <div class="mdl-name">Full Assembly</div>
+        <div class="mdl-desc">Complete robot assembly ready for slicing or visual inspection.</div>
+        <div class="mdl-badges"><span class="fmt">STL</span><span>46.5 MB</span></div>
+      </a>
+      <a class="model-dl-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/raw/main/3d/self%20balancing%20robot.f3z" target="_blank" rel="noopener">
+        <div class="mdl-name">Fusion 360 Archive</div>
+        <div class="mdl-desc">Full parametric design with timeline history and components.</div>
+        <div class="mdl-badges"><span class="fmt">F3Z</span><span>61.2 MB</span></div>
+      </a>
+      <a class="model-dl-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/raw/main/3d/expansion%20board%20esp%2032%20shield%20CAD.STEP" target="_blank" rel="noopener">
+        <div class="mdl-name">ESP32 Shield PCB</div>
+        <div class="mdl-desc">STEP model of the expansion board for mechanical integration.</div>
+        <div class="mdl-badges"><span class="fmt">STEP</span><span>25.1 MB</span></div>
+      </a>
+    </div>
+
+    <!-- D) Assembly Stats -->
+    <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:0 0 18px;">Assembly Statistics</h4>
+    <div class="assy-stats reveal">
+      <div class="assy-stat">
+        <div class="as-val" data-count="24" data-suffix="">0</div>
+        <div class="as-label">printed parts</div>
+      </div>
+      <div class="assy-stat">
+        <div class="as-val" data-count="4" data-suffix="">0</div>
+        <div class="as-label">servo mounts</div>
+      </div>
+      <div class="assy-stat">
+        <div class="as-val" data-count="8" data-suffix="">0</div>
+        <div class="as-label">bearing seats</div>
+      </div>
+      <div class="assy-stat">
+        <div class="as-val" data-count="2" data-suffix="">0</div>
+        <div class="as-label">wheel hubs</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 13 DESIGN ===================== -->
+<section id="design" class="has-marks" data-screen-label="13 Design">
+  <span class="marks-tl"></span><span class="marks-tr"></span><span class="marks-bl"></span><span class="marks-br"></span>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-figure"><b>13</b></div>
+      <div class="eyebrow reveal">Fig. 13 · Rationale</div>
+      <h2 class="section-title reveal d1">Behind the design &mdash; every choice has a reason.</h2>
+      <p class="section-sub reveal d2">The major architectural decisions that shaped this robot, explained from first principles. Each trade-off was evaluated against weight, complexity, cost, and control-loop latency.</p>
+    </div>
+
+    <div class="design-decisions">
+      <div class="decision-card reveal">
+        <div class="dc-num">DECISION 01</div>
+        <h4>Why two wheels?</h4>
+        <p>Simpler drivetrain with only two DC motors reduces weight and wiring complexity. The inverted-pendulum dynamics enable agile, differential-drive turns that would require a full Ackermann steering linkage on a four-wheel platform. The smaller footprint also improves indoor manoeuvrability.</p>
+      </div>
+      <div class="decision-card reveal d1">
+        <div class="dc-num">DECISION 02</div>
+        <h4>Why articulated legs?</h4>
+        <p>A mirrored 4-bar linkage allows the robot to transition between a compact 66&nbsp;mm sitting height and a 220&nbsp;mm standing height. The lowered centre of gravity when seated provides passive stability for charging or idle states, while the raised stance maximises the camera field of view for the vision pipeline.</p>
+      </div>
+      <div class="decision-card reveal d2">
+        <div class="dc-num">DECISION 03</div>
+        <h4>Why ESP32 + Pi 5 dual compute?</h4>
+        <p>The ESP32 runs a deterministic 100&nbsp;Hz control loop with hard real-time guarantees &mdash; no garbage collection, no kernel preemption. The Pi 5 handles the ML vision pipeline with four worker threads and bounded queues. This latency separation prevents frame drops or inference spikes from destabilising the balance controller.</p>
+      </div>
+      <div class="decision-card reveal d3">
+        <div class="dc-num">DECISION 04</div>
+        <h4>Why a custom PCB?</h4>
+        <p>The breadboard prototype used approximately 40 jumper wires, each a potential point of failure under vibration. The custom 4-layer PCB eliminates all jumpers, provides clean power planes that reduce noise on the I2C and SPI buses, and cuts assembly time from 4 hours to 20 minutes. Net cost per unit is lower above three boards.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ===================== FOOTER ===================== -->
 <footer class="foot">
   <div class="wrap">
@@ -3599,6 +4361,9 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
           <li><a href="#mechanical" data-hover>Mechanical Specs</a></li>
           <li><a href="#electronics" data-hover>Electronics Architecture</a></li>
           <li><a href="#code" data-hover>Code Architecture</a></li>
+          <li><a href="#pcb" data-hover>PCB Showcase</a></li>
+          <li><a href="#models" data-hover>3D Models</a></li>
+          <li><a href="#design" data-hover>Behind the Design</a></li>
         </ul>
       </div>
       <div>
@@ -3782,6 +4547,169 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
     animate();
   })();
 
+  /* =================== STL VIEWER (Section 12) =================== */
+  (async () => {
+    const stlCanvas = document.getElementById('stl-viewer-3d');
+    if (!stlCanvas) return;
+
+    let THREE, STLLoader, OrbitControls;
+    try {
+      THREE = await import('three');
+      ({ STLLoader } = await import('three/addons/loaders/STLLoader.js'));
+      ({ OrbitControls } = await import('three/addons/controls/OrbitControls.js'));
+    } catch (e) {
+      console.warn('STL viewer deps failed', e);
+      return;
+    }
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 2000);
+    const renderer = new THREE.WebGLRenderer({ canvas: stlCanvas, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
+
+    // Lighting
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    const keyL = new THREE.DirectionalLight(0xffffff, 1.3);
+    keyL.position.set(3, 4, 5);
+    scene.add(keyL);
+    const fillL = new THREE.DirectionalLight(0x88ccff, 0.6);
+    fillL.position.set(-4, 2, 3);
+    scene.add(fillL);
+    const rimCL = new THREE.DirectionalLight(0x00d9ff, 0.8);
+    rimCL.position.set(-3, 1, -4);
+    scene.add(rimCL);
+    const rimPL = new THREE.DirectionalLight(0xa855f7, 0.6);
+    rimPL.position.set(4, -1, -3);
+    scene.add(rimPL);
+    scene.add(new THREE.HemisphereLight(0xb6e8ff, 0x1a1d24, 0.4));
+
+    // Resize
+    function fitSTL() {
+      const r = stlCanvas.getBoundingClientRect();
+      renderer.setSize(r.width, r.height, false);
+      camera.aspect = r.width / r.height;
+      camera.updateProjectionMatrix();
+    }
+    fitSTL();
+    window.addEventListener('resize', fitSTL);
+
+    // Controls
+    const ctrl = new OrbitControls(camera, stlCanvas);
+    ctrl.enableDamping = true;
+    ctrl.dampingFactor = 0.08;
+    ctrl.enablePan = true;
+    ctrl.minDistance = 50;
+    ctrl.maxDistance = 800;
+    ctrl.autoRotate = true;
+    ctrl.autoRotateSpeed = 0.6;
+    stlCanvas.addEventListener('pointerdown', () => { ctrl.autoRotate = false; });
+
+    const defaultCamPos = [250, 180, 350];
+    camera.position.set(...defaultCamPos);
+    ctrl.target.set(0, 0, 0);
+    ctrl.update();
+
+    let stlMesh = null;
+    let isWireframe = false;
+
+    // Load STL on scroll into view
+    const loaderEl = document.getElementById('stl-loader');
+    const pctEl = document.getElementById('stl-pct');
+    const fillEl = document.getElementById('stl-fill');
+    let stlLoaded = false;
+
+    function loadSTL() {
+      if (stlLoaded) return;
+      stlLoaded = true;
+      const loader = new STLLoader();
+      loader.load(
+        '3d/self balancing robot_.stl',
+        (geometry) => {
+          geometry.computeVertexNormals();
+          const mat = new THREE.MeshStandardMaterial({
+            color: 0xb8bcc6,
+            metalness: 0.3,
+            roughness: 0.55,
+            flatShading: false
+          });
+          stlMesh = new THREE.Mesh(geometry, mat);
+          // Center model
+          geometry.computeBoundingBox();
+          const box = geometry.boundingBox;
+          const center = new THREE.Vector3();
+          box.getCenter(center);
+          stlMesh.position.sub(center);
+          scene.add(stlMesh);
+
+          // Fit camera
+          const size = new THREE.Vector3();
+          box.getSize(size);
+          const maxDim = Math.max(size.x, size.y, size.z);
+          camera.position.set(maxDim * 1.2, maxDim * 0.8, maxDim * 1.5);
+          ctrl.target.set(0, 0, 0);
+          ctrl.update();
+          defaultCamPos[0] = camera.position.x;
+          defaultCamPos[1] = camera.position.y;
+          defaultCamPos[2] = camera.position.z;
+
+          loaderEl.classList.add('done');
+        },
+        (xhr) => {
+          if (xhr.total) {
+            const p = Math.round(xhr.loaded / xhr.total * 100);
+            pctEl.textContent = p + '%';
+            fillEl.style.width = p + '%';
+          }
+        },
+        (err) => {
+          console.warn('STL load failed', err);
+          pctEl.textContent = 'Load failed';
+        }
+      );
+    }
+
+    // Lazy load on intersection
+    const stlIo = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        loadSTL();
+        stlIo.disconnect();
+      }
+    }, { threshold: 0.1 });
+    stlIo.observe(stlCanvas);
+
+    // Toolbar
+    document.getElementById('stl-reset').addEventListener('click', () => {
+      camera.position.set(...defaultCamPos);
+      ctrl.target.set(0, 0, 0);
+      ctrl.autoRotate = true;
+      ctrl.update();
+    });
+    document.getElementById('stl-wire').addEventListener('click', function() {
+      if (!stlMesh) return;
+      isWireframe = !isWireframe;
+      stlMesh.material.wireframe = isWireframe;
+      this.classList.toggle('active', isWireframe);
+    });
+    document.getElementById('stl-fs').addEventListener('click', () => {
+      const card = stlCanvas.closest('.stl-viewer-card');
+      if (!document.fullscreenElement) {
+        card.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    // Render loop
+    function animateSTL() {
+      ctrl.update();
+      renderer.render(scene, camera);
+      requestAnimationFrame(animateSTL);
+    }
+    animateSTL();
+  })();
 
   /* =================== SCROLL PROGRESS =================== */
   const prog = document.getElementById('scroll-progress');
@@ -3795,7 +4723,7 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
 
   /* =================== NAV ACTIVE =================== */
   const navLinks = document.querySelectorAll('.nav-link');
-  const sections = ['overview','mechanical','electronics','power','torque','software','risks','milestones','vision','code']
+  const sections = ['overview','mechanical','electronics','power','torque','software','risks','milestones','vision','code','pcb','models','design']
     .map(id => document.getElementById(id));
   function updateNav(){
     let active = null;
