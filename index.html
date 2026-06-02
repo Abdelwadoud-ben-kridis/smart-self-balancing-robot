@@ -3220,7 +3220,7 @@ footer.foot {
       <div class="hero-left">
         <div class="hero-status reveal in"><span class="pill">LIVE</span> Build Phase · May 2026</div>
         <h1 class="hero-title reveal in d1">A two-wheeled robot<br/>that <em>stands up,</em><br/>balances, &amp; thinks.</h1>
-        <p class="hero-tag reveal in d2">Mirrored four-bar leg linkages drive a 155&nbsp;mm stance transition between seated (66&nbsp;mm) and standing (220&nbsp;mm) configurations. An ESP32 closes the balance loop at 100&nbsp;Hz; a Raspberry&nbsp;Pi&nbsp;5 sidecar handles vision, gestures, and high-level behaviour.</p>
+        <p class="hero-tag reveal in d2">Four-bar legs. 66&rarr;220&nbsp;mm stance. ESP32 balance loop at 100&nbsp;Hz. Pi&nbsp;5 vision sidecar.</p>
 
         <div class="hero-meta reveal in d3">
           <div>
@@ -3308,7 +3308,7 @@ footer.foot {
       <div class="section-figure"><b>01</b></div>
       <div class="eyebrow reveal">Fig. 01 · Overview</div>
       <h2 class="section-title reveal d1">Design complete. Entering build phase.</h2>
-      <p class="section-sub reveal d2">Mechanical CAD, electronics architecture, and firmware design are finalised. This document records the Project Review Board sign-off for the transition from validated design into physical prototype: print, wire, flash, and tune.</p>
+      <p class="section-sub reveal d2">CAD, electronics, and firmware locked. Moving from design to physical build.</p>
     </div>
 
     <div class="mech-grid">
@@ -3350,7 +3350,7 @@ footer.foot {
       <div class="section-figure"><b>02</b></div>
       <div class="eyebrow reveal">Fig. 02 · Mechanical</div>
       <h2 class="section-title reveal d1">Mirrored four-bar linkages with equal 97 mm arms.</h2>
-      <p class="section-sub reveal d2">Equal upper- and lower-arm lengths produce an approximately vertical foot trajectory across the full travel range, decoupling the height transition from horizontal disturbance and minimising the load delivered to the balance controller during stance change.</p>
+      <p class="section-sub reveal d2">Equal-length arms keep the foot path vertical, so standing up doesn&rsquo;t disturb the balance loop.</p>
     </div>
 
     <div class="mech-grid">
@@ -3420,7 +3420,7 @@ footer.foot {
       <div class="section-figure"><b>03</b></div>
       <div class="eyebrow reveal">Fig. 03 · Electronics</div>
       <h2 class="section-title reveal d1">Dual-controller architecture separated by latency budget.</h2>
-      <p class="section-sub reveal d2">The ESP32 handles all time-critical work: MPU-6500 sensing, PCA9685 servo output, and L298N motor drive within a deterministic 10&nbsp;ms cycle. The Raspberry Pi 5 runs the vision pipeline and behaviour state machine, communicating with the ESP32 over a single UART link at 115200&nbsp;baud.</p>
+      <p class="section-sub reveal d2">ESP32 owns the real-time 10&nbsp;ms loop. Pi&nbsp;5 handles vision and behaviour. One UART link between them.</p>
     </div>
 
     <div class="reveal">
@@ -3617,7 +3617,7 @@ footer.foot {
       <div class="section-figure"><b>04</b></div>
       <div class="eyebrow reveal">Fig. 04 · Power</div>
       <h2 class="section-title reveal d1">Four regulated rails from a single 3S 18650 pack.</h2>
-      <p class="section-sub reveal d2">Drive motors run directly off the pack to isolate large transient currents from the regulated rails. Servos and the Raspberry Pi 5 each have a dedicated buck converter; the ESP32 and 3.3&nbsp;V logic share the 5&nbsp;V rail via the ESP32's onboard LDO.</p>
+      <p class="section-sub reveal d2">Motors run straight off the pack. Servos and Pi each get their own buck converter.</p>
     </div>
 
     <div class="power-grid">
@@ -3673,7 +3673,7 @@ footer.foot {
       <div class="section-figure"><b>05</b></div>
       <div class="eyebrow reveal">Fig. 05 · Torque</div>
       <h2 class="section-title reveal d1">2.4&times; safety margin against rated servo torque.</h2>
-      <p class="section-sub reveal d2">Worst-case static torque occurs at full extension during the stand-up transition, with full body mass acting through the 97&nbsp;mm upper-arm lever. After applying a 2&times; safety factor to the body mass estimate, required torque remains comfortably below half of the MG996R rated output.</p>
+      <p class="section-sub reveal d2">Worst case at full stand-up extension. Even with 2&times; safety factor, well within MG996R rated output.</p>
     </div>
 
     <div class="torque-grid">
@@ -3755,7 +3755,7 @@ footer.foot {
       <div class="section-figure"><b>06</b></div>
       <div class="eyebrow reveal">Fig. 06 · Software</div>
       <h2 class="section-title reveal d1">Complementary filter feeding a discrete PID at 100 Hz.</h2>
-      <p class="section-sub reveal d2">Arduino C++ firmware on the ESP32. The complementary filter weights gyro integration over short timescales against the accelerometer reference over long ones; the fused pitch drives a discrete PID controller, with a minimal serial protocol exposing runtime commands and live gain tuning.</p>
+      <p class="section-sub reveal d2">Complementary filter fuses gyro + accelerometer into pitch. PID drives motors. Serial protocol for live tuning.</p>
     </div>
 
     <div class="soft-grid">
@@ -3848,7 +3848,7 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
       <div class="section-figure"><b>07</b></div>
       <div class="eyebrow reveal">Fig. 07 · Risks</div>
       <h2 class="section-title reveal d1">Five tracked risks, all with designed-in mitigations.</h2>
-      <p class="section-sub reveal d2">Mechanical, electrical, and firmware risks identified during design review. Each carries a concrete, already-implemented mitigation. Select any row to expand.</p>
+      <p class="section-sub reveal d2">Five risks identified during design review. All have built-in mitigations. Click to expand.</p>
     </div>
 
     <div class="risk-list">
@@ -3928,7 +3928,7 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
       <div class="section-figure"><b>08</b></div>
       <div class="eyebrow reveal">Fig. 08 · Milestones</div>
       <h2 class="section-title reveal d1">From validated design to autonomous behaviour.</h2>
-      <p class="section-sub reveal d2">Three phases of work: mechanical and firmware design (complete), build and balance commissioning (next), and computer-vision behaviour layer (final). Eighteen tracked milestones from concept to fully autonomous operation.</p>
+      <p class="section-sub reveal d2">Design &rarr; Build &rarr; Autonomy. 18 milestones from concept to fully autonomous operation.</p>
     </div>
 
     <div class="miles-grid">
@@ -4000,7 +4000,7 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
       <div class="section-figure"><b>09</b></div>
       <div class="eyebrow reveal">Fig. 09 · Vision roadmap</div>
       <h2 class="section-title reveal d1">Local computer-vision pipeline on the Raspberry Pi 5.</h2>
-      <p class="section-sub reveal d2">Once balance is commissioned, the Pi 5 enables perception and behaviour: person following, hand-gesture command, visual SLAM, and fall detection. All inference runs locally over a USB webcam with no cloud dependency.</p>
+      <p class="section-sub reveal d2">Person following, gesture control, SLAM, fall detection. All local inference on Pi&nbsp;5, no cloud.</p>
     </div>
 
     <div class="tiles">
@@ -4125,7 +4125,7 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
       <div class="section-figure"><b>10</b></div>
       <div class="eyebrow reveal">Fig. 10 · Architecture</div>
       <h2 class="section-title reveal d1">Two processors, four bounded queues, one UART link.</h2>
-      <p class="section-sub reveal d2">The ESP32 runs a deterministic 100&nbsp;Hz balance loop driven by a minimal serial protocol. The Pi 5 runs a multi-threaded vision pipeline with bounded inter-thread queues; producers are non-blocking and stale data is dropped at the queue boundary.</p>
+      <p class="section-sub reveal d2">ESP32: deterministic 100&nbsp;Hz loop. Pi&nbsp;5: multi-threaded vision with bounded queues. Stale frames get dropped.</p>
     </div>
 
     <div class="diagram-wrap reveal" style="margin-bottom: 30px;">
@@ -4483,7 +4483,7 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
       <div class="section-figure"><b>11</b></div>
       <div class="eyebrow reveal">Fig. 11 · PCB</div>
       <h2 class="section-title reveal d1">Custom 4-layer board replaces forty jumper wires.</h2>
-      <p class="section-sub reveal d2">A purpose-built distribution &amp; interface board consolidates the ESP32, dual L298N control, IMU, servo controller, and ToF sensors onto a single 94.6&times;58.1&nbsp;mm 4-layer board with dedicated ground and power planes.</p>
+      <p class="section-sub reveal d2">94.6&times;58.1&nbsp;mm distribution board. 4 layers, 40 components, 0 DRC violations.</p>
     </div>
 
     <!-- A) PCB Hero Card -->
@@ -4682,7 +4682,7 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
       <div class="section-figure"><b>12</b></div>
       <div class="eyebrow reveal">Fig. 12 · 3D Models</div>
       <h2 class="section-title reveal d1">Every printed part, viewable in the browser.</h2>
-      <p class="section-sub reveal d2">Interact with the full assembly STL directly. Orbit, zoom, and inspect the 24-part print-ready model including servo mounts, bearing seats, and the articulated leg linkages.</p>
+      <p class="section-sub reveal d2">Full assembly STL in the browser. Orbit, zoom, and inspect all 24 printed parts.</p>
     </div>
 
     <!-- A) Interactive 3D Viewer + B) Metadata -->
@@ -4767,29 +4767,29 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
       <div class="section-figure"><b>13</b></div>
       <div class="eyebrow reveal">Fig. 13 · Rationale</div>
       <h2 class="section-title reveal d1">Behind the design &mdash; every choice has a reason.</h2>
-      <p class="section-sub reveal d2">The major architectural decisions that shaped this robot, explained from first principles. Each trade-off was evaluated against weight, complexity, cost, and control-loop latency.</p>
+      <p class="section-sub reveal d2">Why we made the choices we did.</p>
     </div>
 
     <div class="design-decisions">
       <div class="decision-card reveal-left">
         <div class="dc-num">01</div>
         <h4>Why two wheels?</h4>
-        <p>Simpler drivetrain with only two DC motors reduces weight and wiring complexity. The inverted-pendulum dynamics enable agile, differential-drive turns that would require a full Ackermann steering linkage on a four-wheel platform. The smaller footprint also improves indoor manoeuvrability.</p>
+        <p>Two motors, no steering linkage. Inverted-pendulum dynamics give agile differential turns in a tiny footprint.</p>
       </div>
       <div class="decision-card reveal-right">
         <div class="dc-num">02</div>
         <h4>Why articulated legs?</h4>
-        <p>A mirrored 4-bar linkage allows the robot to transition between a compact 66&nbsp;mm sitting height and a 220&nbsp;mm standing height. The lowered centre of gravity when seated provides passive stability for charging or idle states, while the raised stance maximises the camera field of view for the vision pipeline.</p>
+        <p>4-bar linkage: 66&nbsp;mm seated, 220&nbsp;mm standing. Low CG when idle, tall stance for camera FOV.</p>
       </div>
       <div class="decision-card reveal-left">
         <div class="dc-num">03</div>
         <h4>Why ESP32 + Pi 5 dual compute?</h4>
-        <p>The ESP32 runs a deterministic 100&nbsp;Hz control loop with hard real-time guarantees &mdash; no garbage collection, no kernel preemption. The Pi 5 handles the ML vision pipeline with four worker threads and bounded queues. This latency separation prevents frame drops or inference spikes from destabilising the balance controller.</p>
+        <p>ESP32: hard real-time, no GC, no preemption. Pi&nbsp;5: ML vision with 4 worker threads. Latency separation keeps balance stable even when inference spikes.</p>
       </div>
       <div class="decision-card reveal-right">
         <div class="dc-num">04</div>
         <h4>Why a custom PCB?</h4>
-        <p>The breadboard prototype used approximately 40 jumper wires, each a potential point of failure under vibration. The custom 4-layer PCB eliminates all jumpers, provides clean power planes that reduce noise on the I2C and SPI buses, and cuts assembly time from 4 hours to 20 minutes. Net cost per unit is lower above three boards.</p>
+        <p>40 jumper wires &rarr; 0. Clean power planes cut I2C/SPI noise. Assembly drops from 4&nbsp;hrs to 20&nbsp;min.</p>
       </div>
     </div>
   </div>
