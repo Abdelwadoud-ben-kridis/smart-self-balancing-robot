@@ -4111,43 +4111,84 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
       </div>
     </div>
 
-    <!-- B) Component Explorer -->
-    <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:0 0 18px;">Component Explorer</h4>
+    <!-- B) Component Explorer — On-Board -->
+    <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:0 0 8px;">On-Board Components <span style="color:var(--accent); font-weight:400;">· 40 total</span></h4>
+    <p style="font-size:13px; color:var(--text-mute); margin:0 0 18px;">This is a distribution &amp; interface board &mdash; modules plug in via headers and screw terminals.</p>
+    <div class="comp-grid">
+      <div class="comp-card reveal">
+        <span class="cat-tag power">Protection</span>
+        <h4>IRF9540N P-MOSFET</h4>
+        <p>Reverse polarity protection with 10k&Omega; gate divider. SMBJ12A TVS diode clamps transients at 12 V.</p>
+      </div>
+      <div class="comp-card reveal d1">
+        <span class="cat-tag power">Regulation</span>
+        <h4>AMS1117-3.3 LDO</h4>
+        <p>5 V &rarr; 3.3 V / 1 A on-board regulator. Powers ESP32 VCC, IMU, and I2C pull-ups. 10&micro;F + 100nF decoupling.</p>
+      </div>
+      <div class="comp-card reveal d2">
+        <span class="cat-tag mcu">Socket</span>
+        <h4>ESP32 Headers (J12/J13)</h4>
+        <p>2&times;15-pin female sockets for ESP32-WROOM-32 30-pin DevKit. 22.86 mm row spacing. Routes all GPIO to subsystems.</p>
+      </div>
+      <div class="comp-card reveal d3">
+        <span class="cat-tag driver">Interface</span>
+        <h4>L298N Control (J9)</h4>
+        <p>6-pin Phoenix 5.08 mm screw terminal. Carries ENA, ENB, IN1&ndash;IN4 control signals only &mdash; no power through PCB.</p>
+      </div>
+      <div class="comp-card reveal">
+        <span class="cat-tag sensor">Interface</span>
+        <h4>GY-6500 IMU Socket (J5)</h4>
+        <p>8-pin header for MPU-6500 module in SPI mode. 4&times;33&Omega; series damping resistors on CLK, MOSI, MISO, CS lines.</p>
+      </div>
+      <div class="comp-card reveal d1">
+        <span class="cat-tag driver">Interface</span>
+        <h4>PCA9685 Socket (J6)</h4>
+        <p>6-pin header for servo PWM driver on I2C. 4.7k&Omega; pull-ups to 3V3. V+ routed from +6V_SERVO rail.</p>
+      </div>
+      <div class="comp-card reveal d2">
+        <span class="cat-tag sensor">Filtering</span>
+        <h4>Encoder RC Filters</h4>
+        <p>4&times; RC low-pass at 15.9 kHz (1k&Omega; + 10nF) on encoder channels. Two Phoenix 4-pin screw terminals (J7/J8).</p>
+      </div>
+      <div class="comp-card reveal d3">
+        <span class="cat-tag power">Passives</span>
+        <h4>14 Resistors &middot; 10 Caps</h4>
+        <p>Gate dividers, pull-downs, series damping, I2C pull-ups. Bulk electrolytics + HF ceramic decoupling on every rail.</p>
+      </div>
+    </div>
+
+    <!-- External Modules -->
+    <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:32px 0 18px;">External Modules <span style="color:var(--cyan); font-weight:400;">· plug-in via connectors</span></h4>
     <div class="comp-grid">
       <div class="comp-card reveal">
         <span class="cat-tag mcu">MCU</span>
-        <h4>ESP32-WROOM-32D</h4>
-        <p>Dual-core 240 MHz main controller. Runs the 100 Hz balance PID loop and UART bridge to Pi 5.</p>
+        <h4>ESP32-WROOM-32</h4>
+        <p>30-pin DevKit plugs into J12/J13. Dual-core 240 MHz, runs 100 Hz PID loop and UART bridge to Pi 5.</p>
       </div>
       <div class="comp-card reveal d1">
-        <span class="cat-tag driver">Driver</span>
-        <h4>2&times; L298N Motor Driver</h4>
-        <p>Dual H-bridge for the JGA25-370 drive motors. PWM speed control with encoder feedback.</p>
+        <span class="cat-tag driver">Motor</span>
+        <h4>L298N H-Bridge</h4>
+        <p>External dual H-bridge. Power (VBAT/GND) wired directly &mdash; only control signals route through PCB via J9.</p>
       </div>
       <div class="comp-card reveal d2">
-        <span class="cat-tag sensor">Sensor</span>
-        <h4>MPU-9250 IMU</h4>
-        <p>9-axis inertial measurement unit. Provides pitch, roll, and yaw for the balance controller at 100 Hz.</p>
+        <span class="cat-tag sensor">IMU</span>
+        <h4>GY-6500 (MPU-6500)</h4>
+        <p>6-axis IMU in SPI mode via J5. NCS held LOW for SPI. Interrupt on GPIO4 for data-ready at 100 Hz.</p>
       </div>
       <div class="comp-card reveal d3">
-        <span class="cat-tag driver">Driver</span>
-        <h4>PCA9685 Servo Driver</h4>
-        <p>16-channel PWM driver on I2C. Controls four MG996R servos for the articulated leg linkages.</p>
+        <span class="cat-tag driver">Servo</span>
+        <h4>PCA9685 PWM Driver</h4>
+        <p>16-ch I2C PWM driver at 0x40. Controls 4&times; MG996R servos. Powered from +6V_SERVO rail via J6.</p>
       </div>
       <div class="comp-card reveal">
-        <span class="cat-tag sensor">Sensor</span>
-        <h4>4&times; VL53L0X ToF Sensors</h4>
-        <p>Time-of-flight distance sensors on I2C multiplexer. Obstacle avoidance at 0&ndash;1200 mm range.</p>
+        <span class="cat-tag power">Power</span>
+        <h4>2&times; XL4016 Buck Converters</h4>
+        <p>External step-down modules: 6 V / 10 A (servos via J2) and 5 V / 10 A (logic/Pi via J3). Set voltage BEFORE connecting.</p>
       </div>
       <div class="comp-card reveal d1">
-        <span class="cat-tag power">Power</span>
-        <h4>XL4016 Buck Converters</h4>
-        <p>Two external step-down modules: 6 V / 10 A for servos, 5 V / 10 A for logic &amp; Pi 5. Fed from 3S 18650 pack.</p>
-      </div>
-      <div class="comp-card reveal d2">
-        <span class="cat-tag power">Power</span>
-        <h4>Power Protection</h4>
-        <p>15 A blade fuse + IRF9540N P-MOSFET reverse polarity protection. AMS1117-3.3 LDO for 3V3 rail.</p>
+        <span class="cat-tag mcu">Compute</span>
+        <h4>Raspberry Pi 5</h4>
+        <p>Vision sidecar. Receives 5 V via J10, sends commands over UART TX &rarr; J11 &rarr; ESP32 GPIO35 (input-only).</p>
       </div>
     </div>
 
