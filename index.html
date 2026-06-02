@@ -1,0 +1,4015 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Self-Balancing Articulated Leg Robot · PRB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<style>
+/* =====================================================================
+   TOKENS
+====================================================================== */
+:root {
+  --bg: #15171c;
+  --bg-2: #1d2027;
+  --bg-3: #262a33;
+  --line: rgba(255,255,255,0.08);
+  --line-2: rgba(255,255,255,0.16);
+  --text: #ecedef;
+  --text-dim: #a8abb3;
+  --text-mute: #6c6f78;
+
+  --accent: #d97757;          /* technical orange */
+  --accent-2: #4dd4e8;        /* electric cyan */
+  --accent-3: #f5d949;        /* highlighter yellow */
+  --accent-pink: #e87aa9;     /* magenta */
+  --green: #87a96b;
+  --rose: #c87070;
+  --cyan: #4dd4e8;
+  --purple: #d97757;
+  --amber: #d97757;
+
+  --glass: rgba(255,255,255,0.03);
+  --glass-2: rgba(255,255,255,0.05);
+  --glass-border: rgba(255,255,255,0.09);
+
+  --font-display: 'Fraunces', 'Times New Roman', serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --topbar-h: 44px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: #14181f;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+
+/* Selection */
+::selection { background: rgba(0,217,255,0.25); color: #fff; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(0,217,255,0.4); background-clip: content-box; }
+
+
+/* =====================================================================
+   SCROLL PROGRESS
+====================================================================== */
+.scroll-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 1px;
+  width: 0%;
+  background: var(--cyan);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* =====================================================================
+   TOP STATUS BAR (CAD/IDE titlebar style — no floating pill)
+====================================================================== */
+.topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--topbar-h);
+  z-index: 1000;
+  background: #0e1014;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: grid;
+  grid-template-columns: auto 1fr auto auto auto;
+  align-items: stretch;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+.tb-cell {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 18px;
+  border-right: 1px solid rgba(255,255,255,0.05);
+  white-space: nowrap;
+}
+.tb-cell:last-child { border-right: none; }
+.tb-cell .k {
+  color: var(--text-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 9.5px;
+}
+.tb-cell .v {
+  color: var(--text);
+  font-weight: 500;
+}
+.tb-cell .v.acc { color: var(--accent); }
+.tb-brand {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 22px;
+  border-right: 1px solid rgba(255,255,255,0.05);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-decoration: none;
+}
+.tb-brand .mark {
+  width: 22px; height: 22px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.tb-nav {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tb-nav::-webkit-scrollbar { display: none; }
+.tb-nav a {
+  display: flex; align-items: center;
+  padding: 0 14px;
+  color: var(--text-mute);
+  text-decoration: none;
+  text-transform: lowercase;
+  letter-spacing: 0.05em;
+  font-size: 11px;
+  border-right: 1px solid rgba(255,255,255,0.04);
+  transition: color .2s, background .2s;
+  position: relative;
+}
+.tb-nav a::before {
+  content: "";
+  position: absolute;
+  left: 14px; right: 14px; bottom: 0;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .25s;
+}
+.tb-nav a:hover { color: var(--text); }
+.tb-nav a:hover::before { transform: scaleX(1); }
+.tb-nav a.active { color: var(--text); }
+.tb-nav a.active::before { transform: scaleX(1); }
+.tb-nav a .n {
+  color: var(--text-mute);
+  margin-right: 8px;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+}
+.tb-status {
+  display: flex; align-items: center; gap: 8px;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 10px;
+}
+.tb-status .led {
+  width: 7px; height: 7px;
+  background: var(--green);
+  border-radius: 50%;
+}
+@media (max-width: 1100px) {
+  .topbar { grid-template-columns: auto 1fr auto; }
+  .tb-cell.hide-md { display: none; }
+}
+@media (max-width: 720px) {
+  .topbar { grid-template-columns: auto 1fr auto; height: 40px; }
+  .tb-nav { display: none; }
+  :root { --topbar-h: 40px; }
+}
+body { padding-top: var(--topbar-h); }
+
+/* hide the old nav */
+nav.nav { display: none !important; }
+.nav-brand {
+  display: flex; align-items: center; gap: 8px;
+  padding-right: 12px;
+  border-right: 1px solid var(--glass-border);
+  color: var(--text);
+  font-weight: 600;
+}
+.nav-brand .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--cyan);
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.82); }
+}
+.nav a {
+  color: var(--text-dim);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 999px;
+  transition: color .2s, background .2s;
+  text-transform: uppercase;
+}
+.nav a:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+.nav a.active { color: var(--cyan); background: rgba(0,217,255,0.08); }
+@media (max-width: 1200px) {
+  .nav { gap: 0; padding: 6px 6px 6px 14px; font-size: 10.5px; }
+  .nav a { padding: 5px 7px; }
+}
+@media (max-width: 900px) {
+  .nav-links { display: none; }
+}
+
+/* =====================================================================
+   LAYOUT HELPERS
+====================================================================== */
+.wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+section { position: relative; padding: 120px 0; }
+
+.section-head { position: relative; margin-bottom: 56px; }
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  display: inline-flex; align-items: center; gap: 10px;
+  position: relative; z-index: 1;
+}
+.eyebrow::before {
+  content: "";
+  width: 20px; height: 1px;
+  background: var(--text-dim);
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+  margin: 0 0 14px;
+  position: relative; z-index: 1;
+  max-width: 16ch;
+}
+.section-sub {
+  font-size: 17px;
+  color: var(--text-dim);
+  max-width: 60ch;
+  margin: 0 0 0;
+  position: relative; z-index: 1;
+  line-height: 1.6;
+}
+
+/* =====================================================================
+   HERO
+====================================================================== */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  padding: 130px 0 90px;
+  overflow: hidden;
+}
+.hero-canvas {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  opacity: 0.55;
+}
+.hero-grid {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 45fr 55fr;
+  gap: 60px;
+  align-items: center;
+  min-height: 75vh;
+}
+.hero-left { position: relative; }
+.hero-status {
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 4px 12px 4px 8px;
+  background: transparent;
+  border: 1px solid var(--line-2);
+  border-radius: 0;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+.hero-status .pill {
+  background: transparent;
+  color: var(--cyan);
+  font-weight: 500;
+  padding: 0;
+  border-right: 1px solid var(--line-2);
+  padding-right: 12px;
+  border-radius: 0;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+}
+.hero-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(48px, 6.8vw, 92px);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  margin: 0 0 28px;
+}
+
+.hero-tag {
+  font-size: 18px;
+  color: var(--text-dim);
+  max-width: 50ch;
+  line-height: 1.6;
+  margin: 0 0 36px;
+}
+.hero-meta {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 28px 44px;
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+}
+.hero-meta .m-l {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  color: var(--text-mute);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.hero-meta .m-v {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.hero-meta .m-v small { color: var(--text-dim); font-size: 13px; margin-left: 4px; font-weight: 400; }
+
+.hero-right { position: relative; }
+.hero-photo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 0.92;
+  border-radius: 24px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at top left, rgba(0,217,255,0.18), transparent 55%),
+    radial-gradient(ellipse at bottom right, rgba(168,85,247,0.18), transparent 60%),
+    #0e1117;
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 30px 80px -20px rgba(0,0,0,0.6),
+    0 0 0 1px rgba(255,255,255,0.02) inset;
+}
+.hero-photo img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: drop-shadow(0 30px 50px rgba(0,0,0,0.45));
+  transition: opacity .6s;
+}
+.hero-photo.viewer-ready img { opacity: 0; pointer-events: none; }
+#viewer-3d {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity .8s;
+  cursor: grab;
+}
+#viewer-3d.ready { opacity: 1; }
+#viewer-3d:active { cursor: grabbing; }
+.viewer-loader {
+  position: absolute;
+  bottom: 18px; left: 18px; right: 18px;
+  z-index: 3;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  display: flex; flex-direction: column; gap: 8px;
+  transition: opacity .4s;
+}
+.viewer-loader.done { opacity: 0; pointer-events: none; }
+.viewer-loader .lh { display: flex; justify-content: space-between; }
+.viewer-loader .lh .v { color: var(--cyan); }
+.viewer-loader .bar {
+  height: 2px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.viewer-loader .bar > i {
+  display: block; height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--cyan), var(--purple));
+  transition: width .2s;
+}
+.view-toggle {
+  position: absolute;
+  top: 18px; left: 18px;
+  z-index: 4;
+  display: none;
+  align-items: center; gap: 0;
+  background: rgba(13,15,18,0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  padding: 3px;
+  cursor: pointer;
+}
+.view-toggle.show { display: flex; }
+.view-toggle button {
+  background: none;
+  border: none;
+  color: var(--text-mute);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all .25s;
+}
+.view-toggle button:hover { color: var(--text); }
+.view-toggle button.active {
+  background: var(--cyan);
+  color: #0d0f12;
+  font-weight: 700;
+}
+.viewer-badge {
+  position: absolute;
+  top: 18px; right: 18px;
+  z-index: 3;
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text);
+  background: rgba(13,15,18,0.6);
+  backdrop-filter: blur(10px);
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  opacity: 0;
+  transition: opacity .6s;
+}
+.viewer-badge.show { opacity: 1; }
+.viewer-badge .d { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); animation: pulse 2s ease-in-out infinite; }
+.viewer-hint {
+  position: absolute;
+  bottom: 18px; right: 22px;
+  z-index: 3;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  opacity: 0;
+  transition: opacity .6s;
+}
+.viewer-hint.show { opacity: 1; }
+.hero-photo::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(8,9,10,0.35), transparent 50%);
+  pointer-events: none;
+}
+.hero-tag-corner {
+  position: absolute;
+  top: 18px; left: 18px;
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  background: rgba(13,15,18,0.55);
+  backdrop-filter: blur(10px);
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  z-index: 3;
+}
+.hero-tag-corner .d { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+.hero-spec-pill {
+  position: absolute;
+  z-index: 3;
+  background: rgba(13,15,18,0.7);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--glass-border);
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text);
+  display: flex; align-items: center; gap: 10px;
+}
+.hero-spec-pill .l { color: var(--text-mute); font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; }
+.hero-spec-pill .v { color: var(--cyan); }
+.hero-spec-pill.pos-1 { bottom: 28px; left: 22px; }
+.hero-spec-pill.pos-2 { bottom: 28px; right: 22px; color: var(--amber); }
+.hero-spec-pill.pos-2 .v { color: var(--amber); }
+.hero-spec-pill.pos-3 { top: 28px; right: 22px; }
+.hero-spec-pill.pos-3 .v { color: var(--purple); }
+
+.scroll-hint {
+  position: absolute;
+  bottom: 30px; left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--text-mute);
+  text-transform: uppercase;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  z-index: 3;
+}
+.scroll-hint .line {
+  width: 1px; height: 36px;
+  background: linear-gradient(to bottom, var(--text-mute), transparent);
+  animation: drop 2s ease-in-out infinite;
+}
+@keyframes drop {
+  0% { transform: scaleY(0); transform-origin: top; }
+  50% { transform: scaleY(1); transform-origin: top; }
+  51% { transform: scaleY(1); transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+
+@media (max-width: 1000px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 36px; }
+  .hero-meta { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+}
+
+/* =====================================================================
+   PILLARS (hero foot)
+====================================================================== */
+.pillars {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.pillar {
+  padding: 22px 20px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .3s;
+}
+.pillar::before {
+  content: "";
+  position: absolute; top:0; left:0;
+  width: 24px; height: 2px;
+  background: var(--accent);
+}
+.pillar:nth-child(2)::before { background: var(--accent-2); height: 2px; width: 24px; }
+.pillar:nth-child(3)::before { background: var(--accent-3); height: 2px; width: 24px; }
+.pillar:nth-child(4)::before { background: var(--accent-pink); height: 2px; width: 24px; }
+.pillar:hover { border-color: var(--line-2); }
+.pillar h4 {
+  margin: 12px 0 6px;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.pillar p { margin: 0; font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+.pillar .num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--text-mute);
+}
+@media (max-width: 800px) {
+  .pillars { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* =====================================================================
+   CARDS / GLASS
+====================================================================== */
+.card {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 24px;
+  backdrop-filter: blur(14px);
+  position: relative;
+  transition: border-color .3s, transform .25s, box-shadow .3s;
+}
+.card.tilt { transform-style: preserve-3d; will-change: transform; }
+.card.tilt > * { transform: translateZ(20px); }
+.card:hover { border-color: rgba(0,217,255,0.3); }
+.card.gradient-border:hover {
+  background:
+    linear-gradient(var(--bg-2), var(--bg-2)) padding-box,
+    linear-gradient(135deg, rgba(0,217,255,0.6), rgba(168,85,247,0.6), rgba(245,158,11,0.4)) border-box;
+  border: 1px solid transparent;
+}
+.card h3 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin: 0 0 10px;
+}
+.card .label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: 10px;
+}
+
+/* =====================================================================
+   MECHANICAL
+====================================================================== */
+.mech-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+.spec-table {
+  border-top: 1px solid var(--line);
+}
+.spec-table .row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  gap: 12px;
+}
+.spec-table .row .k {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.spec-table .row .v {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--text);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+.spec-table .row .v.mono { font-family: var(--font-mono); font-size: 14.5px; color: var(--cyan); }
+.mini-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 24px;
+}
+.mini-card {
+  padding: 16px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+}
+.mini-card .icon {
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  background: rgba(0,217,255,0.1);
+  color: var(--cyan);
+  margin-bottom: 10px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+}
+.mini-card:nth-child(2) .icon { background: rgba(168,85,247,0.1); color: var(--purple); }
+.mini-card:nth-child(3) .icon { background: rgba(245,158,11,0.1); color: var(--amber); }
+.mini-card .t { font-family: var(--font-display); font-size: 14px; font-weight: 500; }
+.mini-card .s { font-family: var(--font-mono); font-size: 11px; color: var(--text-mute); margin-top: 4px; }
+
+.floor-photo {
+  position: relative;
+  aspect-ratio: 1 / 0.78;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #0e1117;
+  border: 1px solid var(--glass-border);
+}
+.floor-photo img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+.floor-label {
+  position: absolute;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  background: rgba(13,15,18,0.78);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.floor-label .dot { width: 8px; height: 8px; border-radius: 50%; }
+.floor-label.f1 { top: 18px; left: 18px; }
+.floor-label.f1 .dot { background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+.floor-label.f2 { bottom: 18px; right: 18px; }
+.floor-label.f2 .dot { background: var(--amber); box-shadow: 0 0 10px var(--amber); }
+.floor-divider {
+  position: absolute;
+  left: 8%; right: 8%;
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan) 30%, var(--amber) 70%, transparent);
+  opacity: 0.45;
+}
+
+@media (max-width: 1000px) {
+  .mech-grid { grid-template-columns: 1fr; }
+  .mini-cards { grid-template-columns: 1fr; }
+}
+
+/* =====================================================================
+   GALLERY (horizontal drag)
+====================================================================== */
+.gallery {
+  position: relative;
+  margin-top: 12px;
+  user-select: none;
+}
+.gallery-track {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 6px 0 22px;
+  cursor: grab;
+  scrollbar-width: thin;
+}
+.gallery-track.dragging { cursor: grabbing; scroll-behavior: auto; }
+.gallery-track::-webkit-scrollbar { height: 4px; }
+.gallery-track::-webkit-scrollbar-thumb { background: rgba(0,217,255,0.3); }
+.g-card {
+  flex: 0 0 360px;
+  aspect-ratio: 1 / 0.86;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0e1117;
+  border: 1px solid var(--glass-border);
+  position: relative;
+  transition: transform .3s, border-color .3s;
+  pointer-events: auto;
+}
+.g-card img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  transition: transform .6s;
+}
+.g-card:hover img { transform: scale(1.05); }
+.g-card:hover { border-color: rgba(0,217,255,0.4); }
+.g-card .cap {
+  position: absolute;
+  left: 14px; bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: rgba(8,9,10,0.7);
+  backdrop-filter: blur(10px);
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+}
+.g-card .cap .d { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); }
+.g-card .idx {
+  position: absolute;
+  top: 14px; right: 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-mute);
+  letter-spacing: 0.1em;
+}
+.gallery-hint {
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  color: var(--text-mute);
+  text-transform: uppercase;
+  display: flex; align-items: center; gap: 10px;
+}
+
+/* =====================================================================
+   ELECTRONICS DIAGRAM
+====================================================================== */
+.elec-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 22px;
+  margin-top: 40px;
+}
+.diagram-wrap {
+  background: var(--bg-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.diagram-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(0,217,255,0.06), transparent 55%),
+    radial-gradient(ellipse at 80% 80%, rgba(168,85,247,0.05), transparent 55%);
+  pointer-events: none;
+}
+.diagram-wrap > * { position: relative; }
+.diagram-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px;
+}
+.diagram-head .t {
+  font-family: var(--font-mono);
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--text-dim);
+}
+.diagram-legend {
+  display: flex; gap: 16px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.diagram-legend i { display: inline-block; width: 14px; height: 2px; vertical-align: middle; margin-right: 6px; }
+
+.bom-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 24px;
+}
+.bom-col {
+  padding: 20px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+}
+.bom-col h4 {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin: 0 0 12px;
+  color: var(--text-mute);
+  display: flex; align-items: center; gap: 10px;
+}
+.bom-col.cyan h4 { color: var(--cyan); }
+.bom-col.amber h4 { color: var(--amber); }
+.bom-col.purple h4 { color: var(--purple); }
+.bom-col h4 .d { width: 8px; height: 8px; border-radius: 2px; background: currentColor; }
+.bom-col ul { list-style: none; padding: 0; margin: 0; }
+.bom-col li {
+  padding: 8px 0;
+  font-size: 14px;
+  color: var(--text);
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.bom-col li:last-child { border-bottom: 0; }
+.bom-col li span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-mute);
+}
+@media (max-width: 800px) {
+  .bom-grid { grid-template-columns: 1fr; }
+}
+
+/* =====================================================================
+   POWER
+====================================================================== */
+.power-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 36px;
+}
+.bars { margin-top: 6px; }
+.bar-row { margin-bottom: 22px; }
+.bar-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 8px;
+}
+.bar-head .n {
+  font-family: var(--font-display);
+  font-size: 15px;
+}
+.bar-head .v {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.bar-track {
+  height: 10px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+.bar-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--cyan), var(--purple));
+  transition: width 1.4s cubic-bezier(.2,.7,.3,1);
+  position: relative;
+}
+.bar-fill::after {
+  content: "";
+  position: absolute; right: 0; top: -3px;
+  width: 2px; height: 16px;
+  background: #fff;
+  box-shadow: 0 0 12px #fff;
+  opacity: 0.7;
+}
+.bar-fill.amber { background: linear-gradient(90deg, var(--amber), var(--rose)); }
+.bar-fill.green { background: linear-gradient(90deg, var(--green), var(--cyan)); }
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 26px;
+}
+.summary-cards .s {
+  padding: 16px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+}
+.summary-cards .s .v {
+  font-family: var(--font-display);
+  font-size: 26px; font-weight: 500; letter-spacing: -0.015em;
+}
+.summary-cards .s .v small { font-size: 13px; color: var(--text-dim); margin-left: 2px; }
+.summary-cards .s .l {
+  font-family: var(--font-mono);
+  font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-top: 4px;
+}
+
+@media (max-width: 900px) {
+  .power-grid { grid-template-columns: 1fr; }
+  .summary-cards { grid-template-columns: 1fr; }
+}
+
+/* =====================================================================
+   TORQUE GAUGE
+====================================================================== */
+.torque-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+.gauge-wrap {
+  display: flex; flex-direction: column; align-items: center;
+}
+.gauge-svg { width: 100%; max-width: 420px; height: auto; }
+.gauge-center {
+  text-align: center;
+  margin-top: -90px;
+  position: relative;
+  z-index: 2;
+}
+.gauge-center .v {
+  font-family: var(--font-display);
+  font-size: 52px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+.gauge-center .v small { font-size: 16px; color: var(--text-dim); margin-left: 6px; }
+.gauge-center .l {
+  font-family: var(--font-mono);
+  font-size: 10.5px; letter-spacing: 0.16em;
+  color: var(--text-mute);
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+.gauge-foot {
+  margin-top: 20px;
+  display: flex; gap: 18px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.gauge-foot .pass {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 12px;
+  background: rgba(34,197,94,0.1);
+  border: 1px solid rgba(34,197,94,0.3);
+  color: var(--green);
+  border-radius: 999px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.weight-card {
+  padding: 24px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  margin-top: 22px;
+}
+.weight-card h4 {
+  margin: 0 0 14px;
+  font-family: var(--font-display);
+  font-weight: 500; font-size: 17px;
+}
+.weight-card ul { list-style: none; padding: 0; margin: 0; }
+.weight-card li {
+  padding: 8px 0;
+  display: flex; align-items: center; gap: 12px;
+  color: var(--text-dim);
+  font-size: 14px;
+  border-bottom: 1px dashed var(--line);
+}
+.weight-card li:last-child { border-bottom: 0; }
+.weight-card li::before {
+  content: "→";
+  color: var(--cyan);
+  font-family: var(--font-mono);
+}
+@media (max-width: 900px) {
+  .torque-grid { grid-template-columns: 1fr; }
+}
+
+/* =====================================================================
+   SOFTWARE
+====================================================================== */
+.soft-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+.pid-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 26px 0;
+}
+.pid-card {
+  padding: 22px 18px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: border-color .3s, transform .3s;
+  position: relative;
+  overflow: hidden;
+}
+.pid-card:hover { border-color: rgba(0,217,255,0.4); transform: translateY(-3px); }
+.pid-card .kchar {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 64px;
+  font-weight: 400;
+  font-variation-settings: "opsz" 144;
+  letter-spacing: -0.04em;
+  color: var(--accent);
+  line-height: 1;
+}
+.pid-card:nth-child(2) .kchar { color: var(--accent-2); }
+.pid-card:nth-child(3) .kchar { color: var(--accent-3); }
+.pid-card .kval {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+.pid-card .kname { margin-top: 12px; font-family: var(--font-display); font-size: 15px; font-weight: 500; }
+.pid-card .kdesc {
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height .35s, opacity .3s, margin .3s;
+  overflow: hidden;
+}
+.pid-card.open .kdesc { max-height: 80px; opacity: 1; }
+.pid-card .hint {
+  position: absolute;
+  top: 16px; right: 16px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  color: var(--text-mute);
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.serial-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 20px;
+}
+.cmd {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 14px;
+  background: var(--bg-3);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+}
+.cmd .key {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,217,255,0.1);
+  color: var(--cyan);
+  border: 1px solid rgba(0,217,255,0.3);
+  border-radius: 6px;
+}
+.cmd .desc { font-size: 13px; color: var(--text-dim); }
+
+.code-block {
+  background: linear-gradient(180deg, #161b2b 0%, #11162305 100%);
+  background-color: #141928;
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 22px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: #d1d5db;
+  position: relative;
+  overflow: hidden;
+}
+.code-block .c-head {
+  display: flex; align-items: center; gap: 8px;
+  margin: -22px -22px 18px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--glass-border);
+  background: rgba(255,255,255,0.02);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.code-block .c-head .dot { width: 8px; height: 8px; border-radius: 50%; }
+.code-block .c-head .dot.r { background: #f43f5e; }
+.code-block .c-head .dot.y { background: var(--amber); }
+.code-block .c-head .dot.g { background: var(--green); }
+.code-block .c-head .name { margin-left: auto; }
+.code-block .cm { color: #6b7280; }
+.code-block .kw { color: var(--purple); }
+.code-block .fn { color: var(--cyan); }
+.code-block .num { color: var(--amber); }
+.code-block .str { color: var(--green); }
+
+@media (max-width: 900px) {
+  .soft-grid { grid-template-columns: 1fr; }
+  .pid-cards { grid-template-columns: 1fr; }
+  .serial-grid { grid-template-columns: 1fr; }
+}
+
+/* =====================================================================
+   RISKS (accordion)
+====================================================================== */
+.risk-list { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
+.risk-item {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color .3s;
+}
+.risk-item.open { border-color: rgba(0,217,255,0.4); }
+.risk-head {
+  display: grid;
+  grid-template-columns: 60px auto 1fr auto auto;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 22px;
+  cursor: pointer;
+  user-select: none;
+}
+.risk-id {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--cyan);
+  letter-spacing: 0.08em;
+}
+.risk-sev {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid;
+}
+.risk-sev.low { color: var(--green); border-color: rgba(135,169,107,0.4); background: rgba(135,169,107,0.08); }
+.risk-sev.med { color: var(--accent); border-color: rgba(217,119,87,0.4); background: rgba(217,119,87,0.08); }
+.risk-sev.high { color: var(--accent-pink); border-color: rgba(232,122,169,0.4); background: rgba(232,122,169,0.08); }
+.risk-title { font-family: var(--font-display); font-size: 16.5px; font-weight: 500; }
+.risk-toggle {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  font-size: 18px; color: var(--text-dim);
+  transition: transform .3s, background .3s, color .3s;
+}
+.risk-item.open .risk-toggle { transform: rotate(45deg); background: var(--cyan); color: #08090a; }
+.risk-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .4s cubic-bezier(.2,.7,.3,1);
+}
+.risk-item.open .risk-body { max-height: 220px; }
+.risk-body-inner {
+  padding: 0 22px 22px 100px;
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.65;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+.risk-body-inner b { color: var(--text); font-weight: 500; }
+
+@media (max-width: 700px) {
+  .risk-head { grid-template-columns: 50px 1fr auto; padding: 14px 16px; gap: 10px; }
+  .risk-sev { display: none; }
+  .risk-body-inner { padding: 14px 16px 18px; }
+}
+
+/* =====================================================================
+   MILESTONES
+====================================================================== */
+.miles-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 50px;
+}
+.miles-progress {
+  position: sticky;
+  top: 100px;
+  align-self: start;
+}
+.progress-ring {
+  position: relative;
+  width: 220px; height: 220px;
+}
+.progress-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.progress-ring .track { stroke: rgba(255,255,255,0.06); fill: none; }
+.progress-ring .fill {
+  fill: none;
+  stroke: url(#progress-grad);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1.5s cubic-bezier(.2,.7,.3,1);
+}
+.progress-ring .center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.progress-ring .pct {
+  font-family: var(--font-display);
+  font-size: 56px; font-weight: 600;
+  letter-spacing: -0.03em;
+}
+.progress-ring .pct sup { font-size: 22px; color: var(--text-dim); }
+.progress-ring .lbl {
+  font-family: var(--font-mono);
+  font-size: 10px; letter-spacing: 0.2em; color: var(--text-mute); text-transform: uppercase;
+}
+.timeline {
+  position: relative;
+  padding-left: 32px;
+}
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 7px; top: 6px; bottom: 6px;
+  width: 1px;
+  background: linear-gradient(to bottom, var(--green) 0%, var(--green) 50%, var(--amber) 50%, var(--amber) 92%, var(--purple) 92%);
+  opacity: 0.5;
+}
+.timeline .t-row {
+  position: relative;
+  padding: 12px 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 16px;
+}
+.timeline .t-row::before {
+  content: "";
+  position: absolute;
+  left: -32px;
+  top: 50%; transform: translateY(-50%);
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  background: var(--bg-2);
+  border: 2px solid var(--text-mute);
+}
+.timeline .t-row.done::before { background: var(--green); border-color: var(--green); box-shadow: 0 0 12px rgba(34,197,94,0.5); }
+.timeline .t-row.next::before { background: var(--bg); border-color: var(--amber); }
+.timeline .t-row.final::before {
+  background: var(--bg); border-color: var(--purple);
+  width: 18px; height: 18px;
+  box-shadow: 0 0 18px rgba(168,85,247,0.5);
+}
+.timeline .t-name { font-family: var(--font-display); font-size: 16px; font-weight: 500; }
+.timeline .t-row.done .t-name { color: var(--text-dim); }
+.timeline .t-row.final .t-name { color: var(--purple); }
+.timeline .t-tag {
+  font-family: var(--font-mono);
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid;
+}
+.timeline .t-row.done .t-tag { color: var(--green); border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.05); }
+.timeline .t-row.next .t-tag { color: var(--amber); border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.05); }
+.timeline .t-row.final .t-tag { color: var(--purple); border-color: rgba(168,85,247,0.4); background: rgba(168,85,247,0.08); }
+.timeline .t-phase {
+  position: relative;
+  padding: 22px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.timeline .t-phase::before {
+  content: "";
+  position: absolute;
+  left: -36px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px; height: 8px;
+  background: var(--bg);
+  outline: 1px solid var(--text-mute);
+}
+.timeline .t-phase .n {
+  color: var(--cyan);
+  font-weight: 600;
+}
+.timeline .t-phase.p2 .n { color: var(--amber); }
+.timeline .t-phase.p3 .n { color: var(--purple); }
+.timeline .t-phase .ln {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--line-2), transparent);
+}
+.timeline .t-name small {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-mute);
+  letter-spacing: 0.04em;
+  margin-top: 3px;
+  font-weight: 400;
+}
+
+@media (max-width: 900px) {
+  .miles-grid { grid-template-columns: 1fr; gap: 28px; }
+  .miles-progress { position: relative; top: 0; }
+}
+
+/* =====================================================================
+   VISION
+====================================================================== */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.tile {
+  padding: 22px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+}
+.tile .t-h {
+  font-family: var(--font-mono);
+  font-size: 10.5px; letter-spacing: 0.16em; color: var(--text-mute); text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.tile .t-v { font-family: var(--font-display); font-size: 18px; font-weight: 500; letter-spacing: -0.01em; }
+.tile .t-s { color: var(--text-dim); font-size: 13px; margin-top: 8px; line-height: 1.5; }
+.tile.acc-c { border-color: rgba(0,217,255,0.2); }
+.tile.acc-p { border-color: rgba(168,85,247,0.2); }
+.tile.acc-a { border-color: rgba(245,158,11,0.2); }
+
+.cv-cats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin-bottom: 32px;
+}
+.cv-cat {
+  padding: 26px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.cv-cat:hover { border-color: rgba(0,217,255,0.3); }
+.cv-cat-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.cv-cat-head .name {
+  display: flex; align-items: center; gap: 12px;
+  font-family: var(--font-display); font-size: 19px; font-weight: 500;
+}
+.cv-cat-head .emoji { font-size: 24px; line-height: 1; }
+.cv-tier {
+  font-family: var(--font-mono);
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid;
+}
+.cv-tier.t1 { color: var(--green); border-color: rgba(135,169,107,0.4); background: rgba(135,169,107,0.08); }
+.cv-tier.t2 { color: var(--accent-2); border-color: rgba(77,212,232,0.4); background: rgba(77,212,232,0.08); }
+.cv-tier.t3 { color: var(--accent-pink); border-color: rgba(232,122,169,0.4); background: rgba(232,122,169,0.08); }
+.cv-cat .stack {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--cyan);
+  letter-spacing: 0.04em;
+  margin-bottom: 16px;
+}
+.cv-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px 14px;
+}
+.cv-list li {
+  list-style: none;
+  font-size: 13px;
+  color: var(--text-dim);
+  padding: 6px 0;
+  border-top: 1px solid var(--line);
+  display: flex; align-items: center; gap: 8px;
+}
+.cv-list li::before {
+  content: "▸";
+  color: var(--cyan);
+  font-size: 10px;
+}
+
+.fps-table {
+  background: var(--bg-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.fps-table .row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  align-items: center;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+.fps-table .row:last-child { border-bottom: 0; }
+.fps-table .row.head {
+  background: rgba(255,255,255,0.02);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  padding: 14px 22px;
+}
+.fps-table .row .model { font-family: var(--font-display); font-weight: 500; }
+.fps-table .row .pi5, .fps-table .row .hailo {
+  font-family: var(--font-mono);
+  display: flex; align-items: center; gap: 10px;
+}
+.fps-table .fps-bar {
+  flex: 1;
+  height: 5px; background: rgba(255,255,255,0.05);
+  border-radius: 999px; overflow: hidden;
+  position: relative;
+}
+.fps-table .fps-bar > i {
+  display: block; height: 100%;
+  background: var(--cyan);
+  border-radius: 999px;
+}
+.fps-table .row .hailo .fps-bar > i { background: var(--purple); }
+
+@media (max-width: 900px) {
+  .tiles, .cv-cats { grid-template-columns: 1fr; }
+  .cv-list { grid-template-columns: 1fr; }
+  .fps-table .row { grid-template-columns: 1fr; gap: 6px; }
+}
+
+/* =====================================================================
+   CODE ARCHITECTURE
+====================================================================== */
+.protocol {
+  background: var(--bg-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 26px;
+  margin-bottom: 28px;
+}
+.protocol h4 {
+  font-family: var(--font-mono);
+  font-size: 11px; letter-spacing: 0.18em;
+  color: var(--cyan); margin: 0 0 16px;
+  text-transform: uppercase;
+}
+.protocol-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+.proto-col h5 {
+  font-family: var(--font-display);
+  font-size: 14px; font-weight: 500;
+  margin: 0 0 10px;
+  display: flex; align-items: center; gap: 10px;
+}
+.proto-col h5 .arr { color: var(--cyan); font-family: var(--font-mono); }
+.proto-col code {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text);
+  padding: 8px 12px;
+  background: rgba(0,217,255,0.04);
+  border-left: 2px solid var(--cyan);
+  margin-bottom: 6px;
+}
+.proto-col.right code { border-color: var(--amber); background: rgba(245,158,11,0.04); }
+
+.tabs {
+  background: var(--bg-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.tab-bar {
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--glass-border);
+  background: rgba(255,255,255,0.02);
+}
+.tab-btn {
+  padding: 14px 22px;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color .25s, border-color .25s, background .25s;
+}
+.tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.02); }
+.tab-btn.active { color: var(--cyan); border-bottom-color: var(--cyan); background: rgba(0,217,255,0.03); }
+.tab-body { padding: 26px 28px; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+.tab-pane ol {
+  list-style: none;
+  counter-reset: step;
+  padding: 0; margin: 0;
+}
+.tab-pane li {
+  counter-increment: step;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 18px;
+  align-items: start;
+}
+.tab-pane li:last-child { border-bottom: 0; }
+.tab-pane li::before {
+  content: counter(step, decimal-leading-zero);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--cyan);
+  letter-spacing: 0.08em;
+}
+.tab-pane li strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--text);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.tab-pane li em {
+  font-style: normal;
+  font-size: 13.5px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+@media (max-width: 800px) {
+  .protocol-grid { grid-template-columns: 1fr; }
+  .tab-btn { padding: 10px 14px; font-size: 10px; }
+}
+
+/* =====================================================================
+   IDE / RUNTIME EXPLORER (Section 10 tabs)
+====================================================================== */
+.ide {
+  background: linear-gradient(180deg, rgba(26,31,48,0.85) 0%, rgba(20,24,38,0.92) 100%);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow:
+    0 30px 80px -30px rgba(0,217,255,0.15),
+    0 0 0 1px rgba(255,255,255,0.02) inset;
+  position: relative;
+}
+.ide::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(0,217,255,0.08), transparent 40%),
+    radial-gradient(ellipse at 80% 100%, rgba(168,85,247,0.06), transparent 50%);
+  pointer-events: none;
+}
+.ide > * { position: relative; z-index: 1; }
+
+.ide-titlebar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 18px;
+  background: rgba(255,255,255,0.025);
+  border-bottom: 1px solid var(--glass-border);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+}
+.ide-titlebar .dots { display: flex; gap: 6px; }
+.ide-titlebar .dots span {
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+}
+.ide-titlebar .dots span:nth-child(1) { background: #f43f5e; }
+.ide-titlebar .dots span:nth-child(2) { background: var(--amber); }
+.ide-titlebar .dots span:nth-child(3) { background: var(--green); }
+.ide-titlebar .path {
+  color: var(--text-mute);
+  text-transform: lowercase;
+  letter-spacing: 0.04em;
+}
+.ide-titlebar .path .here {
+  color: var(--text);
+  background: rgba(0,217,255,0.08);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 6px;
+  border: 1px solid rgba(0,217,255,0.2);
+}
+.ide-titlebar .live {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 8px;
+  color: var(--green);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.ide-titlebar .live .d {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 12px var(--green);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.ide-body {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 520px;
+}
+.ide-sidebar {
+  background: rgba(0,0,0,0.2);
+  border-right: 1px solid var(--glass-border);
+  padding: 16px 0;
+}
+.ide-sec {
+  padding: 6px 18px 10px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.ide-tab {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  background: transparent;
+  border: none;
+  border-left: 2px solid transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background .2s, border-color .2s;
+  font-family: var(--font-body);
+  color: var(--text-dim);
+}
+.ide-tab:hover { background: rgba(255,255,255,0.03); color: var(--text); }
+.ide-tab.active {
+  background: linear-gradient(90deg, rgba(0,217,255,0.08), transparent);
+  border-left-color: var(--cyan);
+  color: var(--text);
+}
+.ide-tab .ico {
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+}
+.ide-tab .ico.c { background: rgba(0,217,255,0.1); color: var(--cyan); border: 1px solid rgba(0,217,255,0.25); }
+.ide-tab .ico.p { background: rgba(168,85,247,0.1); color: var(--purple); border: 1px solid rgba(168,85,247,0.25); }
+.ide-tab .ico.g { background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
+.ide-tab .ico.a { background: rgba(245,158,11,0.1); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+.ide-tab .ico.r { background: rgba(244,63,94,0.1); color: var(--rose); border: 1px solid rgba(244,63,94,0.25); }
+.ide-tab .label .name {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.ide-tab .label .meta {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--text-mute);
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+}
+
+.ide-main {
+  padding: 22px 28px 24px;
+  overflow: hidden;
+  position: relative;
+}
+.ide-pane { display: none; }
+.ide-pane.active { display: block; animation: paneIn .35s ease-out; }
+@keyframes paneIn {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.ide-header {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px dashed var(--glass-border);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.ide-header .h-l {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.ide-header .h-r {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.ide-header .h-r span.acc { color: var(--cyan); }
+
+.ide-flow {
+  list-style: none;
+  padding: 0; margin: 0;
+  position: relative;
+  counter-reset: idestep;
+}
+.ide-flow::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  top: 12px; bottom: 12px;
+  width: 1px;
+  background: linear-gradient(to bottom, var(--cyan), var(--purple) 50%, var(--amber));
+  opacity: 0.35;
+}
+.ide-flow li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 38px 1fr;
+  gap: 18px;
+  padding: 8px 0;
+}
+.ide-flow li::before {
+  content: counter(idestep, decimal-leading-zero);
+  counter-increment: idestep;
+  width: 38px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-mute);
+  background: var(--bg);
+  padding: 4px 0;
+  z-index: 1;
+  align-self: flex-start;
+  margin-top: 12px;
+}
+.ide-flow li .body {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  transition: border-color .25s, background .25s, transform .25s;
+}
+.ide-flow li:hover .body {
+  border-color: rgba(0,217,255,0.3);
+  background: rgba(0,217,255,0.04);
+  transform: translateX(4px);
+}
+.ide-flow li .step-head {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.ide-flow li .tag {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid;
+}
+.ide-flow li .tag.cyan { color: var(--cyan); border-color: rgba(0,217,255,0.3); background: rgba(0,217,255,0.06); }
+.ide-flow li .tag.purple { color: var(--purple); border-color: rgba(168,85,247,0.3); background: rgba(168,85,247,0.06); }
+.ide-flow li .tag.green { color: var(--green); border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.06); }
+.ide-flow li .tag.amber { color: var(--amber); border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.06); }
+.ide-flow li .tag.rose { color: var(--rose); border-color: rgba(244,63,94,0.3); background: rgba(244,63,94,0.06); }
+.ide-flow li .title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--text);
+}
+.ide-flow li .timing {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-mute);
+  letter-spacing: 0.08em;
+  margin-left: auto;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.ide-flow li .timing::before { content: "▸"; color: var(--cyan); }
+.ide-flow li .desc {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.55;
+  margin: 0;
+}
+.ide-flow li .desc code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--cyan);
+  background: rgba(0,217,255,0.06);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.ide-footer {
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 18px;
+  background: rgba(0,0,0,0.3);
+  border-top: 1px solid var(--glass-border);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  flex-wrap: wrap;
+}
+.ide-footer .b { color: var(--text); }
+.ide-footer .sep { width: 4px; height: 4px; border-radius: 50%; background: var(--text-mute); }
+.ide-footer .right { margin-left: auto; }
+.ide-footer .live-bar {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--cyan);
+}
+.ide-footer .live-bar .d {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@media (max-width: 900px) {
+  .ide-body { grid-template-columns: 1fr; }
+  .ide-sidebar { display: flex; overflow-x: auto; padding: 12px 0; }
+  .ide-sec { display: none; }
+  .ide-tab { min-width: 200px; flex: 0 0 auto; border-left: none; border-bottom: 2px solid transparent; }
+  .ide-tab.active { border-bottom-color: var(--cyan); border-left-color: transparent; }
+}
+
+
+footer.foot { position: relative; z-index: 2; }
+section { position: relative; z-index: 2; }
+.hero-canvas { z-index: 0; }
+
+
+====================================================================== */
+
+/* =====================================================================
+   ENGINEERING DRAWING DETAILS
+====================================================================== */
+/* Corner crop marks on sections */
+section.has-marks > .marks-tl,
+section.has-marks > .marks-tr,
+section.has-marks > .marks-bl,
+section.has-marks > .marks-br {
+  position: absolute;
+  width: 22px; height: 22px;
+  border-color: var(--accent);
+  border-style: solid;
+  border-width: 0;
+  pointer-events: none;
+  opacity: 0.55;
+  z-index: 3;
+}
+section.has-marks > .marks-tl { top: 90px; left: 24px; border-top-width: 1px; border-left-width: 1px; }
+section.has-marks > .marks-tr { top: 90px; right: 24px; border-top-width: 1px; border-right-width: 1px; }
+section.has-marks > .marks-bl { bottom: 28px; left: 24px; border-bottom-width: 1px; border-left-width: 1px; }
+section.has-marks > .marks-br { bottom: 28px; right: 24px; border-bottom-width: 1px; border-right-width: 1px; }
+
+/* Oversized section figure number — serif italic, in margin */
+.section-figure {
+  position: absolute;
+  top: -30px; left: -20px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-variation-settings: "opsz" 144;
+  font-size: clamp(160px, 18vw, 280px);
+  line-height: 0.85;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--line-2);
+  user-select: none;
+  pointer-events: none;
+  letter-spacing: -0.05em;
+  z-index: 0;
+}
+.section-figure b {
+  font-weight: 400;
+  font-style: italic;
+  color: var(--accent);
+  -webkit-text-stroke: 0;
+  margin-right: -0.06em;
+}
+.section-head { padding-top: 50px; padding-left: 14ch; position: relative; }
+@media (max-width: 900px) {
+  .section-head { padding-left: 0; padding-top: 100px; }
+  .section-figure { font-size: 100px; }
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: var(--text-mute);
+  text-transform: uppercase;
+  margin-bottom: 28px;
+  display: inline-flex; align-items: center; gap: 14px;
+  position: relative; z-index: 1;
+}
+.eyebrow::before { content: "◆"; color: var(--accent); font-size: 6px; }
+.eyebrow::after { content: ""; width: 36px; height: 1px; background: var(--text-mute); }
+
+.fig-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.fig-tag::before { content: ""; width: 8px; height: 1px; background: var(--accent); }
+
+/* Draft stamp — rotated wet-ink style */
+.draft-stamp {
+  position: fixed;
+  bottom: 26px; left: 26px;
+  z-index: 800;
+  transform: rotate(-7deg);
+  padding: 9px 18px;
+  border: 2px solid var(--accent);
+  outline: 1px solid var(--accent);
+  outline-offset: 3px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  background: rgba(15,17,22,0.4);
+  backdrop-filter: blur(6px);
+  pointer-events: none;
+  opacity: 0.85;
+  display: flex; flex-direction: column; gap: 2px;
+  line-height: 1.1;
+}
+.draft-stamp small {
+  font-size: 8.5px;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  opacity: 0.8;
+  font-weight: 400;
+}
+@media (max-width: 720px) { .draft-stamp { display: none; } }
+
+/* Alternate section figure colors — personal energy */
+section:nth-of-type(odd) .section-figure b { color: var(--accent); }
+section:nth-of-type(even) .section-figure b { color: var(--accent-2); }
+section:nth-of-type(3n) .section-figure b { color: var(--accent-3); }
+
+/* Personal maker badge — hand-stamped feel */
+.maker-badge {
+  position: fixed;
+  bottom: 26px; right: 26px;
+  z-index: 800;
+  transform: rotate(4deg);
+  padding: 10px 14px 10px 14px;
+  border: 1.5px solid var(--accent-2);
+  background: rgba(15,17,22,0.6);
+  backdrop-filter: blur(6px);
+  color: var(--accent-2);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  pointer-events: none;
+  opacity: 0.9;
+  display: flex; flex-direction: column; gap: 2px;
+  line-height: 1.2;
+  max-width: 200px;
+}
+.maker-badge .name {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--text);
+  font-weight: 400;
+}
+.maker-badge .age {
+  color: var(--accent-2);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+}
+@media (max-width: 720px) { .maker-badge { display: none; } }
+
+/* Scribble underline accent — hand-drawn feel via wavy SVG bg */
+.hero-title em {
+  position: relative;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 12' preserveAspectRatio='none'><path d='M2 8 Q 25 2, 50 7 T 100 7 T 150 7 T 198 7' stroke='%234dd4e8' stroke-width='2.5' fill='none' stroke-linecap='round'/></svg>");
+  background-repeat: no-repeat;
+  background-size: 100% 0.18em;
+  background-position: 0 88%;
+  padding-bottom: 0.05em;
+}
+.callout-box {
+  position: absolute;
+  z-index: 4;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text);
+  display: flex; align-items: center; gap: 10px;
+  pointer-events: none;
+}
+.callout-box .leader {
+  width: 60px; height: 1px;
+  background: var(--accent);
+  position: relative;
+}
+.callout-box .leader::before {
+  content: "";
+  position: absolute;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+}
+.callout-box.right .leader::before { right: -3px; top: -3px; }
+.callout-box.left .leader::before { left: -3px; top: -3px; }
+.callout-box .label {
+  background: rgba(15,17,22,0.88);
+  border: 1px solid var(--line-2);
+  padding: 5px 9px;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+}
+.callout-box .label b { color: var(--accent); font-weight: 600; margin-right: 6px; }
+.callout-box.bl { bottom: 22%; left: -50px; }
+.callout-box.br { top: 30%; right: -50px; flex-direction: row-reverse; }
+.callout-box.tl { top: 14%; left: -50px; }
+.callout-box.tr { bottom: 26%; right: -50px; flex-direction: row-reverse; }
+@media (max-width: 1300px) {
+  .callout-box.bl, .callout-box.tl { left: 14px; }
+  .callout-box.br, .callout-box.tr { right: 14px; }
+}
+
+/* hero asymmetric override */
+.hero-grid { grid-template-columns: 40fr 60fr; }
+@media (max-width: 1000px) { .hero-grid { grid-template-columns: 1fr; } }
+
+/* =====================================================================
+   FOOTER
+====================================================================== */
+footer.foot {
+  padding: 80px 0 50px;
+  border-top: 1px solid var(--line);
+  margin-top: 80px;
+}
+.foot-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 50px;
+}
+.foot-brand .logo {
+  font-family: var(--font-display);
+  font-size: 22px; font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 14px;
+}
+.foot-brand .logo .dot { color: var(--cyan); }
+.foot-brand p { color: var(--text-dim); font-size: 14px; max-width: 40ch; }
+.foot h5 {
+  font-family: var(--font-mono);
+  font-size: 10.5px; letter-spacing: 0.18em; color: var(--text-mute);
+  text-transform: uppercase; margin: 0 0 14px;
+}
+.foot ul { list-style: none; padding: 0; margin: 0; }
+.foot li { padding: 4px 0; }
+.foot a { color: var(--text-dim); text-decoration: none; font-size: 13.5px; }
+.foot a:hover { color: var(--cyan); }
+.foot-end {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 11px; color: var(--text-mute);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 800px) {
+  .foot-grid { grid-template-columns: 1fr; gap: 24px; }
+  .foot-end { flex-direction: column; gap: 12px; }
+}
+
+/* =====================================================================
+   SCROLL REVEAL
+====================================================================== */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .8s cubic-bezier(.2,.7,.3,1), transform .8s cubic-bezier(.2,.7,.3,1);
+}
+.reveal.in { opacity: 1; transform: translateY(0); }
+.reveal.d1 { transition-delay: .08s; }
+.reveal.d2 { transition-delay: .16s; }
+.reveal.d3 { transition-delay: .24s; }
+.reveal.d4 { transition-delay: .32s; }
+
+/* =====================================================================
+   UTILITIES
+====================================================================== */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--line-2), transparent);
+  margin: 40px 0;
+}
+.kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 6px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--glass-border);
+  border-radius: 4px;
+  color: var(--text);
+}
+</style>
+</head>
+<body>
+
+
+
+
+<!-- MAKER BADGE -->
+<div class="maker-badge">
+  <span class="age">Built by</span>
+  <span class="name">Abdelwadoud BK</span>
+  <span class="age">17 · personal project</span>
+</div>
+
+<!-- DRAFT STAMP -->
+<div class="draft-stamp">
+  Draft
+  <small>Rev A · May 2026</small>
+</div>
+
+
+<!-- SCROLL PROGRESS -->
+<div class="scroll-progress" id="scroll-progress"></div>
+
+<!-- TOP STATUS BAR -->
+<header class="topbar">
+  <a class="tb-brand" href="#top">
+    <span class="mark">SB</span>
+    Self-Balancing Robot
+  </a>
+  <nav class="tb-nav">
+    <a href="#overview" class="tb-link active"><span class="n">01</span>overview</a>
+    <a href="#mechanical" class="tb-link"><span class="n">02</span>mechanical</a>
+    <a href="#electronics" class="tb-link"><span class="n">03</span>electronics</a>
+    <a href="#power" class="tb-link"><span class="n">04</span>power</a>
+    <a href="#torque" class="tb-link"><span class="n">05</span>torque</a>
+    <a href="#software" class="tb-link"><span class="n">06</span>software</a>
+    <a href="#risks" class="tb-link"><span class="n">07</span>risks</a>
+    <a href="#milestones" class="tb-link"><span class="n">08</span>milestones</a>
+    <a href="#vision" class="tb-link"><span class="n">09</span>vision</a>
+    <a href="#code" class="tb-link"><span class="n">10</span>code</a>
+  </nav>
+  <div class="tb-cell hide-md"><span class="k">Doc</span><span class="v">PRB-SBR-001</span></div>
+  <div class="tb-cell hide-md"><span class="k">Rev</span><span class="v acc">A · May 2026</span></div>
+  <div class="tb-cell"><span class="tb-status"><span class="led"></span> Build phase</span></div>
+</header>
+<nav class="nav" data-hover>
+  <div class="nav-brand"><span class="dot"></span> SBR · 01</div>
+  <div class="nav-links">
+    <a href="#overview" class="nav-link" data-hover>Overview</a>
+    <a href="#mechanical" class="nav-link" data-hover>Mechanical</a>
+    <a href="#electronics" class="nav-link" data-hover>Electronics</a>
+    <a href="#power" class="nav-link" data-hover>Power</a>
+    <a href="#torque" class="nav-link" data-hover>Torque</a>
+    <a href="#software" class="nav-link" data-hover>Software</a>
+    <a href="#risks" class="nav-link" data-hover>Risks</a>
+    <a href="#milestones" class="nav-link" data-hover>Milestones</a>
+    <a href="#vision" class="nav-link" data-hover>Vision</a>
+    <a href="#code" class="nav-link" data-hover>Code</a>
+  </div>
+</nav>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero has-marks" id="top">
+  <span class="marks-tl"></span><span class="marks-tr"></span><span class="marks-bl"></span><span class="marks-br"></span>
+    <div class="wrap">
+    <div class="hero-grid">
+      <div class="hero-left">
+        <div class="hero-status reveal in"><span class="pill">LIVE</span> Build Phase · May 2026</div>
+        <h1 class="hero-title reveal in d1">A two-wheeled robot<br/>that <em>stands up,</em><br/>balances, &amp; thinks.</h1>
+        <p class="hero-tag reveal in d2">Mirrored four-bar leg linkages drive a 155&nbsp;mm stance transition between seated (66&nbsp;mm) and standing (220&nbsp;mm) configurations. An ESP32 closes the balance loop at 100&nbsp;Hz; a Raspberry&nbsp;Pi&nbsp;5 sidecar handles vision, gestures, and high-level behaviour.</p>
+
+        <div class="hero-meta reveal in d3">
+          <div>
+            <div class="m-l">Stand</div>
+            <div class="m-v" data-count="220" data-suffix=" mm">0<small> mm</small></div>
+          </div>
+          <div>
+            <div class="m-l">Sit</div>
+            <div class="m-v" data-count="66" data-suffix=" mm">0<small> mm</small></div>
+          </div>
+          <div>
+            <div class="m-l">Loop</div>
+            <div class="m-v" data-count="100" data-suffix=" Hz">0<small> Hz</small></div>
+          </div>
+          <div>
+            <div class="m-l">Servos</div>
+            <div class="m-v" data-count="4" data-suffix="× MG996R">0<small>× MG996R</small></div>
+          </div>
+          <div>
+            <div class="m-l">Margin</div>
+            <div class="m-v" data-count="2.4" data-suffix="×">0<small>×</small></div>
+          </div>
+          <div>
+            <div class="m-l">Runtime</div>
+            <div class="m-v" data-count="60" data-suffix=" min">0<small> min</small></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="hero-photo" id="hero-photo" data-hover>
+          <div class="hero-tag-corner"><span class="d"></span> CAD · Fusion 360 · Rev A</div>
+          <img src="images/angle.png" alt="Robot 3/4 view CAD render" />
+          <canvas id="viewer-3d"></canvas>
+          <div class="view-toggle" id="view-toggle">
+            <button id="btn-photo">Photo</button>
+            <button id="btn-3d" class="active">3D</button>
+          </div>
+          <div class="viewer-badge" id="viewer-badge"><span class="d"></span> LIVE 3D · drag to orbit</div>
+          <div class="viewer-hint" id="viewer-hint">scroll to zoom</div>
+          <div class="viewer-loader" id="viewer-loader">
+            <div class="lh"><span>Loading model</span><span class="v" id="vl-pct">0%</span></div>
+            <div class="bar"><i id="vl-bar"></i></div>
+          </div>
+          <!-- CAD-style dimension callouts — fig.0 annotation -->
+          <div class="hero-spec-pill pos-1"><span class="l">Servo</span><span class="v">MG996R</span></div>
+          <div class="hero-spec-pill pos-3"><span class="l">Body</span><span class="v">~471 g</span></div>
+          <div class="hero-spec-pill pos-2"><span class="l">Wheel</span><span class="v">⌀ 65 mm</span></div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="pillars">
+      <div class="pillar reveal d1">
+        <div class="num">01 · STABILITY</div>
+        <h4>Closed-loop balance</h4>
+        <p>Complementary filter fuses MPU-6500 gyro + accel into a clean pitch; PID drives the wheels at 100&nbsp;Hz.</p>
+      </div>
+      <div class="pillar reveal d2">
+        <div class="num">02 · ACTUATION</div>
+        <h4>Articulated legs</h4>
+        <p>Four MG996R servos turn equal 97&nbsp;mm arms through a 1:1 spur train. Worst-case torque sits at 2.4× margin.</p>
+      </div>
+      <div class="pillar reveal d3">
+        <div class="num">03 · MODULARITY</div>
+        <h4>ESP32 + Pi&nbsp;5</h4>
+        <p>ESP32 owns the real-time balance loop; Raspberry Pi 5 handles vision, gestures, and high-level behaviour.</p>
+      </div>
+      <div class="pillar reveal d4">
+        <div class="num">04 · SAFETY</div>
+        <h4>Designed-in protection</h4>
+        <p>BMS hardware cutoff, boot-safe GPIO mapping, fall-detect at &gt;45° pitch, palm-up gesture E-STOP.</p>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-hint"><span>scroll</span><span class="line"></span></div>
+</section>
+
+<!-- ===================== 01 OVERVIEW ===================== -->
+<section id="overview" class="has-marks" data-screen-label="01 Overview">
+  <span class="marks-tl"></span><span class="marks-tr"></span><span class="marks-bl"></span><span class="marks-br"></span>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-figure"><b>01</b></div>
+      <div class="eyebrow reveal">Fig. 01 · Overview</div>
+      <h2 class="section-title reveal d1">Design complete. Entering build phase.</h2>
+      <p class="section-sub reveal d2">Mechanical CAD, electronics architecture, and firmware design are finalised. This document records the Project Review Board sign-off for the transition from validated design into physical prototype: print, wire, flash, and tune.</p>
+    </div>
+
+    <div class="mech-grid">
+      <div class="reveal d1">
+        <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:0 0 14px;">Objective</h4>
+        <p style="font-size:17px; color:var(--text); line-height:1.7; margin:0 0 22px;">A two-wheeled self-balancing robot with articulated legs. The robot transitions cleanly between sitting (66&nbsp;mm) and standing (220&nbsp;mm) under active balance, then holds vertical pitch while accepting drive commands from a vision-driven behaviour layer.</p>
+
+        <div class="spec-table">
+          <div class="row"><span class="k">Project Name</span><span class="v">Self-Balancing Articulated Leg Robot</span></div>
+          <div class="row"><span class="k">Phase</span><span class="v">Build · CAD complete</span></div>
+          <div class="row"><span class="k">Review Date</span><span class="v mono">MAY 2026</span></div>
+          <div class="row"><span class="k">Owner</span><span class="v">Abdelwadoud Ben Kridis</span></div>
+          <div class="row"><span class="k">Hardware Rev</span><span class="v mono">A · prototype</span></div>
+          <div class="row"><span class="k">Firmware Rev</span><span class="v mono">0.1 · initial</span></div>
+        </div>
+      </div>
+
+      <div class="reveal d2">
+        <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:0 0 14px;">Scope of this review</h4>
+        <p style="font-size:15px; color:var(--text-dim); line-height:1.7; margin:0 0 18px;">Validates the mechanical, electrical, and firmware design against the success criteria below and authorises the build phase. Re-review is triggered if assembled mass exceeds 600&nbsp;g, the PID loop fails to stabilise within two tuning sessions, or any rail draws over its regulator headroom.</p>
+
+        <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:22px 0 14px;">Success criteria</h4>
+        <div class="spec-table">
+          <div class="row"><span class="k">Balance hold</span><span class="v">±3° of vertical · ≥60 s</span></div>
+          <div class="row"><span class="k">Stand-up sequence</span><span class="v">2 s interp · no servo stall</span></div>
+          <div class="row"><span class="k">Power stability</span><span class="v">no rail brown-out under draw</span></div>
+          <div class="row"><span class="k">Vision pipeline</span><span class="v">≥20 fps end-to-end on Pi&nbsp;5</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 02 MECHANICAL ===================== -->
+<section id="mechanical" class="has-marks" data-screen-label="02 Mechanical">
+  <span class="marks-tl"></span><span class="marks-tr"></span><span class="marks-bl"></span><span class="marks-br"></span>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-figure"><b>02</b></div>
+      <div class="eyebrow reveal">Fig. 02 · Mechanical</div>
+      <h2 class="section-title reveal d1">Mirrored four-bar linkages with equal 97 mm arms.</h2>
+      <p class="section-sub reveal d2">Equal upper- and lower-arm lengths produce an approximately vertical foot trajectory across the full travel range, decoupling the height transition from horizontal disturbance and minimising the load delivered to the balance controller during stance change.</p>
+    </div>
+
+    <div class="mech-grid">
+      <div class="reveal d1">
+        <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:0 0 14px;">Body &amp; Travel</h4>
+        <div class="spec-table">
+          <div class="row"><span class="k">Standing height</span><span class="v mono">~220 mm</span></div>
+          <div class="row"><span class="k">Sitting height</span><span class="v mono">~66 mm</span></div>
+          <div class="row"><span class="k">Vertical travel</span><span class="v mono">~155 mm</span></div>
+          <div class="row"><span class="k">Wheel diameter</span><span class="v mono">65 mm × 2</span></div>
+          <div class="row"><span class="k">Body footprint</span><span class="v mono">18 × 15 cm</span></div>
+          <div class="row"><span class="k">Internal floors</span><span class="v">2 (top + bottom)</span></div>
+        </div>
+
+        <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:26px 0 14px;">Leg Geometry</h4>
+        <div class="spec-table">
+          <div class="row"><span class="k">Arm length</span><span class="v mono">97 mm (equal)</span></div>
+          <div class="row"><span class="k">Linkage</span><span class="v">4-bar parallel</span></div>
+          <div class="row"><span class="k">Legs</span><span class="v">2 · mirrored L/R</span></div>
+          <div class="row"><span class="k">Sit · knee</span><span class="v mono">80°</span></div>
+          <div class="row"><span class="k">Sit · hip</span><span class="v mono">−80° (mirrored)</span></div>
+        </div>
+
+        <div class="mini-cards">
+          <div class="mini-card">
+            <div class="icon">G</div>
+            <div class="t">20T Spur · 1:1</div>
+            <div class="s">Gear train</div>
+          </div>
+          <div class="mini-card">
+            <div class="icon">F</div>
+            <div class="t">Fusion 360</div>
+            <div class="s">CAD platform</div>
+          </div>
+          <div class="mini-card">
+            <div class="icon">3D</div>
+            <div class="t">FDM · PLA/PETG</div>
+            <div class="s">Manufacturing</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal d2">
+        <div class="floor-photo card tilt" data-tilt data-hover>
+          <img src="images/top-down.png" alt="Top-down internal layout" />
+          <div class="floor-divider"></div>
+          <div class="floor-label f1"><span class="dot"></span> FLOOR 1 — RPi 5 · ESP32 · Display</div>
+          <div class="floor-label f2"><span class="dot"></span> FLOOR 2 — Battery · Bucks · L298N · PCA9685</div>
+        </div>
+
+        <div class="card tilt reveal d3" style="margin-top: 18px; padding: 22px;" data-tilt data-hover>
+          <div class="label">Why equal arms</div>
+          <p style="margin:0; color: var(--text-dim); font-size: 13.5px; line-height: 1.65;">
+            With two equal 97&nbsp;mm links, the upper-arm and lower-arm angles always sum to a constant relative to gravity &mdash; the foot tracks essentially straight up and down through the travel range. The CAD walk-through confirms ≤&nbsp;4&nbsp;mm of forward drift at full extension.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 03 ELECTRONICS ===================== -->
+<section id="electronics" class="has-marks" data-screen-label="03 Electronics">
+  <span class="marks-tl"></span><span class="marks-tr"></span><span class="marks-bl"></span><span class="marks-br"></span>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-figure"><b>03</b></div>
+      <div class="eyebrow reveal">Fig. 03 · Electronics</div>
+      <h2 class="section-title reveal d1">Dual-controller architecture separated by latency budget.</h2>
+      <p class="section-sub reveal d2">The ESP32 handles all time-critical work: MPU-6500 sensing, PCA9685 servo output, and L298N motor drive within a deterministic 10&nbsp;ms cycle. The Raspberry Pi 5 runs the vision pipeline and behaviour state machine, communicating with the ESP32 over a single UART link at 115200&nbsp;baud.</p>
+    </div>
+
+    <div class="reveal">
+      <div class="gallery-hint">
+        <span>⤺ ⇆ ⤻</span> drag to scroll · reference views
+      </div>
+      <div class="gallery" id="gallery">
+        <div class="gallery-track" id="gallery-track">
+          <div class="g-card"><img src="images/standing-side.png" alt="Standing side annotated" draggable="false"/>
+            <span class="cap"><span class="d"></span> Standing · annotated 40°</span><span class="idx">01 / 04</span></div>
+          <div class="g-card"><img src="images/side-sitting.png" alt="Sitting pose" draggable="false"/>
+            <span class="cap"><span class="d"></span> Seated · 66 mm</span><span class="idx">02 / 04</span></div>
+          <div class="g-card"><img src="images/front.png" alt="Front display" draggable="false"/>
+            <span class="cap"><span class="d"></span> Front · display</span><span class="idx">03 / 04</span></div>
+          <div class="g-card"><img src="images/rear.png" alt="Rear motor view" draggable="false"/>
+            <span class="cap"><span class="d"></span> Rear · motor assembly</span><span class="idx">04 / 04</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="elec-grid">
+      <div class="diagram-wrap reveal">
+        <div class="diagram-head">
+          <span class="t">Fig. 1 · System block diagram</span>
+          <div class="diagram-legend">
+            <span><i style="background:var(--cyan)"></i> Signal</span>
+            <span><i style="background:var(--amber)"></i> Power</span>
+            <span><i style="background:var(--purple)"></i> UART</span>
+          </div>
+        </div>
+        <svg viewBox="0 0 1000 360" width="100%" style="display:block;">
+          <defs>
+            <marker id="arrS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 Z" fill="var(--cyan)"/>
+            </marker>
+            <marker id="arrP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 Z" fill="var(--amber)"/>
+            </marker>
+            <marker id="arrU" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 Z" fill="var(--purple)"/>
+            </marker>
+          </defs>
+
+          <!-- POWER COLUMN -->
+          <g font-family="JetBrains Mono" font-size="9" letter-spacing="1.5">
+            <text x="80" y="22" fill="var(--amber)" text-anchor="middle">POWER</text>
+          </g>
+          <rect x="20" y="34" width="140" height="56" rx="10" fill="rgba(245,158,11,0.06)" stroke="rgba(245,158,11,0.4)"/>
+          <text x="90" y="56" text-anchor="middle" font-family="Space Grotesk" font-size="14" font-weight="600" fill="#fff">3S 18650</text>
+          <text x="90" y="74" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="var(--text-dim)">11.1V · 2600mAh</text>
+
+          <rect x="20" y="100" width="140" height="34" rx="8" fill="rgba(245,158,11,0.04)" stroke="rgba(245,158,11,0.25)"/>
+          <text x="90" y="122" text-anchor="middle" font-family="Space Grotesk" font-size="12" fill="#fff">BMS · protection</text>
+
+          <rect x="20" y="148" width="64" height="42" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)"/>
+          <text x="52" y="166" text-anchor="middle" font-family="Space Grotesk" font-size="11" fill="#fff">Buck 1</text>
+          <text x="52" y="180" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--amber)">→ 6V</text>
+
+          <rect x="96" y="148" width="64" height="42" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)"/>
+          <text x="128" y="166" text-anchor="middle" font-family="Space Grotesk" font-size="11" fill="#fff">Buck 2</text>
+          <text x="128" y="180" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--amber)">→ 5V</text>
+
+          <rect x="20" y="202" width="140" height="36" rx="8" fill="rgba(245,158,11,0.04)" stroke="rgba(245,158,11,0.25)"/>
+          <text x="90" y="224" text-anchor="middle" font-family="Space Grotesk" font-size="12" fill="#fff">Direct 11.1V → L298N</text>
+
+          <!-- power wires inside -->
+          <path d="M90 90 V 100" stroke="var(--amber)" stroke-width="1.4"/>
+          <path d="M90 134 V 142 M52 142 V 148 M128 142 V 148 M90 134 H 52 M90 134 H 128" stroke="var(--amber)" stroke-width="1.2" fill="none"/>
+          <path d="M90 134 V 202" stroke="var(--amber)" stroke-width="1.2" stroke-dasharray="3 3"/>
+
+          <!-- COMPUTE COLUMN -->
+          <g font-family="JetBrains Mono" font-size="9" letter-spacing="1.5">
+            <text x="380" y="22" fill="var(--cyan)" text-anchor="middle">COMPUTE</text>
+          </g>
+          <rect x="290" y="70" width="180" height="80" rx="12" fill="rgba(0,217,255,0.06)" stroke="rgba(0,217,255,0.5)"/>
+          <text x="380" y="98" text-anchor="middle" font-family="Space Grotesk" font-size="18" font-weight="600" fill="var(--cyan)">ESP32</text>
+          <text x="380" y="116" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="var(--text)">real-time loop</text>
+          <text x="380" y="132" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--text-dim)">PID · 100 Hz · I²C · GPIO</text>
+
+          <rect x="290" y="180" width="180" height="64" rx="12" fill="rgba(168,85,247,0.06)" stroke="rgba(168,85,247,0.5)"/>
+          <text x="380" y="204" text-anchor="middle" font-family="Space Grotesk" font-size="16" font-weight="600" fill="var(--purple)">Raspberry Pi 5</text>
+          <text x="380" y="222" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="var(--text)">vision · behaviour</text>
+          <text x="380" y="236" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--text-dim)">YOLOv8 · MediaPipe</text>
+
+          <!-- UART -->
+          <path d="M380 150 V 180" stroke="var(--purple)" stroke-width="1.4" marker-end="url(#arrU)"/>
+          <text x="388" y="170" font-family="JetBrains Mono" font-size="9" fill="var(--purple)">UART</text>
+
+          <!-- PERIPHERALS COLUMN -->
+          <g font-family="JetBrains Mono" font-size="9" letter-spacing="1.5">
+            <text x="640" y="22" fill="var(--cyan)" text-anchor="middle">PERIPHERALS</text>
+          </g>
+          <rect x="555" y="36" width="170" height="46" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.13)"/>
+          <text x="640" y="56" text-anchor="middle" font-family="Space Grotesk" font-size="13" fill="#fff">MPU-6500</text>
+          <text x="640" y="71" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--text-dim)">gyro · accel · SPI</text>
+
+          <rect x="555" y="94" width="170" height="46" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.13)"/>
+          <text x="640" y="114" text-anchor="middle" font-family="Space Grotesk" font-size="13" fill="#fff">PCA9685</text>
+          <text x="640" y="129" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--text-dim)">16-ch PWM · I²C</text>
+
+          <rect x="555" y="152" width="170" height="46" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.13)"/>
+          <text x="640" y="172" text-anchor="middle" font-family="Space Grotesk" font-size="13" fill="#fff">L298N</text>
+          <text x="640" y="187" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--text-dim)">dual H-bridge · PWM+DIR</text>
+
+          <rect x="555" y="210" width="170" height="46" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.13)"/>
+          <text x="640" y="230" text-anchor="middle" font-family="Space Grotesk" font-size="13" fill="#fff">3.5" SPI Display</text>
+          <text x="640" y="245" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--text-dim)">status · diag</text>
+
+          <!-- ACTUATORS COLUMN -->
+          <g font-family="JetBrains Mono" font-size="9" letter-spacing="1.5">
+            <text x="890" y="22" fill="var(--amber)" text-anchor="middle">ACTUATORS</text>
+          </g>
+          <rect x="810" y="94" width="170" height="46" rx="8" fill="rgba(245,158,11,0.06)" stroke="rgba(245,158,11,0.4)"/>
+          <text x="895" y="114" text-anchor="middle" font-family="Space Grotesk" font-size="13" fill="#fff">4× MG996R</text>
+          <text x="895" y="129" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--text-dim)">hip · knee · L · R</text>
+
+          <rect x="810" y="152" width="170" height="46" rx="8" fill="rgba(245,158,11,0.06)" stroke="rgba(245,158,11,0.4)"/>
+          <text x="895" y="172" text-anchor="middle" font-family="Space Grotesk" font-size="13" fill="#fff">2× JGA 25-370</text>
+          <text x="895" y="187" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--text-dim)">drive motors</text>
+
+          <!-- Power lines from buck/direct → actuators -->
+          <path d="M160 169 H 240 V 117 H 555" stroke="var(--amber)" stroke-width="1.2" stroke-dasharray="3 3" fill="none"/>
+          <path d="M725 117 H 810" stroke="var(--amber)" stroke-width="1.4" marker-end="url(#arrP)"/>
+          <text x="730" y="110" font-family="JetBrains Mono" font-size="8.5" fill="var(--amber)">6V</text>
+
+          <path d="M160 169 H 220 V 220 H 270 V 110 H 290" stroke="var(--amber)" stroke-width="1.2" stroke-dasharray="3 3" fill="none"/>
+          <text x="226" y="106" font-family="JetBrains Mono" font-size="8.5" fill="var(--amber)">5V</text>
+
+          <path d="M160 220 H 240 V 175 H 555" stroke="var(--amber)" stroke-width="1.2" stroke-dasharray="3 3" fill="none"/>
+          <path d="M725 175 H 810" stroke="var(--amber)" stroke-width="1.4" marker-end="url(#arrP)"/>
+          <text x="730" y="168" font-family="JetBrains Mono" font-size="8.5" fill="var(--amber)">11.1V</text>
+
+          <!-- Signal: ESP32 → IMU -->
+          <path d="M470 90 H 510 V 60 H 555" stroke="var(--cyan)" stroke-width="1.4" fill="none" marker-end="url(#arrS)"/>
+          <text x="475" y="56" font-family="JetBrains Mono" font-size="8.5" fill="var(--text-dim)">I²C</text>
+          <!-- Signal: ESP32 → PCA9685 -->
+          <path d="M470 110 H 555" stroke="var(--cyan)" stroke-width="1.4" fill="none" marker-end="url(#arrS)"/>
+          <text x="475" y="106" font-family="JetBrains Mono" font-size="8.5" fill="var(--text-dim)">I²C</text>
+          <!-- Signal: ESP32 → L298N -->
+          <path d="M470 130 H 510 V 175 H 555" stroke="var(--cyan)" stroke-width="1.4" fill="none" marker-end="url(#arrS)"/>
+          <text x="513" y="158" font-family="JetBrains Mono" font-size="8.5" fill="var(--text-dim)">GPIO</text>
+          <!-- Signal: ESP32 → Display -->
+          <path d="M470 130 H 500 V 232 H 555" stroke="var(--cyan)" stroke-width="1.4" fill="none" marker-end="url(#arrS)"/>
+          <text x="503" y="226" font-family="JetBrains Mono" font-size="8.5" fill="var(--text-dim)">SPI</text>
+
+          <!-- PCA → Servos -->
+          <path d="M725 117 H 745 V 117 H 810" stroke="var(--cyan)" stroke-width="1.4" fill="none" marker-end="url(#arrS)"/>
+          <text x="745" y="110" font-family="JetBrains Mono" font-size="8.5" fill="var(--text-dim)">PWM ×4</text>
+          <!-- L298N → motors -->
+          <path d="M725 175 H 810" stroke="var(--cyan)" stroke-width="1.4" fill="none" marker-end="url(#arrS)"/>
+          <text x="745" y="168" font-family="JetBrains Mono" font-size="8.5" fill="var(--text-dim)">DC ×2</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="bom-grid">
+      <div class="bom-col cyan reveal d1">
+        <h4><span class="d"></span> Floor 1 · Brains</h4>
+        <ul>
+          <li>Raspberry Pi 5 <span>4GB</span></li>
+          <li>ESP32 <span>WROOM-32</span></li>
+          <li>MPU-6500 <span>SPI</span></li>
+          <li>3.5" SPI TFT <span>display</span></li>
+        </ul>
+      </div>
+      <div class="bom-col amber reveal d2">
+        <h4><span class="d"></span> Floor 2 · Power</h4>
+        <ul>
+          <li>3S 18650 Pack <span>11.1V</span></li>
+          <li>Buck → 6V <span>servos</span></li>
+          <li>Buck → 5V <span>logic</span></li>
+          <li>L298N <span>H-bridge</span></li>
+          <li>PCA9685 <span>16-ch PWM</span></li>
+          <li>BMS board <span>protection</span></li>
+        </ul>
+      </div>
+      <div class="bom-col purple reveal d3">
+        <h4><span class="d"></span> External · Actuators</h4>
+        <ul>
+          <li>MG996R servos <span>×4</span></li>
+          <li>JGA 25-370 motors <span>×2</span></li>
+          <li>Wheels ⌀ 65 mm <span>×2</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 04 POWER ===================== -->
+<section id="power" class="has-marks" data-screen-label="04 Power">
+  <span class="marks-tl"></span><span class="marks-tr"></span><span class="marks-bl"></span><span class="marks-br"></span>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-figure"><b>04</b></div>
+      <div class="eyebrow reveal">Fig. 04 · Power</div>
+      <h2 class="section-title reveal d1">Four regulated rails from a single 3S 18650 pack.</h2>
+      <p class="section-sub reveal d2">Drive motors run directly off the pack to isolate large transient currents from the regulated rails. Servos and the Raspberry Pi 5 each have a dedicated buck converter; the ESP32 and 3.3&nbsp;V logic share the 5&nbsp;V rail via the ESP32's onboard LDO.</p>
+    </div>
+
+    <div class="power-grid">
+      <div class="reveal d1">
+        <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:0 0 14px;">Rail Map</h4>
+        <div class="spec-table">
+          <div class="row"><span class="k">Drive motors</span><span class="v mono">11.1V · ~1.2A peak</span></div>
+          <div class="row"><span class="k">MG996R servos (×4)</span><span class="v mono">6V · ~1.5A peak</span></div>
+          <div class="row"><span class="k">Raspberry Pi 5</span><span class="v mono">5V · ~0.6A</span></div>
+          <div class="row"><span class="k">ESP32</span><span class="v mono">5V · ~0.25A</span></div>
+          <div class="row"><span class="k">PCA9685 + logic</span><span class="v mono">3.3V · ~0.05A</span></div>
+          <div class="row"><span class="k">SPI display</span><span class="v mono">3.3V · ~0.1A</span></div>
+        </div>
+
+        <div class="summary-cards">
+          <div class="s"><div class="v" data-count="2600" data-suffix=" mAh">0<small> mAh</small></div><div class="l">Battery</div></div>
+          <div class="s"><div class="v">45-60<small> min</small></div><div class="l">Runtime</div></div>
+          <div class="s"><div class="v" style="color:var(--green)">✓ BMS</div><div class="l">Protection</div></div>
+        </div>
+      </div>
+
+      <div class="reveal d2">
+        <div class="diagram-wrap">
+          <div class="diagram-head">
+            <span class="t">Fig. 2 · Peak rail load · % of headroom</span>
+          </div>
+          <div class="bars" data-bars>
+            <div class="bar-row">
+              <div class="bar-head"><span class="n">Servo rail · Buck 1</span><span class="v">~1.5A / 2.5A · 60%</span></div>
+              <div class="bar-track"><div class="bar-fill amber" data-pct="60"></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-head"><span class="n">Logic rail · Buck 2</span><span class="v">~0.9A / 3A · 30%</span></div>
+              <div class="bar-track"><div class="bar-fill green" data-pct="30"></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-head"><span class="n">Drive motor rail · direct</span><span class="v">~1.2A / 1.6A · 75%</span></div>
+              <div class="bar-track"><div class="bar-fill" data-pct="75"></div></div>
+            </div>
+          </div>
+          <p style="font-size:13px; color:var(--text-dim); margin: 18px 0 0; line-height: 1.6;">All three rails sit below 80% of their regulator headroom under continuous draw. Drive motor rail is the tightest &mdash; a 2A-rated L298N gives ~25% margin over peak.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 05 TORQUE ===================== -->
+<section id="torque" class="has-marks" data-screen-label="05 Torque">
+  <span class="marks-tl"></span><span class="marks-tr"></span><span class="marks-bl"></span><span class="marks-br"></span>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-figure"><b>05</b></div>
+      <div class="eyebrow reveal">Fig. 05 · Torque</div>
+      <h2 class="section-title reveal d1">2.4&times; safety margin against rated servo torque.</h2>
+      <p class="section-sub reveal d2">Worst-case static torque occurs at full extension during the stand-up transition, with full body mass acting through the 97&nbsp;mm upper-arm lever. After applying a 2&times; safety factor to the body mass estimate, required torque remains comfortably below half of the MG996R rated output.</p>
+    </div>
+
+    <div class="torque-grid">
+      <div class="reveal">
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" viewBox="0 0 400 240">
+            <defs>
+              <linearGradient id="gauge-grad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="var(--green)"/>
+                <stop offset="60%" stop-color="var(--cyan)"/>
+                <stop offset="100%" stop-color="var(--purple)"/>
+              </linearGradient>
+            </defs>
+            <!-- Track -->
+            <path d="M 40 200 A 160 160 0 0 1 360 200" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="22" stroke-linecap="round"/>
+            <!-- Fill (animated) -->
+            <path id="gauge-fill" d="M 40 200 A 160 160 0 0 1 360 200" fill="none" stroke="url(#gauge-grad)" stroke-width="22" stroke-linecap="round"
+                  stroke-dasharray="503" stroke-dashoffset="503"/>
+            <!-- Tick marks -->
+            <g font-family="JetBrains Mono" font-size="11" fill="var(--text-mute)" letter-spacing="1">
+              <text x="40" y="226" text-anchor="middle">0</text>
+              <text x="125" y="100" text-anchor="middle">3</text>
+              <text x="200" y="60" text-anchor="middle">6</text>
+              <text x="275" y="100" text-anchor="middle">9</text>
+              <text x="360" y="226" text-anchor="middle">11</text>
+              <text x="200" y="226" text-anchor="middle" font-size="9" letter-spacing="1.6">kg·cm</text>
+            </g>
+            <!-- pointer at 4.56/11 = 41% along arc (180° + 41% × 180° = 254°… simpler: angle = -180 + 41%×180 = -106.2°) -->
+          </svg>
+          <div class="gauge-center">
+            <div class="v" id="gauge-val">0<small> kg·cm</small></div>
+            <div class="l">Required · per leg</div>
+          </div>
+          <div class="gauge-foot">
+            <span>Required <strong style="color:var(--cyan)">4.56</strong></span>
+            <span>Rated <strong style="color:var(--purple)">11.0</strong></span>
+            <span class="pass">PASS · 2.4× margin</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal d1">
+        <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:0 0 14px;">Inputs</h4>
+        <div class="spec-table">
+          <div class="row"><span class="k">Body mass</span><span class="v mono">~471 g</span></div>
+          <div class="row"><span class="k">Arm length</span><span class="v mono">97 mm</span></div>
+          <div class="row"><span class="k">Raw torque / leg</span><span class="v mono">~2.28 kg·cm</span></div>
+          <div class="row"><span class="k">Safety factor</span><span class="v mono">2.0×</span></div>
+          <div class="row"><span class="k">Required / leg</span><span class="v mono" style="color: var(--cyan)">4.56 kg·cm</span></div>
+          <div class="row"><span class="k">MG996R rated</span><span class="v mono">11.0 kg·cm</span></div>
+          <div class="row"><span class="k">Effective margin</span><span class="v mono" style="color: var(--green)">2.4× · PASS ✓</span></div>
+        </div>
+
+        <div class="weight-card">
+          <h4>Weight guidelines</h4>
+          <ul>
+            <li>Print body in PLA or PETG &mdash; no ABS, no resin</li>
+            <li>3S 18650 cells (not LiFePO4 brick, not SLA)</li>
+            <li>Infill capped at 30% for non-load-bearing parts</li>
+            <li>Keep total assembled mass under 600&nbsp;g</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 06 SOFTWARE ===================== -->
+<section id="software" class="has-marks" data-screen-label="06 Software">
+  <span class="marks-tl"></span><span class="marks-tr"></span><span class="marks-bl"></span><span class="marks-br"></span>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-figure"><b>06</b></div>
+      <div class="eyebrow reveal">Fig. 06 · Software</div>
+      <h2 class="section-title reveal d1">Complementary filter feeding a discrete PID at 100 Hz.</h2>
+      <p class="section-sub reveal d2">Arduino C++ firmware on the ESP32. The complementary filter weights gyro integration over short timescales against the accelerometer reference over long ones; the fused pitch drives a discrete PID controller, with a minimal serial protocol exposing runtime commands and live gain tuning.</p>
+    </div>
+
+    <div class="soft-grid">
+      <div class="reveal">
+        <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:0 0 14px;">Stack</h4>
+        <div class="spec-table">
+          <div class="row"><span class="k">Platform</span><span class="v">Arduino C++ on ESP32</span></div>
+          <div class="row"><span class="k">Filter</span><span class="v">Complementary · 98% gyro + 2% accel</span></div>
+          <div class="row"><span class="k">Loop rate</span><span class="v mono">100 Hz · 10 ms</span></div>
+          <div class="row"><span class="k">Stand / sit</span><span class="v mono">2.0 s smooth interp</span></div>
+          <div class="row"><span class="k">PID enable</span><span class="v">at 50% of stand sequence</span></div>
+          <div class="row"><span class="k">Serial debug</span><span class="v">live pitch + motor out</span></div>
+        </div>
+
+        <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:26px 0 14px;">PID · Initial Tune <span style="color: var(--text-mute);">· click to expand</span></h4>
+        <div class="pid-cards">
+          <div class="pid-card" data-pid data-hover>
+            <span class="hint">tap</span>
+            <div class="kchar">P</div>
+            <div class="kval">Kp = 25</div>
+            <div class="kname">Proportional</div>
+            <div class="kdesc">Instant response to tilt error. Bigger Kp pushes harder; too big and the robot oscillates.</div>
+          </div>
+          <div class="pid-card" data-pid data-hover>
+            <span class="hint">tap</span>
+            <div class="kchar">I</div>
+            <div class="kval">Ki = 1.0</div>
+            <div class="kname">Integral</div>
+            <div class="kdesc">Eliminates steady-state lean bias by accumulating error. Add last, in small amounts.</div>
+          </div>
+          <div class="pid-card" data-pid data-hover>
+            <span class="hint">tap</span>
+            <div class="kchar">D</div>
+            <div class="kval">Kd = 1.5</div>
+            <div class="kname">Derivative</div>
+            <div class="kdesc">Damps oscillation by reacting to rate of change. Smooths overshoot during recovery.</div>
+          </div>
+        </div>
+
+        <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:26px 0 14px;">Serial Commands</h4>
+        <div class="serial-grid">
+          <div class="cmd"><span class="key">W</span><span class="desc">Stand up · 2 s smooth interp</span></div>
+          <div class="cmd"><span class="key">S</span><span class="desc">Sit down · 2 s smooth interp</span></div>
+          <div class="cmd"><span class="key">P</span><span class="desc">Print pitch + PID state</span></div>
+          <div class="cmd"><span class="key">+/-</span><span class="desc">Tune Kp live by ±1.0</span></div>
+        </div>
+      </div>
+
+      <div class="reveal d2">
+        <div class="code-block">
+          <div class="c-head">
+            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+            <span class="name">control.ino</span>
+          </div>
+<span class="cm">// complementary filter — pitch fusion</span>
+pitch <span class="kw">=</span> <span class="num">0.98</span> <span class="kw">*</span> (pitch <span class="kw">+</span> gyroY <span class="kw">*</span> dt)
+       <span class="kw">+</span> <span class="num">0.02</span> <span class="kw">*</span> atan2(accelX, accelZ);
+
+<span class="cm">// discrete PID</span>
+<span class="kw">float</span> err <span class="kw">=</span> target <span class="kw">-</span> pitch;
+integral <span class="kw">+=</span> err <span class="kw">*</span> dt;
+<span class="kw">float</span> deriv <span class="kw">=</span> (err <span class="kw">-</span> prevErr) <span class="kw">/</span> dt;
+<span class="kw">float</span> u <span class="kw">=</span> Kp<span class="kw">*</span>err <span class="kw">+</span> Ki<span class="kw">*</span>integral <span class="kw">+</span> Kd<span class="kw">*</span>deriv;
+prevErr <span class="kw">=</span> err;
+
+<span class="cm">// drive — clamp and write</span>
+u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw">-</span><span class="num">255</span>, <span class="num">255</span>);
+<span class="fn">driveMotors</span>(u);
+
+<span class="cm">// stand-up interpolation (called at 100Hz)</span>
+<span class="kw">if</span> (state <span class="kw">==</span> <span class="str">STANDING</span>) {
+  step<span class="kw">++</span>;
+  <span class="kw">float</span> t <span class="kw">=</span> step <span class="kw">/</span> <span class="num">200.0</span>f;     <span class="cm">// 200 × 10ms = 2 s</span>
+  knee <span class="kw">=</span> <span class="fn">lerp</span>(<span class="num">80</span>, <span class="num">0</span>, <span class="fn">ease</span>(t));
+  hip  <span class="kw">=</span> <span class="fn">lerp</span>(<span class="kw">-</span><span class="num">80</span>, <span class="num">0</span>, <span class="fn">ease</span>(t));
+  <span class="fn">writeServos</span>(knee, hip);
+  <span class="kw">if</span> (step <span class="kw">==</span> <span class="num">100</span>) pidEnabled <span class="kw">=</span> <span class="kw">true</span>; <span class="cm">// 50%</span>
+}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 07 RISKS ===================== -->
+<section id="risks" class="has-marks" data-screen-label="07 Risks">
+  <span class="marks-tl"></span><span class="marks-tr"></span><span class="marks-bl"></span><span class="marks-br"></span>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-figure"><b>07</b></div>
+      <div class="eyebrow reveal">Fig. 07 · Risks</div>
+      <h2 class="section-title reveal d1">Five tracked risks, all with designed-in mitigations.</h2>
+      <p class="section-sub reveal d2">Mechanical, electrical, and firmware risks identified during design review. Each carries a concrete, already-implemented mitigation. Select any row to expand.</p>
+    </div>
+
+    <div class="risk-list">
+      <div class="risk-item reveal" data-risk>
+        <div class="risk-head" data-hover>
+          <span class="risk-id">R-01</span>
+          <span class="risk-sev med">Medium</span>
+          <span class="risk-title">Servo torque insufficient if body too heavy</span>
+          <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-mute);">Mech</span>
+          <span class="risk-toggle">+</span>
+        </div>
+        <div class="risk-body"><div class="risk-body-inner">
+          <b>Mitigation —</b> torque verified with 2.4× safety margin at the 471&nbsp;g target body mass. Use PLA or PETG, 18650 cells (not SLA), and cap infill at 30% on non-load-bearing parts. Re-run the calculation if assembled mass exceeds 600&nbsp;g.
+        </div></div>
+      </div>
+
+      <div class="risk-item reveal d1" data-risk>
+        <div class="risk-head" data-hover>
+          <span class="risk-id">R-02</span>
+          <span class="risk-sev high">High</span>
+          <span class="risk-title">PID instability / oscillation on first boot</span>
+          <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-mute);">FW</span>
+          <span class="risk-toggle">+</span>
+        </div>
+        <div class="risk-body"><div class="risk-body-inner">
+          <b>Mitigation —</b> serial tuning interface is built in. Start with Kp&nbsp;=&nbsp;5 and step up by +5 per trial. When oscillation appears, back off 20% and hold. Only after Kp and Kd are stable should Ki be introduced. Always tether the robot during these sessions.
+        </div></div>
+      </div>
+
+      <div class="risk-item reveal d2" data-risk>
+        <div class="risk-head" data-hover>
+          <span class="risk-id">R-03</span>
+          <span class="risk-sev high">High</span>
+          <span class="risk-title">Robot falls during stand / sit transition</span>
+          <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-mute);">Mech + FW</span>
+          <span class="risk-toggle">+</span>
+        </div>
+        <div class="risk-body"><div class="risk-body-inner">
+          <b>Mitigation —</b> stand-up runs as a 2&nbsp;second smooth interpolation. The PID balance loop activates at the 50% point of the sequence, giving the legs time to reach a stable geometry before active balancing engages. Tested on carpet, with a spotter on first runs.
+        </div></div>
+      </div>
+
+      <div class="risk-item reveal d3" data-risk>
+        <div class="risk-head" data-hover>
+          <span class="risk-id">R-04</span>
+          <span class="risk-sev med">Medium</span>
+          <span class="risk-title">Boot-time motor glitch from strapping GPIO</span>
+          <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-mute);">EE</span>
+          <span class="risk-toggle">+</span>
+        </div>
+        <div class="risk-body"><div class="risk-body-inner">
+          <b>Mitigation —</b> ESP32 GPIO 12, 14, and 15 are strapping pins with known boot-time behaviour. GPIO 12 is unused. GPIO 14 (ENC1_B) defaults LOW at boot — safe. GPIO 15 (H_IN4) defaults HIGH — mitigated by driving it LOW in the first line of setup() before any motor code runs. Pin map documented in the firmware header.
+        </div></div>
+      </div>
+
+      <div class="risk-item reveal d4" data-risk>
+        <div class="risk-head" data-hover>
+          <span class="risk-id">R-05</span>
+          <span class="risk-sev low">Low</span>
+          <span class="risk-title">Battery over-discharge / cell damage</span>
+          <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-mute);">Power</span>
+          <span class="risk-toggle">+</span>
+        </div>
+        <div class="risk-body"><div class="risk-body-inner">
+          <b>Mitigation —</b> BMS board included in the design and wired in series with the pack. Under-voltage cutoff protects the 18650 cells; for the first few tuning sessions, also use a separate battery alarm as a redundant audible warning. Never bypass the BMS.
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 08 MILESTONES ===================== -->
+<section id="milestones" class="has-marks" data-screen-label="08 Milestones">
+  <span class="marks-tl"></span><span class="marks-tr"></span><span class="marks-bl"></span><span class="marks-br"></span>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-figure"><b>08</b></div>
+      <div class="eyebrow reveal">Fig. 08 · Milestones</div>
+      <h2 class="section-title reveal d1">From validated design to autonomous behaviour.</h2>
+      <p class="section-sub reveal d2">Three phases of work: mechanical and firmware design (complete), build and balance commissioning (next), and computer-vision behaviour layer (final). Eighteen tracked milestones from concept to fully autonomous operation.</p>
+    </div>
+
+    <div class="miles-grid">
+      <div class="miles-progress reveal">
+        <div class="progress-ring">
+          <svg viewBox="0 0 200 200">
+            <defs>
+              <linearGradient id="progress-grad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="var(--cyan)"/>
+                <stop offset="100%" stop-color="var(--purple)"/>
+              </linearGradient>
+            </defs>
+            <circle class="track" cx="100" cy="100" r="86" stroke-width="12"/>
+            <circle class="fill" id="progress-fill" cx="100" cy="100" r="86" stroke-width="12"
+                    stroke-dasharray="540.4" stroke-dashoffset="540.4"/>
+          </svg>
+          <div class="center">
+            <div class="pct"><span id="progress-pct">0</span><sup>%</sup></div>
+            <div class="lbl">6 / 18 milestones</div>
+          </div>
+        </div>
+        <div style="margin-top: 22px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display:flex; align-items:center; gap:10px; font-family:var(--font-mono); font-size:11px; color:var(--text-dim);">
+            <span style="width:10px;height:10px;border-radius:50%;background:var(--green);"></span> 6 Complete · Design
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; font-family:var(--font-mono); font-size:11px; color:var(--text-dim);">
+            <span style="width:10px;height:10px;border-radius:50%;background:var(--bg);border:2px solid var(--amber);"></span> 6 Next · Build &amp; balance
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; font-family:var(--font-mono); font-size:11px; color:var(--text-dim);">
+            <span style="width:10px;height:10px;border-radius:50%;background:var(--bg);border:2px solid var(--purple);"></span> 6 Final · Vision &amp; AI
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline reveal d1">
+        <div class="t-phase"><span class="n">Phase 01</span> <span>Design</span> <span class="ln"></span> <span style="color:var(--green);">6 / 6 complete</span></div>
+        <div class="t-row done"><span class="t-name">Concept &amp; research <small>Two-wheel inverted pendulum with articulated stance — feasibility study</small></span><span class="t-tag">Done</span></div>
+        <div class="t-row done"><span class="t-name">Component selection <small>ESP32, Pi&nbsp;5, MPU-6500, MG996R, JGA 25-370 sized against torque + power budgets</small></span><span class="t-tag">Done</span></div>
+        <div class="t-row done"><span class="t-name">Mechanical CAD in Fusion 360 <small>Full assembly, mirrored leg sub-assemblies, two-floor chassis layout</small></span><span class="t-tag">Done</span></div>
+        <div class="t-row done"><span class="t-name">Leg kinematics resolved <small>Equal 97&nbsp;mm arms producing near-vertical foot path through travel range</small></span><span class="t-tag">Done</span></div>
+        <div class="t-row done"><span class="t-name">Geometry mirrored in CAD <small>Left and right legs constrained and parameterised as mirror sub-assemblies</small></span><span class="t-tag">Done</span></div>
+        <div class="t-row done"><span class="t-name">Firmware architecture specified <small>100&nbsp;Hz loop, complementary filter, PID controller, serial protocol defined</small></span><span class="t-tag">Done</span></div>
+
+        <div class="t-phase p2"><span class="n">Phase 02</span> <span>Build &amp; balance commissioning</span> <span class="ln"></span> <span style="color:var(--amber);">0 / 6 next</span></div>
+        <div class="t-row next"><span class="t-name">3D-print mechanical parts <small>PLA / PETG · 30% infill cap · print, post-process, inspect tolerances</small></span><span class="t-tag">Next</span></div>
+        <div class="t-row next"><span class="t-name">Electronics wiring &amp; integration <small>Bench assembly of two-floor stack · power rails verified before logic connect</small></span><span class="t-tag">Next</span></div>
+        <div class="t-row next"><span class="t-name">ESP32 firmware bring-up <small>Flash, verify IMU read, servo sweep, motor direction calibration</small></span><span class="t-tag">Next</span></div>
+        <div class="t-row next"><span class="t-name">PID tuning session <small>Tethered iteration on Kp, Kd, then Ki · target: ±3° hold</small></span><span class="t-tag">Next</span></div>
+        <div class="t-row next"><span class="t-name">Stand / sit motion validation <small>Verify 2&nbsp;s interpolation · PID handoff at 50% · no servo stall</small></span><span class="t-tag">Next</span></div>
+        <div class="t-row next"><span class="t-name">Balance commissioning gate <small>±3° of vertical · ≥60&nbsp;s hold · closes Phase 02</small></span><span class="t-tag">Next</span></div>
+
+        <div class="t-phase p3"><span class="n">Phase 03</span> <span>Computer vision &amp; AI</span> <span class="ln"></span> <span style="color:var(--purple);">0 / 6 final</span></div>
+        <div class="t-row next"><span class="t-name">Raspberry Pi 5 OS &amp; vision stack <small>Pi&nbsp;OS · OpenCV · YOLOv8n · MediaPipe · PyTorch baseline</small></span><span class="t-tag">Vision</span></div>
+        <div class="t-row next"><span class="t-name">UART protocol integration <small>Bidirectional Pi&nbsp;5 ↔ ESP32 link · telemetry consumed at 20&nbsp;Hz</small></span><span class="t-tag">Vision</span></div>
+        <div class="t-row next"><span class="t-name">Multi-threaded vision pipeline <small>Camera, CV, behaviour, serial threads with bounded queues · ≥20&nbsp;fps end-to-end</small></span><span class="t-tag">Vision</span></div>
+        <div class="t-row next"><span class="t-name">Behaviour state machine <small>IDLE → STANDING → FOLLOWING → GESTURE · fall detect at &gt;45° pitch</small></span><span class="t-tag">AI</span></div>
+        <div class="t-row next"><span class="t-name">Person-following demo <small>YOLOv8n centroid tracking · turn + distance error → drive commands at 10&nbsp;Hz</small></span><span class="t-tag">AI</span></div>
+        <div class="t-row final"><span class="t-name">Autonomous gesture-controlled operation <small>Hand-gesture command · person re-ID · fall recovery · closes the project</small></span><span class="t-tag">Final ★</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 09 VISION ===================== -->
+<section id="vision" class="has-marks" data-screen-label="09 Vision">
+  <span class="marks-tl"></span><span class="marks-tr"></span><span class="marks-bl"></span><span class="marks-br"></span>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-figure"><b>09</b></div>
+      <div class="eyebrow reveal">Fig. 09 · Vision roadmap</div>
+      <h2 class="section-title reveal d1">Local computer-vision pipeline on the Raspberry Pi 5.</h2>
+      <p class="section-sub reveal d2">Once balance is commissioned, the Pi 5 enables perception and behaviour: person following, hand-gesture command, visual SLAM, and fall detection. All inference runs locally over a USB webcam with no cloud dependency.</p>
+    </div>
+
+    <div class="tiles">
+      <div class="tile acc-c reveal d1">
+        <div class="t-h">Compute</div>
+        <div class="t-v">Pi 5 · 4GB</div>
+        <div class="t-s">USB webcam · 100% local · no cloud round-trips · runs alongside ESP32 on the same chassis.</div>
+      </div>
+      <div class="tile acc-p reveal d2">
+        <div class="t-h">CPU baseline</div>
+        <div class="t-v">Cortex-A76 @ 2.4 GHz</div>
+        <div class="t-s">20+&nbsp;fps on YOLOv8n at 640×480; comfortable headroom for MediaPipe at 30&nbsp;fps.</div>
+      </div>
+      <div class="tile acc-a reveal d3">
+        <div class="t-h">Optional accelerator</div>
+        <div class="t-v">Hailo-8L AI HAT</div>
+        <div class="t-s">13&nbsp;TOPS over PCIe · ~£45 · drops most models to 30&nbsp;fps and unlocks ORB-SLAM3 at full rate.</div>
+      </div>
+    </div>
+
+    <div class="cv-cats">
+      <div class="cv-cat tilt reveal d1" data-tilt data-hover>
+        <div class="cv-cat-head">
+          <div class="name"><span class="emoji">👤</span> Person &amp; Body Tracking</div>
+          <div class="cv-tier t1">Tier 1 · Easy</div>
+        </div>
+        <div class="stack">MediaPipe · YOLOv8 · InsightFace</div>
+        <ul class="cv-list">
+          <li>Person Following</li>
+          <li>Specific Person (face enrol)</li>
+          <li>Re-ID from behind</li>
+          <li>Pose Mirroring</li>
+          <li>Stand/Sit on Approach</li>
+          <li>Look-at-Face</li>
+        </ul>
+      </div>
+
+      <div class="cv-cat tilt reveal d2" data-tilt data-hover>
+        <div class="cv-cat-head">
+          <div class="name"><span class="emoji">✋</span> Gesture Control</div>
+          <div class="cv-tier t1">Tier 1 · Easy</div>
+        </div>
+        <div class="stack">MediaPipe Hands</div>
+        <ul class="cv-list">
+          <li>Palm → STOP</li>
+          <li>Fist → SIT</li>
+          <li>Peace → STAND</li>
+          <li>Point → GO</li>
+          <li>Wave → TURN</li>
+          <li>Distance bubble control</li>
+        </ul>
+      </div>
+
+      <div class="cv-cat tilt reveal d3" data-tilt data-hover>
+        <div class="cv-cat-head">
+          <div class="name"><span class="emoji">🗺️</span> Navigation &amp; Mapping</div>
+          <div class="cv-tier t2">Tier 2 · Medium</div>
+        </div>
+        <div class="stack">ORB-SLAM3 · MiDaS · OpenCV</div>
+        <ul class="cv-list">
+          <li>Obstacle Detection (MiDaS depth)</li>
+          <li>Stair / Edge Detection</li>
+          <li>Visual SLAM</li>
+          <li>ArUco Docking</li>
+          <li>Room Patrol</li>
+          <li>Visual Odometry</li>
+        </ul>
+      </div>
+
+      <div class="cv-cat tilt reveal d4" data-tilt data-hover>
+        <div class="cv-cat-head">
+          <div class="name"><span class="emoji">🔒</span> Security &amp; Monitoring</div>
+          <div class="cv-tier t2">Tier 2 · Medium</div>
+        </div>
+        <div class="stack">YOLO · InsightFace · Telegram</div>
+        <ul class="cv-list">
+          <li>Motion-Triggered Wake</li>
+          <li>Unknown Face Alert (Telegram)</li>
+          <li>Object / Package Detection</li>
+        </ul>
+      </div>
+
+      <div class="cv-cat tilt reveal" data-tilt data-hover style="grid-column: 1 / -1;">
+        <div class="cv-cat-head">
+          <div class="name"><span class="emoji">🧠</span> Advanced / Experimental</div>
+          <div class="cv-tier t3">Tier 3 · Hard</div>
+        </div>
+        <div class="stack">DeepFace · Whisper tiny · multi-frame planning</div>
+        <ul class="cv-list">
+          <li>Object Fetching</li>
+          <li>Emotion Detection (DeepFace)</li>
+          <li>Multi-Person Nav</li>
+          <li>QR + Voice Command (Whisper tiny)</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin: 30px 0 14px;">Frame-rate benchmarks · per model</h4>
+    <div class="fps-table reveal">
+      <div class="row head">
+        <span>Model</span>
+        <span>Pi 5 baseline</span>
+        <span>Hailo-8L</span>
+      </div>
+      <div class="row"><span class="model">YOLOv8n · person</span><span class="pi5"><div class="fps-bar"><i style="width:66%"></i></div>20 fps</span><span class="hailo"><div class="fps-bar"><i style="width:100%"></i></div>30+ fps</span></div>
+      <div class="row"><span class="model">MediaPipe Face</span><span class="pi5"><div class="fps-bar"><i style="width:100%"></i></div>30 fps</span><span class="hailo"><div class="fps-bar"><i style="width:100%"></i></div>30+ fps</span></div>
+      <div class="row"><span class="model">MediaPipe Hands</span><span class="pi5"><div class="fps-bar"><i style="width:66%"></i></div>20 fps</span><span class="hailo"><div class="fps-bar"><i style="width:100%"></i></div>30+ fps</span></div>
+      <div class="row"><span class="model">MediaPipe Pose</span><span class="pi5"><div class="fps-bar"><i style="width:83%"></i></div>25 fps</span><span class="hailo"><div class="fps-bar"><i style="width:100%"></i></div>30+ fps</span></div>
+      <div class="row"><span class="model">InsightFace</span><span class="pi5"><div class="fps-bar"><i style="width:33%"></i></div>10 fps</span><span class="hailo"><div class="fps-bar"><i style="width:83%"></i></div>25+ fps</span></div>
+      <div class="row"><span class="model">MiDaS small</span><span class="pi5"><div class="fps-bar"><i style="width:33%"></i></div>10 fps</span><span class="hailo"><div class="fps-bar"><i style="width:83%"></i></div>25+ fps</span></div>
+      <div class="row"><span class="model">ORB-SLAM3</span><span class="pi5"><div class="fps-bar"><i style="width:50%"></i></div>15 fps</span><span class="hailo"><div class="fps-bar"><i style="width:100%"></i></div>30+ fps</span></div>
+      <div class="row"><span class="model">DeepFace emotion</span><span class="pi5"><div class="fps-bar"><i style="width:16%"></i></div>5 fps</span><span class="hailo"><div class="fps-bar"><i style="width:66%"></i></div>20+ fps</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 10 CODE ===================== -->
+<section id="code" class="has-marks" data-screen-label="10 Code">
+  <span class="marks-tl"></span><span class="marks-tr"></span><span class="marks-bl"></span><span class="marks-br"></span>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-figure"><b>10</b></div>
+      <div class="eyebrow reveal">Fig. 10 · Architecture</div>
+      <h2 class="section-title reveal d1">Two processors, four bounded queues, one UART link.</h2>
+      <p class="section-sub reveal d2">The ESP32 runs a deterministic 100&nbsp;Hz balance loop driven by a minimal serial protocol. The Pi 5 runs a multi-threaded vision pipeline with bounded inter-thread queues; producers are non-blocking and stale data is dropped at the queue boundary.</p>
+    </div>
+
+    <div class="diagram-wrap reveal" style="margin-bottom: 30px;">
+      <div class="diagram-head">
+        <span class="t">Fig. 3 · Pi 5 thread + ESP32 dataflow</span>
+      </div>
+      <svg viewBox="0 0 1100 280" width="100%" style="display:block;">
+        <defs>
+          <marker id="ax" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M0,0 L10,5 L0,10 Z" fill="var(--cyan)"/>
+          </marker>
+        </defs>
+
+        <!-- Webcam -->
+        <rect x="20" y="110" width="120" height="60" rx="10" fill="rgba(0,217,255,0.05)" stroke="rgba(0,217,255,0.4)"/>
+        <text x="80" y="138" text-anchor="middle" font-family="Space Grotesk" font-size="13" font-weight="600" fill="#fff">Webcam</text>
+        <text x="80" y="155" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="var(--text-dim)">30 fps · USB</text>
+
+        <path d="M140 140 H 170" stroke="var(--cyan)" stroke-width="1.4" marker-end="url(#ax)"/>
+
+        <!-- CameraThread -->
+        <rect x="175" y="100" width="140" height="80" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.13)"/>
+        <text x="245" y="124" text-anchor="middle" font-family="Space Grotesk" font-size="13" font-weight="600" fill="#fff">CameraThread</text>
+        <text x="245" y="142" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="var(--text-dim)">grab frame</text>
+        <text x="245" y="158" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--cyan)">→ frame_queue (2)</text>
+
+        <path d="M315 140 H 345" stroke="var(--cyan)" stroke-width="1.4" marker-end="url(#ax)"/>
+
+        <!-- CVPipeline -->
+        <rect x="350" y="100" width="160" height="80" rx="10" fill="rgba(0,217,255,0.05)" stroke="rgba(0,217,255,0.45)"/>
+        <text x="430" y="124" text-anchor="middle" font-family="Space Grotesk" font-size="13" font-weight="600" fill="#fff">CVPipeline</text>
+        <text x="430" y="142" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="var(--text-dim)">YOLOv8 + MediaPipe</text>
+        <text x="430" y="158" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--cyan)">→ scene_queue (2)</text>
+
+        <path d="M510 140 H 545" stroke="var(--cyan)" stroke-width="1.4" marker-end="url(#ax)"/>
+
+        <!-- BehaviorManager -->
+        <rect x="550" y="100" width="170" height="80" rx="10" fill="rgba(168,85,247,0.06)" stroke="rgba(168,85,247,0.45)"/>
+        <text x="635" y="124" text-anchor="middle" font-family="Space Grotesk" font-size="13" font-weight="600" fill="#fff">BehaviorManager</text>
+        <text x="635" y="142" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="var(--text-dim)">state machine · 10 Hz</text>
+        <text x="635" y="158" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--cyan)">→ command_queue (10)</text>
+
+        <path d="M720 140 H 755" stroke="var(--cyan)" stroke-width="1.4" marker-end="url(#ax)"/>
+
+        <!-- SerialComm -->
+        <rect x="760" y="100" width="140" height="80" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.13)"/>
+        <text x="830" y="124" text-anchor="middle" font-family="Space Grotesk" font-size="13" font-weight="600" fill="#fff">SerialComm</text>
+        <text x="830" y="142" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="var(--text-dim)">UART 115200</text>
+        <text x="830" y="158" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--cyan)">↔ telemetry_queue (20)</text>
+
+        <path d="M900 140 H 935" stroke="var(--cyan)" stroke-width="1.4" marker-end="url(#ax)"/>
+
+        <!-- ESP32 -->
+        <rect x="940" y="100" width="140" height="80" rx="10" fill="rgba(245,158,11,0.06)" stroke="rgba(245,158,11,0.45)"/>
+        <text x="1010" y="128" text-anchor="middle" font-family="Space Grotesk" font-size="14" font-weight="600" fill="var(--amber)">ESP32</text>
+        <text x="1010" y="146" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="var(--text-dim)">PID @ 100 Hz</text>
+        <text x="1010" y="162" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--text-dim)">L298N · PCA9685</text>
+
+        <!-- T: telemetry back arrow -->
+        <path d="M940 168 H 760" stroke="var(--purple)" stroke-width="1" stroke-dasharray="3 3" fill="none"/>
+        <text x="845" y="200" font-family="JetBrains Mono" font-size="9" fill="var(--purple)">T: pitch, motor_l, motor_r @ 20 Hz</text>
+
+        <!-- Labels -->
+        <text x="20" y="40" font-family="JetBrains Mono" font-size="10" fill="var(--text-mute)" letter-spacing="1.5">RASPBERRY PI 5 · python threads</text>
+        <text x="940" y="40" font-family="JetBrains Mono" font-size="10" fill="var(--text-mute)" letter-spacing="1.5">ESP32 · firmware</text>
+
+        <!-- divider -->
+        <line x1="920" y1="60" x2="920" y2="230" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4"/>
+
+        <!-- queues annotation -->
+        <text x="20" y="248" font-family="JetBrains Mono" font-size="9" fill="var(--text-mute)" letter-spacing="1">RULE — producers never block. if queue full, drop oldest. stale data is worse than no data.</text>
+      </svg>
+    </div>
+
+    <div class="protocol reveal">
+      <h4>UART Protocol · 115200 baud · GPIO 35/2</h4>
+      <div class="protocol-grid">
+        <div class="proto-col">
+          <h5><span class="arr">→</span> Pi 5 to ESP32</h5>
+          <code>M:speed,turn\n</code>
+          <code>P:STAND\n</code>
+          <code>P:SIT\n</code>
+          <code>G:KP,25.0\n</code>
+          <code>E:\n   <span style="color:var(--rose);">// emergency stop</span></code>
+        </div>
+        <div class="proto-col right">
+          <h5><span class="arr" style="color:var(--amber)">←</span> ESP32 to Pi 5</h5>
+          <code>T:pitch,motor_l,motor_r,state\n</code>
+          <code style="color:var(--text-dim);">// 20 Hz telemetry stream</code>
+          <code style="color:var(--text-dim);">// state ∈ {SIT, STD, BAL}</code>
+          <code style="color:var(--rose);">// |pitch| &gt; 45° → Pi 5 sends P:SIT</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="ide reveal">
+      <div class="ide-titlebar">
+        <span class="dots"><span></span><span></span><span></span></span>
+        <span class="path">sbr-001 / runtime <span class="here" id="ide-here">esp32-core.ino</span></span>
+        <span class="live"><span class="d"></span> RUNTIME TRACE</span>
+      </div>
+
+      <div class="ide-body">
+        <div class="ide-sidebar">
+          <div class="ide-sec">Processes</div>
+          <button class="ide-tab active" data-tab="esp" data-hover>
+            <span class="ico c">≡</span>
+            <span class="label"><span class="name">esp32-core</span><span class="meta">100 Hz · 6 steps</span></span>
+          </button>
+          <button class="ide-tab" data-tab="pi" data-hover>
+            <span class="ico p">△</span>
+            <span class="label"><span class="name">pi5-threads</span><span class="meta">async · 4 workers</span></span>
+          </button>
+          <button class="ide-tab" data-tab="sm" data-hover>
+            <span class="ico g">◈</span>
+            <span class="label"><span class="name">state-machine</span><span class="meta">10 Hz · 6 states</span></span>
+          </button>
+          <button class="ide-tab" data-tab="follow" data-hover>
+            <span class="ico a">○</span>
+            <span class="label"><span class="name">person-follow</span><span class="meta">10 Hz · closed loop</span></span>
+          </button>
+          <div class="ide-sec" style="margin-top: 14px;">Plumbing</div>
+          <button class="ide-tab" data-tab="queue" data-hover>
+            <span class="ico c">▯</span>
+            <span class="label"><span class="name">queue-design</span><span class="meta">non-blocking</span></span>
+          </button>
+          <button class="ide-tab" data-tab="safe" data-hover>
+            <span class="ico r">■</span>
+            <span class="label"><span class="name">fall-safety</span><span class="meta">&lt;50 ms cutoff</span></span>
+          </button>
+        </div>
+
+        <div class="ide-main">
+          <!-- ESP32 -->
+          <div class="ide-pane active" data-pane="esp" data-title="esp32-core.ino">
+            <div class="ide-header">
+              <div class="h-l">ESP32 · real-time balance loop</div>
+              <div class="h-r"><span class="acc">100 Hz</span> · 6 steps per cycle</div>
+            </div>
+            <ol class="ide-flow">
+              <li><div class="body">
+                <div class="step-head"><span class="tag cyan">I/O</span><span class="title">Sample inertial measurement unit</span><span class="timing">10 ms tick</span></div>
+                <p class="desc">Read MPU-6500 over SPI; pull raw gyro&nbsp;Y and accel&nbsp;X/Z from registers.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag purple">Fusion</span><span class="title">Complementary angle filter</span><span class="timing">~25 μs</span></div>
+                <p class="desc"><code>pitch = 0.98 * (pitch + gyroY * dt) + 0.02 * atan2(accelX, accelZ)</code> &mdash; 98% gyro short-term, 2% accel long-term.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag green">Control</span><span class="title">Discrete PID compute</span><span class="timing">~10 μs</span></div>
+                <p class="desc"><code>u = Kp·e + Ki·∫e + Kd·ė</code> where <code>e = target − pitch</code>. Integrator + derivative held across ticks.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag amber">Drive</span><span class="title">Motor output to L298N</span><span class="timing">PWM</span></div>
+                <p class="desc">Clamp <code>u ∈ [−255, +255]</code>; sign flips direction pin; magnitude written as 8-bit PWM duty.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag cyan">Servo</span><span class="title">Stance interpolation</span><span class="timing">2 s / 200 steps</span></div>
+                <p class="desc">On <code>STAND</code>/<code>SIT</code> command, ease knee + hip angles over 200&nbsp;×&nbsp;10&nbsp;ms steps; PID enables at step 100 (50%).</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag purple">Comms</span><span class="title">Serial I/O</span><span class="timing">async</span></div>
+                <p class="desc">Parse incoming <code>M:</code> / <code>P:</code> / <code>G:</code> / <code>E:</code> commands; broadcast <code>T:</code> telemetry every 50&nbsp;ms (20&nbsp;Hz).</p>
+              </div></li>
+            </ol>
+          </div>
+
+          <!-- Pi 5 -->
+          <div class="ide-pane" data-pane="pi" data-title="pi5-threads.py">
+            <div class="ide-header">
+              <div class="h-l">Raspberry Pi 5 · vision pipeline threads</div>
+              <div class="h-r"><span class="acc">4 workers</span> · non-blocking</div>
+            </div>
+            <ol class="ide-flow">
+              <li><div class="body">
+                <div class="step-head"><span class="tag cyan">Source</span><span class="title">CameraThread</span><span class="timing">30 fps</span></div>
+                <p class="desc">Grab frame from USB webcam; push to <code>frame_queue(maxsize=2)</code>; drop oldest if full so the camera never blocks.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag amber">Inference</span><span class="title">CVPipeline</span><span class="timing">~20 fps</span></div>
+                <p class="desc">Pull frame; run <code>YOLOv8n</code> for persons + <code>MediaPipe</code> for hands and pose; assemble <code>SceneState</code>; push to <code>scene_queue(maxsize=2)</code>.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag green">Logic</span><span class="title">BehaviorManager</span><span class="timing">10 Hz</span></div>
+                <p class="desc">Pull <code>SceneState</code>; evaluate state machine; decide drive command; push to <code>command_queue(maxsize=10)</code>.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag purple">Transport</span><span class="title">SerialComm</span><span class="timing">115200 baud</span></div>
+                <p class="desc">Drain <code>command_queue</code> and write to <code>Serial2</code> (GPIO 35 RX / GPIO 2 TX); read telemetry lines back from ESP32; push to <code>telemetry_queue(maxsize=20)</code>.</p>
+              </div></li>
+            </ol>
+          </div>
+
+          <!-- State Machine -->
+          <div class="ide-pane" data-pane="sm" data-title="state-machine.py">
+            <div class="ide-header">
+              <div class="h-l">Behaviour state machine · high-level autonomy</div>
+              <div class="h-r"><span class="acc">6 states</span> · 10 Hz tick</div>
+            </div>
+            <ol class="ide-flow">
+              <li><div class="body">
+                <div class="step-head"><span class="tag green">Idle</span><span class="title">IDLE</span><span class="timing">default</span></div>
+                <p class="desc">Robot seated; only motion-detection runs on the webcam; waits for a person to enter the frame or a manual command.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag cyan">Transition</span><span class="title">STANDING</span><span class="timing">2 s</span></div>
+                <p class="desc">Person detected or peace-sign gesture received; sends <code>P:STAND</code>; waits 2&nbsp;s; transitions into <code>FOLLOWING</code>.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag amber">Active</span><span class="title">FOLLOWING</span><span class="timing">10 Hz</span></div>
+                <p class="desc">Tracks person centroid; computes <code>turn_error</code> + <code>distance_error</code>; emits <code>M:</code> commands at 10&nbsp;Hz.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag rose">Override</span><span class="title">GESTURE</span><span class="timing">priority</span></div>
+                <p class="desc">Open palm → E-STOP. Fist → SIT → IDLE. Peace sign → STAND (from IDLE only). Gesture state preempts all others.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag purple">Autonomous</span><span class="title">PATROL</span><span class="timing">no-person 30 s</span></div>
+                <p class="desc">If no person is seen for 30&nbsp;s, the robot navigates SLAM waypoints and sweeps the environment.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag rose">Alert</span><span class="title">ALERT</span><span class="timing">on unknown face</span></div>
+                <p class="desc">Unknown face detected; Telegram notification dispatched; robot holds position until a known face is observed.</p>
+              </div></li>
+            </ol>
+          </div>
+
+          <!-- Person Follow -->
+          <div class="ide-pane" data-pane="follow" data-title="person-follow.py">
+            <div class="ide-header">
+              <div class="h-l">Person follower · closed-loop pursuit</div>
+              <div class="h-r"><span class="acc">640×480</span> · 10 Hz</div>
+            </div>
+            <ol class="ide-flow">
+              <li><div class="body">
+                <div class="step-head"><span class="tag cyan">Detect</span><span class="title">YOLOv8n bounding box</span><span class="timing">~20 fps</span></div>
+                <p class="desc">Detector outputs a person bbox <code>[x1, y1, x2, y2]</code> in a 640&nbsp;×&nbsp;480 frame. Highest-confidence person retained.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag purple">Centroid</span><span class="title">Horizontal centre</span><span class="timing">O(1)</span></div>
+                <p class="desc"><code>bbox_cx = (x1 + x2) / 2</code>; compared against frame centre <code>frame_cx = 320</code>.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag green">Turn error</span><span class="title">Normalised steering signal</span><span class="timing">[-1, +1]</span></div>
+                <p class="desc"><code>turn_err = (bbox_cx − frame_cx) / 320</code>. Right-of-centre is positive (turn right); left is negative.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag amber">Distance error</span><span class="title">From apparent height</span><span class="timing">target 0.30</span></div>
+                <p class="desc"><code>dist_err = (bbox_h / 480) − 0.30</code>. Positive (subject is close) drives backward; negative drives forward.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag cyan">Drive</span><span class="title">Compose &amp; emit</span><span class="timing">10 Hz</span></div>
+                <p class="desc"><code>speed = −dist_err × 60</code>, <code>turn = turn_err × 40</code>; send <code>M:speed,turn\n</code> over UART.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag rose">Loss recovery</span><span class="title">Re-acquisition</span><span class="timing">2 s timeout</span></div>
+                <p class="desc">If no bbox for 2&nbsp;s, stop motors and enter <code>PATROL</code>; re-acquire by slow sweep until a person appears.</p>
+              </div></li>
+            </ol>
+          </div>
+
+          <!-- Queue Design -->
+          <div class="ide-pane" data-pane="queue" data-title="queue-design.py">
+            <div class="ide-header">
+              <div class="h-l">Queue design · non-blocking inter-thread plumbing</div>
+              <div class="h-r"><span class="acc">4 queues</span> · bounded</div>
+            </div>
+            <ol class="ide-flow">
+              <li><div class="body">
+                <div class="step-head"><span class="tag cyan">Frames</span><span class="title">frame_queue</span><span class="timing">maxsize 2</span></div>
+                <p class="desc">Always-latest frame from camera; CVPipeline drops stale frames so the camera thread never blocks behind inference.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag purple">Scenes</span><span class="title">scene_queue</span><span class="timing">maxsize 2</span></div>
+                <p class="desc">Always-latest <code>SceneState</code>; BehaviorManager always reads the freshest analysis, never a backlog.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag amber">Commands</span><span class="title">command_queue</span><span class="timing">maxsize 10</span></div>
+                <p class="desc">Buffered drive commands; SerialComm drains at line rate; back-pressure limited to a few hundred ms.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag green">Telemetry</span><span class="title">telemetry_queue</span><span class="timing">maxsize 20</span></div>
+                <p class="desc">ESP32 telemetry arrives at 20&nbsp;Hz; Pi 5 reads at its own pace; old data is auto-dropped at queue boundary.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag cyan">Invariant</span><span class="title">Producers never block</span><span class="timing">design rule</span></div>
+                <p class="desc">If a queue is full, drop oldest or skip. Stale data is worse than no data &mdash; this rule applies everywhere.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag rose">Emergency</span><span class="title">E: bypasses everything</span><span class="timing">&lt;50 ms</span></div>
+                <p class="desc">Emergency stop command <code>E:\n</code> is written to serial immediately in the BehaviorManager thread &mdash; no queue, no buffering.</p>
+              </div></li>
+            </ol>
+          </div>
+
+          <!-- Fall & Safety -->
+          <div class="ide-pane" data-pane="safe" data-title="fall-safety.py">
+            <div class="ide-header">
+              <div class="h-l">Fall detection &amp; safety interlocks</div>
+              <div class="h-r"><span class="acc">&lt;50 ms</span> · hardware-backed</div>
+            </div>
+            <ol class="ide-flow">
+              <li><div class="body">
+                <div class="step-head"><span class="tag cyan">Watch</span><span class="title">Telemetry monitor</span><span class="timing">20 Hz</span></div>
+                <p class="desc">SerialComm reads pitch from every <code>T:</code> packet and stores the latest value in shared state.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag amber">Detect</span><span class="title">Fall threshold</span><span class="timing">|pitch| &gt; 45°</span></div>
+                <p class="desc">BehaviorManager checks: if <code>|pitch| &gt; 45°</code>, the FALL protocol triggers immediately on the next 10&nbsp;Hz tick.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag green">Recover</span><span class="title">Controlled sit</span><span class="timing">2 s</span></div>
+                <p class="desc">Send <code>P:SIT</code> to ESP32; ESP32 lowers legs through normal interpolation; PID disabled during the descent.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag rose">E-STOP</span><span class="title">Gesture cutoff</span><span class="timing">&lt;50 ms</span></div>
+                <p class="desc">Open palm detected → skip queue → write <code>E:\n</code> direct to serial → motors cut in &lt;&nbsp;50&nbsp;ms end-to-end.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag purple">Boot-safe</span><span class="title">Strapping pin avoidance</span><span class="timing">at power-up</span></div>
+                <p class="desc">GPIO 12 unused. GPIO 14 (ENC1_B) LOW at boot — safe. GPIO 15 (H_IN4) HIGH at boot — killed in first line of setup(): digitalWrite(15, LOW). No net motor glitch; pin map locked in firmware header.</p>
+              </div></li>
+              <li><div class="body">
+                <div class="step-head"><span class="tag rose">Hardware</span><span class="title">BMS cutoff</span><span class="timing">cell-level</span></div>
+                <p class="desc">Hardware-level: if cell voltage drops below threshold, the BMS cuts power before firmware can react. Never bypassed.</p>
+              </div></li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <div class="ide-footer">
+        <span class="live-bar"><span class="d"></span> <span class="b">RUNTIME</span></span>
+        <span class="sep"></span>
+        <span><span class="b">ESP32</span> @ 100 Hz · deterministic</span>
+        <span class="sep"></span>
+        <span><span class="b">Pi 5</span> · 4 worker threads · bounded queues</span>
+        <span class="right"><span class="b" id="ide-foot-r">6 steps loaded</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="logo">SBR<span class="dot">·</span>01</div>
+        <p>Self-Balancing Articulated Leg Robot &mdash; a two-wheeled platform with mirrored 4-bar legs, ESP32 real-time control, and a Pi 5 vision sidecar.</p>
+      </div>
+      <div>
+        <h5>Document</h5>
+        <ul>
+          <li><a href="#overview" data-hover>Project Overview</a></li>
+          <li><a href="#mechanical" data-hover>Mechanical Specs</a></li>
+          <li><a href="#electronics" data-hover>Electronics Architecture</a></li>
+          <li><a href="#code" data-hover>Code Architecture</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Status</h5>
+        <ul>
+          <li><a href="#milestones" data-hover>6 / 18 Milestones</a></li>
+          <li><a href="#risks" data-hover>5 Risks Mitigated</a></li>
+          <li><a href="#torque" data-hover>2.4× Torque Margin</a></li>
+          <li><a href="#vision" data-hover>Vision Roadmap</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-end">
+      <span>PRB-SBR-001 · Rev A · May 2026 · Abdelwadoud Ben Kridis</span>
+      <span>Internal · build team</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ===================== JS ===================== -->
+<script>
+(() => {
+  /* =================== 3D VIEWER =================== */
+  (async () => {
+    const canvas = document.getElementById('viewer-3d');
+    const photo = document.getElementById('hero-photo');
+    const badge = document.getElementById('viewer-badge');
+    const hint = document.getElementById('viewer-hint');
+    const loader = document.getElementById('viewer-loader');
+    const vlPct = document.getElementById('vl-pct');
+    const vlBar = document.getElementById('vl-bar');
+    if (!canvas) return;
+
+    let THREE, GLTFLoader, OrbitControls;
+    try {
+      THREE = await import('three');
+      ({ GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js'));
+      ({ OrbitControls } = await import('three/addons/controls/OrbitControls.js'));
+    } catch (e) {
+      console.warn('three.js failed to load — keeping 2D fallback', e);
+      loader.classList.add('done');
+      return;
+    }
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(35, 1, 0.01, 100);
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
+
+    // Lighting — three-point + key cyan/purple rims
+    scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+    const key = new THREE.DirectionalLight(0xffffff, 1.4);
+    key.position.set(3, 4, 5);
+    scene.add(key);
+    const fill = new THREE.DirectionalLight(0x88ccff, 0.6);
+    fill.position.set(-4, 2, 3);
+    scene.add(fill);
+    const rimC = new THREE.DirectionalLight(0x00d9ff, 0.9);
+    rimC.position.set(-3, 1, -4);
+    scene.add(rimC);
+    const rimP = new THREE.DirectionalLight(0xa855f7, 0.7);
+    rimP.position.set(4, -1, -3);
+    scene.add(rimP);
+    const top = new THREE.HemisphereLight(0xb6e8ff, 0x1a1d24, 0.5);
+    scene.add(top);
+
+    // Resize
+    function fit() {
+      const r = canvas.getBoundingClientRect();
+      renderer.setSize(r.width, r.height, false);
+      camera.aspect = r.width / r.height;
+      camera.updateProjectionMatrix();
+    }
+    fit();
+    window.addEventListener('resize', fit);
+
+    // Controls
+    const controls = new OrbitControls(camera, canvas);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.enablePan = false;
+    controls.minDistance = 0.4;
+    controls.maxDistance = 6;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.8;
+    canvas.addEventListener('pointerdown', () => { controls.autoRotate = false; });
+
+    // Load GLB lazily on first scroll-into-view
+    let loaded = false;
+    function startLoad() {
+      if (loaded) return;
+      loaded = true;
+      const gltfLoader = new GLTFLoader();
+      gltfLoader.load(
+        'robot.glb',
+        (gltf) => {
+          const model = gltf.scene;
+          // Normalize: center, scale to fit
+          const box = new THREE.Box3().setFromObject(model);
+          const size = new THREE.Vector3();
+          const center = new THREE.Vector3();
+          box.getSize(size);
+          box.getCenter(center);
+          model.position.sub(center);
+          const maxDim = Math.max(size.x, size.y, size.z);
+          const scale = 2 / maxDim;
+          model.scale.setScalar(scale);
+          // Re-center after scale by adjusting position
+          scene.add(model);
+
+          // Camera position — 3/4 view
+          camera.position.set(2.4, 1.4, 3.2);
+          controls.target.set(0, 0, 0);
+          controls.update();
+
+          // Reveal
+          canvas.classList.add('ready');
+          photo.classList.add('viewer-ready');
+          badge.classList.add('show');
+          hint.classList.add('show');
+          loader.classList.add('done');
+
+          const toggle = document.getElementById('view-toggle');
+          const btnPhoto = document.getElementById('btn-photo');
+          const btn3d = document.getElementById('btn-3d');
+          toggle.classList.add('show');
+          let showing3d = true;
+          btnPhoto.addEventListener('click', () => {
+            if (!showing3d) return;
+            showing3d = false;
+            btnPhoto.classList.add('active');
+            btn3d.classList.remove('active');
+            canvas.style.opacity = '0';
+            canvas.style.pointerEvents = 'none';
+            photo.querySelector('img').style.opacity = '1';
+            badge.classList.remove('show');
+            hint.classList.remove('show');
+          });
+          btn3d.addEventListener('click', () => {
+            if (showing3d) return;
+            showing3d = true;
+            btn3d.classList.add('active');
+            btnPhoto.classList.remove('active');
+            canvas.style.opacity = '1';
+            canvas.style.pointerEvents = 'auto';
+            photo.querySelector('img').style.opacity = '0';
+            badge.classList.add('show');
+            hint.classList.add('show');
+          });
+        },
+        (ev) => {
+          if (ev.lengthComputable) {
+            const pct = Math.round((ev.loaded / ev.total) * 100);
+            vlPct.textContent = pct + '%';
+            vlBar.style.width = pct + '%';
+          } else {
+            const mb = (ev.loaded / 1024 / 1024).toFixed(1);
+            vlPct.textContent = mb + ' MB';
+            vlBar.style.width = Math.min(95, (ev.loaded / 2100000) * 100) + '%';
+          }
+        },
+        (err) => {
+          console.warn('GLB load failed', err);
+          loader.classList.add('done');
+        }
+      );
+    }
+
+    // Lazy start when hero is in view (it is on load, but defer slightly to let page paint)
+    setTimeout(startLoad, 250);
+
+    // Render loop
+    function animate() {
+      controls.update();
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    animate();
+  })();
+
+
+  /* =================== SCROLL PROGRESS =================== */
+  const prog = document.getElementById('scroll-progress');
+  function updateProgress(){
+    const h = document.documentElement;
+    const pct = h.scrollTop / (h.scrollHeight - h.clientHeight);
+    prog.style.width = (pct * 100) + '%';
+  }
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  updateProgress();
+
+  /* =================== NAV ACTIVE =================== */
+  const navLinks = document.querySelectorAll('.nav-link');
+  const sections = ['overview','mechanical','electronics','power','torque','software','risks','milestones','vision','code']
+    .map(id => document.getElementById(id));
+  function updateNav(){
+    let active = null;
+    for (const s of sections) {
+      const r = s.getBoundingClientRect();
+      if (r.top < window.innerHeight/2) active = s.id;
+    }
+    navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + active));
+  }
+  /* =================== TOPBAR ACTIVE LINK =================== */
+  const tbLinks = document.querySelectorAll('.tb-link');
+  function updateTopbar(){
+    let active = null;
+    for (const s of sections) {
+      const r = s.getBoundingClientRect();
+      if (r.top < window.innerHeight * 0.4) active = s.id;
+    }
+    tbLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + active));
+  }
+  window.addEventListener('scroll', updateTopbar, { passive: true });
+  updateTopbar();
+
+  document.querySelectorAll('[data-tilt]').forEach(card => {
+    card.classList.add('tilt');
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width;
+      const y = (e.clientY - r.top) / r.height;
+      const rotY = (x - 0.5) * 8;
+      const rotX = (0.5 - y) * 8;
+      card.style.transform = `perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = '';
+    });
+  });
+
+  /* =================== GALLERY DRAG =================== */
+  const track = document.getElementById('gallery-track');
+  if (track) {
+    let down = false, startX = 0, startLeft = 0;
+    track.addEventListener('mousedown', e => {
+      down = true;
+      track.classList.add('dragging');
+      startX = e.clientX;
+      startLeft = track.scrollLeft;
+    });
+    window.addEventListener('mousemove', e => {
+      if (!down) return;
+      const dx = e.clientX - startX;
+      track.scrollLeft = startLeft - dx;
+    });
+    window.addEventListener('mouseup', () => {
+      down = false;
+      track.classList.remove('dragging');
+    });
+    // touch
+    let tx = 0, tl = 0;
+    track.addEventListener('touchstart', e => {
+      tx = e.touches[0].clientX;
+      tl = track.scrollLeft;
+    });
+    track.addEventListener('touchmove', e => {
+      const dx = e.touches[0].clientX - tx;
+      track.scrollLeft = tl - dx;
+    });
+  }
+
+  /* =================== PID CARDS =================== */
+  document.querySelectorAll('[data-pid]').forEach(card => {
+    card.addEventListener('click', () => card.classList.toggle('open'));
+  });
+
+  /* =================== RISK ACCORDION =================== */
+  document.querySelectorAll('[data-risk]').forEach(item => {
+    item.querySelector('.risk-head').addEventListener('click', () => {
+      const wasOpen = item.classList.contains('open');
+      document.querySelectorAll('[data-risk]').forEach(i => i.classList.remove('open'));
+      if (!wasOpen) item.classList.add('open');
+    });
+  });
+
+  /* =================== TABS / IDE =================== */
+  const tabs = document.querySelectorAll('.ide-tab');
+  const panes = document.querySelectorAll('.ide-pane');
+  const ideHere = document.getElementById('ide-here');
+  const ideFootR = document.getElementById('ide-foot-r');
+  tabs.forEach(t => t.addEventListener('click', () => {
+    tabs.forEach(x => x.classList.remove('active'));
+    panes.forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    const pane = document.querySelector(`[data-pane="${t.dataset.tab}"]`);
+    if (pane) {
+      pane.classList.add('active');
+      if (ideHere && pane.dataset.title) ideHere.textContent = pane.dataset.title;
+      if (ideFootR) {
+        const n = pane.querySelectorAll('.ide-flow > li').length;
+        ideFootR.textContent = n + ' steps loaded';
+      }
+    }
+  }));
+
+  /* =================== SCROLL REVEAL =================== */
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        if (e.target.classList.contains('reveal-count')) {
+          // handled separately
+        }
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  /* =================== COUNT-UP =================== */
+  const countEls = document.querySelectorAll('[data-count]');
+  const countIo = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting && !e.target._counted) {
+        e.target._counted = true;
+        const target = parseFloat(e.target.dataset.count);
+        const suffix = e.target.dataset.suffix || '';
+        const dur = 1400;
+        const start = performance.now();
+        const isFloat = target % 1 !== 0;
+        function step(now){
+          const t = Math.min(1, (now - start) / dur);
+          const eased = 1 - Math.pow(1 - t, 3);
+          const val = target * eased;
+          e.target.innerHTML = (isFloat ? val.toFixed(1) : Math.floor(val)) + '<small>' + suffix.replace(/^[^a-zA-Z×0-9]/, m => m) + '</small>';
+          // properly format suffix: take suffix as the unit only
+          e.target.innerHTML = (isFloat ? val.toFixed(1) : Math.floor(val)) +
+            (suffix ? '<small>' + suffix + '</small>' : '');
+          if (t < 1) requestAnimationFrame(step);
+          else e.target.innerHTML = (isFloat ? target.toFixed(1) : target) +
+            (suffix ? '<small>' + suffix + '</small>' : '');
+        }
+        requestAnimationFrame(step);
+      }
+    });
+  }, { threshold: 0.4 });
+  countEls.forEach(el => countIo.observe(el));
+
+  /* =================== BARS =================== */
+  const barIo = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.querySelectorAll('.bar-fill').forEach(f => {
+          f.style.width = f.dataset.pct + '%';
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+  document.querySelectorAll('[data-bars]').forEach(b => barIo.observe(b));
+
+  /* =================== GAUGE =================== */
+  const gauge = document.getElementById('gauge-fill');
+  const gaugeVal = document.getElementById('gauge-val');
+  if (gauge) {
+    const gaugeIo = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting && !gauge._done) {
+          gauge._done = true;
+          const totalLen = 503;
+          const target = 4.56 / 11; // 0.4145
+          const dur = 1600;
+          const start = performance.now();
+          function step(now){
+            const t = Math.min(1, (now - start) / dur);
+            const eased = 1 - Math.pow(1 - t, 3);
+            const val = target * eased;
+            gauge.style.strokeDashoffset = totalLen * (1 - val);
+            const v = (4.56 * eased).toFixed(2);
+            gaugeVal.innerHTML = v + '<small> kg·cm</small>';
+            if (t < 1) requestAnimationFrame(step);
+            else gaugeVal.innerHTML = '4.56<small> kg·cm</small>';
+          }
+          requestAnimationFrame(step);
+        }
+      });
+    }, { threshold: 0.4 });
+    gaugeIo.observe(gauge);
+  }
+
+  /* =================== PROGRESS RING =================== */
+  const ring2 = document.getElementById('progress-fill');
+  const pctEl = document.getElementById('progress-pct');
+  if (ring2) {
+    const ringIo = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting && !ring2._done) {
+          ring2._done = true;
+          const totalLen = 540.4;
+          const target = 6 / 18; // 33%
+          const dur = 1600;
+          const start = performance.now();
+          function step(now){
+            const t = Math.min(1, (now - start) / dur);
+            const eased = 1 - Math.pow(1 - t, 3);
+            const val = target * eased;
+            ring2.style.strokeDashoffset = totalLen * (1 - val);
+            pctEl.textContent = Math.round(100 * target * eased);
+            if (t < 1) requestAnimationFrame(step);
+            else pctEl.textContent = Math.round(100 * target);
+          }
+          requestAnimationFrame(step);
+        }
+      });
+    }, { threshold: 0.4 });
+    ringIo.observe(ring2);
+  }
+})();
+</script>
+
+</body>
+</html>
