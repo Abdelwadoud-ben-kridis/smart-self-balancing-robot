@@ -20,9 +20,9 @@
    TOKENS
 ====================================================================== */
 :root {
-  --bg: #111318;
-  --bg-2: #181a20;
-  --bg-3: #1e2028;
+  --bg: #161616;
+  --bg-2: #1c1c1c;
+  --bg-3: #232323;
   --line: rgba(255,255,255,0.06);
   --line-2: rgba(255,255,255,0.10);
   --text: #d4d4d4;
@@ -53,7 +53,7 @@
 html, body { margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
-  background: #111318;
+  background: #161616;
   color: var(--text);
   font-family: var(--font-body);
   font-size: 14px;
@@ -64,7 +64,7 @@ body {
 
 
 /* Selection */
-::selection { background: rgba(0,217,255,0.25); color: #fff; }
+::selection { background: rgba(217,119,87,0.3); color: #fff; }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -75,7 +75,7 @@ body {
   border: 2px solid transparent;
   background-clip: content-box;
 }
-::-webkit-scrollbar-thumb:hover { background: rgba(0,217,255,0.4); background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); background-clip: content-box; }
 
 
 /* =====================================================================
@@ -86,127 +86,80 @@ body {
   top: 0; left: 0;
   height: 1px;
   width: 0%;
-  background: var(--cyan);
+  background: var(--accent);
   z-index: 9999;
   pointer-events: none;
 }
 
 /* =====================================================================
-   TOP STATUS BAR (CAD/IDE titlebar style — no floating pill)
+   NAVIGATION
 ====================================================================== */
 .topbar {
   position: fixed;
   top: 0; left: 0; right: 0;
   height: var(--topbar-h);
   z-index: 1000;
-  background: #0e1014;
+  background: rgba(22,22,22,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255,255,255,0.06);
-  display: grid;
-  grid-template-columns: auto 1fr auto auto auto;
-  align-items: stretch;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  max-width: 100%;
 }
-.tb-cell {
-  display: flex; align-items: center; gap: 10px;
-  padding: 0 18px;
-  border-right: 1px solid rgba(255,255,255,0.05);
-  white-space: nowrap;
-}
-.tb-cell:last-child { border-right: none; }
-.tb-cell .k {
-  color: var(--text-mute);
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  font-size: 9.5px;
-}
-.tb-cell .v {
-  color: var(--text);
-  font-weight: 500;
-}
-.tb-cell .v.acc { color: var(--accent); }
+.tb-cell { display: none; }
 .tb-brand {
-  display: flex; align-items: center; gap: 10px;
-  padding: 0 22px;
-  border-right: 1px solid rgba(255,255,255,0.05);
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 17px;
-  letter-spacing: -0.01em;
+  display: flex; align-items: center; gap: 0;
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   color: var(--text);
   text-decoration: none;
 }
-.tb-brand .mark {
-  width: 22px; height: 22px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--accent);
-  color: var(--accent);
-  font-family: var(--font-mono);
-  font-style: normal;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0;
-}
+.tb-brand .mark { display: none; }
 .tb-nav {
   display: flex;
+  align-items: center;
+  gap: 0;
   overflow-x: auto;
   scrollbar-width: none;
 }
 .tb-nav::-webkit-scrollbar { display: none; }
 .tb-nav a {
   display: flex; align-items: center;
-  padding: 0 14px;
+  padding: 6px 12px;
   color: var(--text-mute);
   text-decoration: none;
-  text-transform: lowercase;
-  letter-spacing: 0.05em;
-  font-size: 11px;
-  border-right: 1px solid rgba(255,255,255,0.04);
-  transition: color .2s, background .2s;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  border: none;
+  border-right: none;
+  transition: color .15s;
   position: relative;
 }
-.tb-nav a::before {
-  content: "";
-  position: absolute;
-  left: 14px; right: 14px; bottom: 0;
-  height: 1px;
-  background: var(--accent);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform .25s;
-}
+.tb-nav a::before { display: none; }
 .tb-nav a:hover { color: var(--text); }
-.tb-nav a:hover::before { transform: scaleX(1); }
-.tb-nav a.active { color: var(--text); }
-.tb-nav a.active::before { transform: scaleX(1); }
-.tb-nav a .n {
-  color: var(--text-mute);
-  margin-right: 8px;
-  font-size: 9.5px;
-  letter-spacing: 0.1em;
-}
+.tb-nav a.active { color: var(--accent); font-weight: 500; }
+.tb-nav a .n { display: none; }
 .tb-status {
-  display: flex; align-items: center; gap: 8px;
-  color: var(--green);
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-mute);
   text-transform: uppercase;
-  letter-spacing: 0.16em;
-  font-size: 10px;
+  letter-spacing: 0.08em;
 }
-.tb-status .led {
-  width: 7px; height: 7px;
-  background: var(--green);
-  border-radius: 50%;
-}
-@media (max-width: 1100px) {
-  .topbar { grid-template-columns: auto 1fr auto; }
-  .tb-cell.hide-md { display: none; }
-}
-@media (max-width: 720px) {
-  .topbar { grid-template-columns: auto 1fr auto; height: 40px; }
+.tb-status .led { display: none; }
+@media (max-width: 900px) {
   .tb-nav { display: none; }
+  .topbar { height: 40px; }
   :root { --topbar-h: 40px; }
 }
 body { padding-top: var(--topbar-h); }
@@ -3153,12 +3106,12 @@ footer.foot {
 
 .hero-photo {
   border-radius: 4px;
-  background: #0e1014;
+  background: #131313;
   border: 1px solid rgba(255,255,255,0.06);
   box-shadow: none;
 }
 
-[class*="viewer-badge"], [class*="view-toggle"], .topbar, .nav {
+[class*="viewer-badge"], [class*="view-toggle"], .nav {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
@@ -3206,9 +3159,6 @@ footer.foot {
   padding: 4px !important;
 }
 
-.tb-brand .mark { display: none; }
-.tb-status .led { display: none; }
-.topbar { background: #0e1014; }
 
 .hero-spec-pill { display: none !important; }
 
@@ -3241,7 +3191,7 @@ footer.foot {
 
 .stl-viewer-card {
   border-radius: 4px !important;
-  background: #0e1014 !important;
+  background: #131313 !important;
   border: 1px solid rgba(255,255,255,0.06) !important;
   box-shadow: none !important;
 }
@@ -3355,28 +3305,19 @@ footer.foot {
 
 <!-- TOP STATUS BAR -->
 <header class="topbar">
-  <a class="tb-brand" href="#top">
-    <span class="mark">SB</span>
-    Self-Balancing Robot
-  </a>
+  <a class="tb-brand" href="#top">SBR-01</a>
   <nav class="tb-nav">
-    <a href="#overview" class="tb-link active"><span class="n">01</span>overview</a>
-    <a href="#mechanical" class="tb-link"><span class="n">02</span>mechanical</a>
-    <a href="#electronics" class="tb-link"><span class="n">03</span>electronics</a>
-    <a href="#power" class="tb-link"><span class="n">04</span>power</a>
-    <a href="#torque" class="tb-link"><span class="n">05</span>torque</a>
-    <a href="#software" class="tb-link"><span class="n">06</span>software</a>
-    <a href="#risks" class="tb-link"><span class="n">07</span>risks</a>
-    <a href="#milestones" class="tb-link"><span class="n">08</span>milestones</a>
-    <a href="#vision" class="tb-link"><span class="n">09</span>vision</a>
-    <a href="#code" class="tb-link"><span class="n">10</span>code</a>
-    <a href="#pcb" class="tb-link"><span class="n">11</span>pcb</a>
-    <a href="#models" class="tb-link"><span class="n">12</span>models</a>
-    <a href="#design" class="tb-link"><span class="n">13</span>design</a>
+    <a href="#overview" class="tb-link active">Overview</a>
+    <a href="#mechanical" class="tb-link">Mechanical</a>
+    <a href="#electronics" class="tb-link">Electronics</a>
+    <a href="#power" class="tb-link">Power</a>
+    <a href="#software" class="tb-link">Software</a>
+    <a href="#milestones" class="tb-link">Milestones</a>
+    <a href="#pcb" class="tb-link">PCB</a>
+    <a href="#models" class="tb-link">3D</a>
+    <a href="#design" class="tb-link">Design</a>
   </nav>
-  <div class="tb-cell hide-md"><span class="k">Doc</span><span class="v">PRB-SBR-001</span></div>
-  <div class="tb-cell hide-md"><span class="k">Rev</span><span class="v acc">A · May 2026</span></div>
-  <div class="tb-cell"><span class="tb-status"><span class="led"></span> Build phase</span></div>
+  <div class="tb-status">Rev C · Build phase</div>
 </header>
 <nav class="nav" data-hover>
   <div class="nav-brand"><span class="dot"></span> SBR · 01</div>
