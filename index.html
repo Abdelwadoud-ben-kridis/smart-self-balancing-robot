@@ -203,7 +203,7 @@ nav.nav { display: none !important; }
    LAYOUT HELPERS
 ====================================================================== */
 .wrap {
-  max-width: 960px;
+  max-width: 1080px;
   margin: 0 auto;
   padding: 0 32px;
 }
@@ -3097,188 +3097,152 @@ footer.foot {
 }
 
 /* ===== NOTEBOOK OVERRIDES ===== */
+
+/* --- Layout: wider, more breathing room --- */
+.wrap { max-width: 1080px; }
+section { padding: 80px 0; }
+section + section { border-top: 1px solid rgba(255,255,255,0.04); }
+
+/* --- Hero: less cramped --- */
+.hero { min-height: auto; padding: 100px 0 60px; }
+.hero-grid { gap: 48px; min-height: auto; }
+.hero-photo {
+  border-radius: 4px;
+  background: #131313;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: none;
+}
+.hero-spec-pill { display: none !important; }
+.hero-status { border: none; padding: 0; color: var(--text-mute); }
+.hero-status .pill { border: none; padding: 0; color: var(--text-mute); padding-right: 8px; }
+
+/* --- Pillars: 2 columns, not 4 crammed --- */
+.pillars { grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 48px; }
+.pillar { padding: 18px; }
+.pillar::before { display: none; }
+.pillar:hover { border-color: var(--line); }
+.pillar .num { font-size: 10px; color: var(--text-mute); }
+.pillar h4 { font-size: 15px; margin: 8px 0 4px; }
+.pillar p { font-size: 13px; }
+
+/* --- Grids: single column by default, let content breathe --- */
+.mech-grid { grid-template-columns: 1fr; gap: 40px; }
+.elec-grid { grid-template-columns: 1fr; gap: 32px; }
+
+/* --- Spec tables: tighter, same-size text --- */
+.spec-table .row .v { font-size: 14px !important; font-weight: 400; color: var(--text) !important; }
+.spec-table .row .v.mono { font-size: 13px !important; font-family: var(--font-mono); color: var(--text) !important; }
+.spec-table .row .k { font-size: 11px; }
+.spec-table .row { padding: 10px 0; }
+
+/* --- Cards: solid bg, no glass, minimal --- */
+.card {
+  background: var(--bg-2);
+  backdrop-filter: none;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.card:hover { border-color: rgba(255,255,255,0.06); transform: none; }
+.card.tilt { transform: none !important; }
+.card.tilt > * { transform: none !important; }
+[data-tilt] { transform: none !important; }
+
+/* --- Mini cards: row not grid --- */
+.mini-cards { grid-template-columns: repeat(3, 1fr); }
+.mini-card { background: var(--bg-2); border-color: rgba(255,255,255,0.06); }
+.mini-card .icon { background: var(--bg-3); color: var(--text-dim); }
+.mini-card:nth-child(2) .icon { background: var(--bg-3); color: var(--text-dim); }
+.mini-card:nth-child(3) .icon { background: var(--bg-3); color: var(--text-dim); }
+
+/* --- Floor photo: simpler --- */
+.floor-photo { border-radius: 4px; background: #131313; }
+.floor-label { backdrop-filter: none; background: rgba(22,22,22,0.85); border-color: rgba(255,255,255,0.06); }
+.floor-label .dot { box-shadow: none !important; background: var(--text-mute) !important; }
+.floor-divider { background: rgba(255,255,255,0.08); opacity: 1; }
+
+/* --- Gallery: tighter --- */
+.gallery { border-radius: 4px; }
+.g-card { border-radius: 4px; }
+.g-card .cap { backdrop-filter: none; background: rgba(22,22,22,0.85); }
+
+/* --- Kill decorations --- */
 .marks-tl, .marks-tr, .marks-bl, .marks-br { display: none !important; }
 .hero-canvas { display: none !important; }
 .section-figure { display: none !important; }
 .cinematic-stat { display: none !important; }
-[data-tilt] { transform: none !important; }
 .has-marks::before, .has-marks::after { display: none !important; }
+.eyebrow::before, .eyebrow::after { display: none !important; }
+.fig-tag::before { display: none !important; }
+.scroll-hint { display: none !important; }
 
-.hero-photo {
-  border-radius: 4px;
-  background: #131313;
-  border: 1px solid rgba(255,255,255,0.06);
-  box-shadow: none;
-}
-
-[class*="viewer-badge"], [class*="view-toggle"], .nav {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-.comp-card:hover, .card:hover, .dl-card:hover, .model-dl-card:hover, .cv-item:hover, .decision-card:hover {
-  transform: none !important;
-  box-shadow: none !important;
-  border-color: rgba(255,255,255,0.10) !important;
-}
-
+/* --- Kill all animations --- */
 .reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-stagger {
-  opacity: 1 !important;
-  transform: none !important;
-  transition: none !important;
-}
-.reveal.in, .reveal-left.in, .reveal-right.in, .reveal-scale.in, .reveal-stagger.in {
-  opacity: 1 !important;
-  transform: none !important;
+  opacity: 1 !important; transform: none !important; transition: none !important;
 }
 
-.view-toggle {
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 2px;
-  padding: 0;
-  backdrop-filter: none;
-}
-.view-toggle button {
-  border-radius: 0;
-  padding: 4px 10px;
-  font-size: 10px;
-}
-.view-toggle button.active {
-  background: rgba(255,255,255,0.08);
-  color: var(--text);
-  font-weight: 500;
-}
+/* --- Viewer controls --- */
+.view-toggle { background: transparent; border: 1px solid rgba(255,255,255,0.06); border-radius: 2px; padding: 0; backdrop-filter: none; }
+.view-toggle button { border-radius: 0; padding: 4px 10px; font-size: 10px; }
+.view-toggle button.active { background: rgba(255,255,255,0.08); color: var(--text); font-weight: 500; }
+.viewer-badge { background: transparent !important; border: none !important; backdrop-filter: none !important; color: var(--text-mute) !important; font-size: 10px !important; padding: 4px !important; }
+[class*="viewer-badge"], [class*="view-toggle"], .nav { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
 
-.viewer-badge {
-  background: transparent !important;
-  border: none !important;
-  backdrop-filter: none !important;
-  color: var(--text-mute) !important;
-  font-size: 10px !important;
-  padding: 4px !important;
-}
+/* --- Section backgrounds: none --- */
+#electronics, #power, #pcb, #models, #vision, #code, #design { background: transparent !important; }
 
-
-.hero-spec-pill { display: none !important; }
-
-.hero-status {
-  border: none;
-  padding: 0;
-  color: var(--text-mute);
+/* --- Comp cards: no hover lift --- */
+.comp-card:hover, .card:hover, .dl-card:hover, .model-dl-card:hover, .cv-item:hover, .decision-card:hover {
+  transform: none !important; box-shadow: none !important;
 }
-.hero-status .pill {
-  border: none;
-  padding: 0;
-  color: var(--text-mute);
-  padding-right: 8px;
-}
-
-#electronics, #power, #pcb, #models, #vision, #code, #design {
-  background: transparent !important;
-}
-
-.pcb-hero-card {
-  background: var(--bg-2) !important;
-  border-radius: 4px !important;
-}
-.pcb-hero-card::before { display: none !important; }
-.spec-table .row .v.mono { color: var(--text) !important; }
-.spec-table .row .v { color: var(--text) !important; }
-.comp-card { border-radius: 4px; }
+.comp-card { border-radius: 4px; background: var(--bg-2); }
 .cat-tag { border-radius: 2px; }
 .dl-card, .dl-icon { border-radius: 4px !important; }
 
-.stl-viewer-card {
-  border-radius: 4px !important;
-  background: #131313 !important;
-  border: 1px solid rgba(255,255,255,0.06) !important;
-  box-shadow: none !important;
-}
-.stl-toolbar button {
-  background: transparent !important;
-  border: 1px solid rgba(255,255,255,0.06) !important;
-  border-radius: 2px !important;
-  color: var(--text-dim) !important;
-}
-.stl-toolbar button:hover {
-  background: rgba(255,255,255,0.04) !important;
-}
+/* --- PCB section --- */
+.pcb-hero-card { background: var(--bg-2) !important; border-radius: 4px !important; }
+.pcb-hero-card::before { display: none !important; }
 
+/* --- STL viewer --- */
+.stl-viewer-card { border-radius: 4px !important; background: #131313 !important; border: 1px solid rgba(255,255,255,0.08) !important; box-shadow: none !important; }
+.stl-toolbar button { background: transparent !important; border: 1px solid rgba(255,255,255,0.06) !important; border-radius: 2px !important; color: var(--text-dim) !important; }
+
+/* --- Design decisions: plain --- */
 .design-decisions::before { display: none !important; }
-.decision-card {
-  border-radius: 4px !important;
-  border-left: none !important;
-  padding-left: 0 !important;
-}
-.dc-num {
-  font-size: 14px !important;
-  font-style: normal !important;
-  color: var(--text-mute) !important;
-  border: none !important;
-  background: none !important;
-  -webkit-text-stroke: 0 !important;
-  width: auto !important;
-  height: auto !important;
-}
+.decision-card { border-radius: 4px !important; border-left: none !important; padding-left: 0 !important; background: var(--bg-2); }
+.dc-num { font-size: 14px !important; font-style: normal !important; color: var(--text-mute) !important; border: none !important; background: none !important; -webkit-text-stroke: 0 !important; width: auto !important; height: auto !important; }
 
-.foot-grid { display: none !important; }
-.foot-end {
-  display: flex;
-  justify-content: center;
-  padding: 32px 0;
-}
-
-.gallery { border-radius: 4px; }
-.g-card { border-radius: 4px; }
-.g-card .cap { backdrop-filter: none; }
-
+/* --- PID / Risk / Timeline --- */
+.pid-card { border-radius: 4px !important; background: var(--bg-2); }
+.pid-card:hover { transform: none !important; }
+.pid-card::before { display: none !important; }
 .risk-card, .risk-item { border-radius: 4px !important; }
 .risk-num { border-radius: 4px !important; }
-
 .t-item { border-radius: 4px !important; }
-
 .ide-wrap { border-radius: 4px !important; }
 .ide-tab { border-radius: 2px 2px 0 0 !important; }
 
-.pid-card { border-radius: 4px !important; }
-.pid-card:hover { transform: none !important; }
-.pid-card::before { display: none !important; }
+/* --- Footer: just one line --- */
+.foot-grid { display: none !important; }
+.foot-end { display: flex; justify-content: center; padding: 32px 0; }
 
-.full-bleed { max-width: 960px; margin: 0 auto; padding: 0 32px; }
+/* --- Full bleed: constrained --- */
+.full-bleed { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
 
-/* Global border-radius overrides */
-.section-title--xl {
+/* --- Title overrides: consistent --- */
+.section-title--xl, .section-title--quiet,
+#pcb .section-title, #models .section-title, #design .section-title,
+#power .section-title, #torque .section-title {
   font-size: clamp(24px, 3.5vw, 36px) !important;
   font-weight: 500 !important;
   letter-spacing: -0.01em !important;
   max-width: none !important;
 }
-.section-title--quiet {
-  font-size: clamp(24px, 3.5vw, 36px) !important;
-  font-weight: 500 !important;
-  letter-spacing: -0.01em !important;
-  max-width: none !important;
-}
-#pcb .section-title,
-#models .section-title,
-#design .section-title {
-  font-size: clamp(24px, 3.5vw, 36px) !important;
-  font-weight: 500 !important;
-  letter-spacing: -0.01em !important;
-  max-width: none !important;
-}
-#power .section-title,
-#torque .section-title {
-  font-size: clamp(24px, 3.5vw, 36px) !important;
-  font-weight: 500 !important;
-  letter-spacing: -0.01em !important;
-}
 
-/* Kill second eyebrow definition decorative elements */
-.eyebrow::before { display: none !important; }
-.eyebrow::after { display: none !important; }
-.fig-tag::before { display: none !important; }
+/* --- Responsive: stack hero on mobile --- */
+@media (max-width: 800px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .pillars { grid-template-columns: 1fr; }
+  .mini-cards { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
