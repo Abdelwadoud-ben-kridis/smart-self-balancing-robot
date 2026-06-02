@@ -2756,6 +2756,394 @@ footer.foot {
   .signal-flow { flex-direction: column; gap: 12px; }
   .sf-arrow { transform: rotate(90deg); }
 }
+
+/* =====================================================================
+   REDESIGN OVERRIDES — Layout Rhythm, Typography, Animations, Color
+====================================================================== */
+
+/* --- 1. Full-Bleed Sections --- */
+.full-bleed { max-width: none !important; padding-left: 0 !important; padding-right: 0 !important; }
+/* Section backgrounds and full-bleed elements handled per-section */
+
+/* --- 2. Typography Scale Variation --- */
+.section-title--xl {
+  font-family: var(--font-display);
+  font-size: clamp(44px, 6vw, 80px) !important;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.96;
+  max-width: 20ch !important;
+}
+.section-title--quiet {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 3vw, 36px) !important;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: var(--text-dim);
+}
+
+/* --- 3. Cinematic Stat Dividers --- */
+.cinematic-divider {
+  position: relative;
+  width: 100%;
+  padding: 100px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+}
+.cinematic-divider::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(77,212,232,0.04), transparent 70%);
+  pointer-events: none;
+}
+.cinematic-divider .stat-line {
+  font-family: var(--font-mono);
+  font-size: clamp(28px, 5vw, 60px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  line-height: 1.1;
+  position: relative;
+  z-index: 1;
+}
+.cinematic-divider .stat-line .accent-num {
+  color: var(--cyan);
+}
+.cinematic-divider .stat-line .accent-orange {
+  color: var(--accent);
+}
+.cinematic-divider .stat-line .accent-green {
+  color: var(--green);
+}
+.cinematic-divider .stat-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-top: 16px;
+  position: relative;
+  z-index: 1;
+}
+.cinematic-divider .stat-arrow {
+  color: var(--accent);
+  font-size: clamp(20px, 3vw, 36px);
+  margin: 0 8px;
+}
+@media (max-width: 640px) {
+  .cinematic-divider { padding: 60px 20px; }
+  .cinematic-divider .stat-line { font-size: 22px; }
+}
+
+/* --- 4. Section Color Identity (radial background tints) --- */
+#electronics { background: radial-gradient(ellipse at 30% 50%, rgba(77,212,232,0.03), transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(77,212,232,0.02), transparent 50%); }
+#power { background: radial-gradient(ellipse at 40% 40%, rgba(245,158,11,0.03), transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(217,119,87,0.02), transparent 50%); }
+#pcb { background: radial-gradient(ellipse at 50% 30%, rgba(135,169,107,0.04), transparent 55%), radial-gradient(ellipse at 20% 80%, rgba(135,169,107,0.02), transparent 50%); }
+#models { background: radial-gradient(ellipse at 40% 40%, rgba(168,85,247,0.04), transparent 55%), radial-gradient(ellipse at 80% 70%, rgba(168,85,247,0.02), transparent 50%); }
+#vision, #code { background: radial-gradient(ellipse at 30% 30%, rgba(200,220,255,0.02), transparent 60%), radial-gradient(ellipse at 70% 70%, rgba(77,212,232,0.02), transparent 50%); }
+#software { background: radial-gradient(ellipse at 50% 30%, rgba(77,212,232,0.02), transparent 60%); }
+
+/* --- 5. Scroll Animation Variants --- */
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity .8s cubic-bezier(.2,.7,.3,1), transform .8s cubic-bezier(.2,.7,.3,1);
+}
+.reveal-left.in { opacity: 1; transform: translateX(0); }
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity .8s cubic-bezier(.2,.7,.3,1), transform .8s cubic-bezier(.2,.7,.3,1);
+}
+.reveal-right.in { opacity: 1; transform: translateX(0); }
+
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity .8s cubic-bezier(.2,.7,.3,1), transform .8s cubic-bezier(.2,.7,.3,1);
+}
+.reveal-scale.in { opacity: 1; transform: scale(1); }
+
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .6s cubic-bezier(.2,.7,.3,1), transform .6s cubic-bezier(.2,.7,.3,1);
+}
+.reveal-stagger.in > *:nth-child(1) { opacity: 1; transform: translateY(0); transition-delay: 0s; }
+.reveal-stagger.in > *:nth-child(2) { opacity: 1; transform: translateY(0); transition-delay: .08s; }
+.reveal-stagger.in > *:nth-child(3) { opacity: 1; transform: translateY(0); transition-delay: .16s; }
+.reveal-stagger.in > *:nth-child(4) { opacity: 1; transform: translateY(0); transition-delay: .24s; }
+.reveal-stagger.in > *:nth-child(5) { opacity: 1; transform: translateY(0); transition-delay: .32s; }
+.reveal-stagger.in > *:nth-child(6) { opacity: 1; transform: translateY(0); transition-delay: .40s; }
+.reveal-stagger.in > *:nth-child(7) { opacity: 1; transform: translateY(0); transition-delay: .48s; }
+.reveal-stagger.in > *:nth-child(8) { opacity: 1; transform: translateY(0); transition-delay: .56s; }
+
+/* Signal flow sequential animation — override initial state */
+.signal-flow.reveal-stagger > .sf-node,
+.signal-flow.reveal-stagger > .sf-arrow {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+.signal-flow.reveal-stagger.in .sf-node:nth-child(1) { opacity: 1; transform: translateX(0); transition-delay: 0s; }
+.signal-flow.reveal-stagger.in .sf-arrow:nth-child(2) { opacity: 1; transform: translateX(0); transition-delay: .15s; }
+.signal-flow.reveal-stagger.in .sf-node:nth-child(3) { opacity: 1; transform: translateX(0); transition-delay: .30s; }
+.signal-flow.reveal-stagger.in .sf-arrow:nth-child(4) { opacity: 1; transform: translateX(0); transition-delay: .45s; }
+.signal-flow.reveal-stagger.in .sf-node:nth-child(5) { opacity: 1; transform: translateX(0); transition-delay: .60s; }
+.signal-flow.reveal-stagger.in .sf-arrow:nth-child(6) { opacity: 1; transform: translateX(0); transition-delay: .75s; }
+.signal-flow.reveal-stagger.in .sf-node:nth-child(7) { opacity: 1; transform: translateX(0); transition-delay: .90s; }
+
+/* ESP32 node pulse animation */
+@keyframes node-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(77,212,232,0.4); }
+  50% { box-shadow: 0 0 20px 4px rgba(77,212,232,0.2); }
+}
+.signal-flow .sf-node.esp-pulse {
+  animation: node-pulse 2.5s ease-in-out infinite;
+  animation-delay: 1.2s;
+}
+
+/* --- 6. PCB Section Redesign --- */
+#pcb .pcb-hero-card {
+  border-radius: 0;
+  padding: 48px;
+  margin-left: -32px;
+  margin-right: -32px;
+  border-left: none;
+  border-right: none;
+}
+#pcb .pcb-hero-card::before {
+  opacity: 0.04;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(135,169,107,0.8) 19px, rgba(135,169,107,0.8) 20px),
+    repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(135,169,107,0.8) 19px, rgba(135,169,107,0.8) 20px);
+}
+
+/* PCB Spec table terminal aesthetic */
+#pcb .spec-table {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(135,169,107,0.2);
+  border-radius: 12px;
+  padding: 8px 20px;
+  position: relative;
+  overflow: hidden;
+}
+#pcb .spec-table::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(135,169,107,0.015) 2px, rgba(135,169,107,0.015) 4px);
+  pointer-events: none;
+}
+#pcb .spec-table .row {
+  border-color: rgba(135,169,107,0.12);
+}
+#pcb .spec-table .row .k {
+  font-family: var(--font-mono);
+  color: rgba(135,169,107,0.6);
+}
+#pcb .spec-table .row .v {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--green);
+}
+#pcb .spec-table .row .v.mono {
+  color: var(--green);
+}
+
+/* PCB component cards — left border accent by category */
+#pcb .comp-card {
+  border-left: 3px solid var(--glass-border);
+  transition: transform .3s, border-color .3s, box-shadow .3s, border-left-color .3s;
+}
+#pcb .comp-card:hover {
+  border-left-color: var(--cyan);
+}
+#pcb .comp-card:has(.cat-tag.power) { border-left-color: var(--green); }
+#pcb .comp-card:has(.cat-tag.mcu) { border-left-color: var(--cyan); }
+#pcb .comp-card:has(.cat-tag.driver) { border-left-color: var(--accent); }
+#pcb .comp-card:has(.cat-tag.sensor) { border-left-color: var(--accent-3); }
+
+/* PCB downloads horizontal strip */
+#pcb .dl-grid {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+}
+#pcb .dl-card {
+  flex: 0 0 240px;
+}
+#pcb .dl-card .dl-icon {
+  background: rgba(135,169,107,0.12);
+  border-color: rgba(135,169,107,0.3);
+  color: var(--green);
+  font-size: 13px;
+  width: 44px;
+  height: 44px;
+}
+
+/* --- 7. 3D Models Section Redesign --- */
+
+/* Viewer card: frosted glow */
+#models .stl-viewer-card {
+  border: 1px solid rgba(168,85,247,0.2);
+  box-shadow:
+    0 0 60px -20px rgba(168,85,247,0.15),
+    0 0 0 1px rgba(255,255,255,0.03) inset;
+  border-radius: 18px;
+}
+
+/* Model downloads horizontal layout */
+#models .model-dl-grid {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+#models .model-dl-card {
+  flex: 0 0 300px;
+}
+
+/* Assembly stats big numbers horizontal strip */
+#models .assy-stats {
+  display: flex;
+  gap: 0;
+}
+#models .assy-stat {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--line);
+  border-radius: 0;
+  padding: 32px 24px;
+}
+#models .assy-stat:last-child { border-right: none; }
+#models .assy-stat .as-val {
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.03em;
+}
+#models .assy-stat .as-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-top: 8px;
+}
+
+/* --- 8. Behind the Design — Magazine Layout --- */
+#design .design-decisions {
+  padding-left: 0;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+#design .design-decisions::before {
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  background: linear-gradient(180deg, var(--cyan), var(--accent), var(--accent-3), var(--green));
+  opacity: 0.2;
+}
+#design .decision-card {
+  max-width: 560px;
+  padding: 36px 36px 36px 40px;
+  margin-bottom: 48px;
+  position: relative;
+}
+#design .decision-card:nth-child(odd) {
+  margin-left: 0;
+  margin-right: auto;
+}
+#design .decision-card:nth-child(even) {
+  margin-left: auto;
+  margin-right: 0;
+}
+#design .decision-card::before {
+  display: none;
+}
+#design .decision-card .dc-num {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 7vw, 72px);
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: -0.04em;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--cyan);
+  margin-bottom: 12px;
+  line-height: 0.9;
+}
+#design .decision-card:nth-child(2) .dc-num { -webkit-text-stroke-color: var(--accent); }
+#design .decision-card:nth-child(3) .dc-num { -webkit-text-stroke-color: var(--accent-3); }
+#design .decision-card:nth-child(4) .dc-num { -webkit-text-stroke-color: var(--green); }
+
+#design .decision-card h4 {
+  font-size: clamp(22px, 3vw, 28px);
+  font-style: italic;
+  font-weight: 600;
+  margin-bottom: 14px;
+  line-height: 1.15;
+}
+#design .decision-card p {
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+@media (max-width: 800px) {
+  #design .decision-card:nth-child(odd),
+  #design .decision-card:nth-child(even) {
+    margin-left: 0;
+    margin-right: 0;
+    max-width: none;
+  }
+  #design .design-decisions::before { display: none; }
+}
+
+/* --- 9. Electronics gallery full-bleed --- */
+#electronics .gallery {
+  margin-left: -32px;
+  margin-right: -32px;
+}
+#electronics .gallery-track {
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+/* --- 10. Breathing room adjustments --- */
+#pcb .section-head,
+#models .section-head,
+#design .section-head {
+  margin-bottom: 72px;
+}
+
+/* PCB section title XL */
+#pcb .section-title,
+#models .section-title,
+#design .section-title {
+  font-size: clamp(44px, 6vw, 80px) !important;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.96;
+  max-width: 20ch !important;
+}
+
+/* Smaller/quieter headers for dense spec sections */
+#power .section-title,
+#torque .section-title {
+  font-size: clamp(28px, 4vw, 48px) !important;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
 </style>
 </head>
 <body>
@@ -3352,6 +3740,12 @@ footer.foot {
     </div>
   </div>
 </section>
+
+<!-- CINEMATIC DIVIDER: Torque → Software -->
+<div class="cinematic-divider reveal-scale">
+  <div class="stat-line"><span class="accent-num">2.4&times;</span> torque safety margin</div>
+  <div class="stat-sub">Validated at 100% duty cycle &middot; 4-motor configuration</div>
+</div>
 
 <!-- ===================== 06 SOFTWARE ===================== -->
 <section id="software" class="has-marks" data-screen-label="06 Software">
@@ -4075,6 +4469,12 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
   </div>
 </section>
 
+<!-- CINEMATIC DIVIDER: Code → PCB -->
+<div class="cinematic-divider reveal-scale">
+  <div class="stat-line"><span class="accent-orange">40</span> jumper wires <span class="stat-arrow">&rarr;</span> <span class="accent-green">1</span> custom board</div>
+  <div class="stat-sub">4-layer PCB &middot; 0 DRC violations &middot; designed in KiCad 8</div>
+</div>
+
 <!-- ===================== 11 PCB ===================== -->
 <section id="pcb" class="has-marks" data-screen-label="11 PCB">
   <span class="marks-tl"></span><span class="marks-tr"></span><span class="marks-bl"></span><span class="marks-br"></span>
@@ -4087,7 +4487,7 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
     </div>
 
     <!-- A) PCB Hero Card -->
-    <div class="pcb-hero-card reveal">
+    <div class="pcb-hero-card reveal-scale">
       <div class="pcb-badge"><span class="dot-g"></span> Prototype &middot; Rev C</div>
       <h3 style="font-family:var(--font-display); font-size:26px; font-weight:600; color:var(--text); margin:0 0 8px; font-style:italic; position:relative;">Robot Main Controller Board</h3>
       <p style="font-size:14px; color:var(--text-dim); max-width:540px; position:relative;">Distribution &amp; interface board &mdash; F.Signal / GND / Power / B.Signal stackup. 0 DRC violations, Gerber-exported, designed in KiCad 8.</p>
@@ -4241,7 +4641,7 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
 
     <!-- E) Signal Flow -->
     <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:40px 0 14px;">Signal Flow</h4>
-    <div class="signal-flow reveal">
+    <div class="signal-flow reveal-stagger">
       <div class="sf-node">
         <div class="sf-label">Sensors</div>
         <div class="sf-name">IMU &middot; ToF</div>
@@ -4250,7 +4650,7 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
         <span class="sf-proto">I2C / SPI</span>
         <div class="sf-line"></div>
       </div>
-      <div class="sf-node" style="border-color:rgba(77,212,232,0.3);">
+      <div class="sf-node esp-pulse" style="border-color:rgba(77,212,232,0.3);">
         <div class="sf-label">MCU</div>
         <div class="sf-name" style="color:var(--cyan);">ESP32</div>
       </div>
@@ -4286,7 +4686,7 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
     </div>
 
     <!-- A) Interactive 3D Viewer + B) Metadata -->
-    <div class="stl-viewer-wrap reveal">
+    <div class="stl-viewer-wrap reveal-scale">
       <div class="stl-viewer-card">
         <canvas id="stl-viewer-3d"></canvas>
         <div class="stl-loader-bar" id="stl-loader">
@@ -4353,6 +4753,12 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
   </div>
 </section>
 
+<!-- CINEMATIC DIVIDER: Models → Design -->
+<div class="cinematic-divider reveal-scale">
+  <div class="stat-line"><span class="accent-num">24</span> printed parts &middot; <span class="accent-orange">471</span>g &middot; <span class="accent-green">220</span>mm tall</div>
+  <div class="stat-sub">PLA / PETG &middot; 30% infill &middot; ~18 hrs print time</div>
+</div>
+
 <!-- ===================== 13 DESIGN ===================== -->
 <section id="design" class="has-marks" data-screen-label="13 Design">
   <span class="marks-tl"></span><span class="marks-tr"></span><span class="marks-bl"></span><span class="marks-br"></span>
@@ -4365,23 +4771,23 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
     </div>
 
     <div class="design-decisions">
-      <div class="decision-card reveal">
-        <div class="dc-num">DECISION 01</div>
+      <div class="decision-card reveal-left">
+        <div class="dc-num">01</div>
         <h4>Why two wheels?</h4>
         <p>Simpler drivetrain with only two DC motors reduces weight and wiring complexity. The inverted-pendulum dynamics enable agile, differential-drive turns that would require a full Ackermann steering linkage on a four-wheel platform. The smaller footprint also improves indoor manoeuvrability.</p>
       </div>
-      <div class="decision-card reveal d1">
-        <div class="dc-num">DECISION 02</div>
+      <div class="decision-card reveal-right">
+        <div class="dc-num">02</div>
         <h4>Why articulated legs?</h4>
         <p>A mirrored 4-bar linkage allows the robot to transition between a compact 66&nbsp;mm sitting height and a 220&nbsp;mm standing height. The lowered centre of gravity when seated provides passive stability for charging or idle states, while the raised stance maximises the camera field of view for the vision pipeline.</p>
       </div>
-      <div class="decision-card reveal d2">
-        <div class="dc-num">DECISION 03</div>
+      <div class="decision-card reveal-left">
+        <div class="dc-num">03</div>
         <h4>Why ESP32 + Pi 5 dual compute?</h4>
         <p>The ESP32 runs a deterministic 100&nbsp;Hz control loop with hard real-time guarantees &mdash; no garbage collection, no kernel preemption. The Pi 5 handles the ML vision pipeline with four worker threads and bounded queues. This latency separation prevents frame drops or inference spikes from destabilising the balance controller.</p>
       </div>
-      <div class="decision-card reveal d3">
-        <div class="dc-num">DECISION 04</div>
+      <div class="decision-card reveal-right">
+        <div class="dc-num">04</div>
         <h4>Why a custom PCB?</h4>
         <p>The breadboard prototype used approximately 40 jumper wires, each a potential point of failure under vibration. The custom 4-layer PCB eliminates all jumpers, provides clean power planes that reduce noise on the I2C and SPI buses, and cuts assembly time from 4 hours to 20 minutes. Net cost per unit is lower above three boards.</p>
       </div>
@@ -4880,7 +5286,7 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
       }
     });
   }, { threshold: 0.12 });
-  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-stagger').forEach(el => io.observe(el));
 
   /* =================== COUNT-UP =================== */
   const countEls = document.querySelectorAll('[data-count]');
