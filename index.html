@@ -4083,14 +4083,14 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
       <div class="section-figure"><b>11</b></div>
       <div class="eyebrow reveal">Fig. 11 · PCB</div>
       <h2 class="section-title reveal d1">Custom 4-layer board replaces forty jumper wires.</h2>
-      <p class="section-sub reveal d2">A purpose-built PCB consolidates the ESP32, dual L298N drivers, IMU, servo controller, and six ToF sensors onto a single 100&times;80&nbsp;mm board with clean power planes and controlled-impedance signal routing.</p>
+      <p class="section-sub reveal d2">A purpose-built distribution &amp; interface board consolidates the ESP32, dual L298N control, IMU, servo controller, and ToF sensors onto a single 94.6&times;58.1&nbsp;mm 4-layer board with dedicated ground and power planes.</p>
     </div>
 
     <!-- A) PCB Hero Card -->
     <div class="pcb-hero-card reveal">
-      <div class="pcb-badge"><span class="dot-g"></span> Prototype &middot; Rev A</div>
+      <div class="pcb-badge"><span class="dot-g"></span> Prototype &middot; Rev C</div>
       <h3 style="font-family:var(--font-display); font-size:26px; font-weight:600; color:var(--text); margin:0 0 8px; font-style:italic; position:relative;">Robot Main Controller Board</h3>
-      <p style="font-size:14px; color:var(--text-dim); max-width:540px; position:relative;">4-layer stackup with dedicated ground and power planes. HASL lead-free finish, designed in KiCad 8.</p>
+      <p style="font-size:14px; color:var(--text-dim); max-width:540px; position:relative;">Distribution &amp; interface board &mdash; F.Signal / GND / Power / B.Signal stackup. 0 DRC violations, Gerber-exported, designed in KiCad 8.</p>
       <div class="pcb-board-specs" style="position:relative;">
         <div class="spec-chip">
           <div class="label">Layers</div>
@@ -4098,7 +4098,7 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
         </div>
         <div class="spec-chip">
           <div class="label">Dimensions</div>
-          <div class="val">100&times;80 mm</div>
+          <div class="val">94.6&times;58.1 mm</div>
         </div>
         <div class="spec-chip">
           <div class="label">MCU</div>
@@ -4141,25 +4141,27 @@ u <span class="kw">=</span> <span class="fn">constrain</span>(u, <span class="kw
       </div>
       <div class="comp-card reveal d1">
         <span class="cat-tag power">Power</span>
-        <h4>Buck Converters</h4>
-        <p>Step-down regulators providing 5 V and 6 V rails from the 11.1 V 3S LiPo pack.</p>
+        <h4>XL4016 Buck Converters</h4>
+        <p>Two external step-down modules: 6 V / 10 A for servos, 5 V / 10 A for logic &amp; Pi 5. Fed from 3S 18650 pack.</p>
       </div>
       <div class="comp-card reveal d2">
         <span class="cat-tag power">Power</span>
-        <h4>BMS Module</h4>
-        <p>3S battery management system with over-discharge, over-charge, and short-circuit protection.</p>
+        <h4>Power Protection</h4>
+        <p>15 A blade fuse + IRF9540N P-MOSFET reverse polarity protection. AMS1117-3.3 LDO for 3V3 rail.</p>
       </div>
     </div>
 
     <!-- C) PCB Specifications Table -->
     <h4 style="font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--text-mute); text-transform:uppercase; margin:0 0 14px;">Board Specifications</h4>
     <div class="spec-table reveal" style="margin-bottom:40px;">
-      <div class="row"><span class="k">Board dimensions</span><span class="v mono">100 &times; 80 mm</span></div>
-      <div class="row"><span class="k">Layers</span><span class="v">4-layer stackup</span></div>
-      <div class="row"><span class="k">Copper weight</span><span class="v mono">1 oz outer &middot; 0.5 oz inner</span></div>
-      <div class="row"><span class="k">Surface finish</span><span class="v">HASL lead-free</span></div>
+      <div class="row"><span class="k">Board dimensions</span><span class="v mono">94.6 &times; 58.1 mm</span></div>
+      <div class="row"><span class="k">Layers</span><span class="v">4-layer &middot; F.Signal / GND / Power / B.Signal</span></div>
+      <div class="row"><span class="k">Copper weight</span><span class="v mono">1 oz all layers</span></div>
+      <div class="row"><span class="k">Thickness</span><span class="v mono">1.6 mm (JLCPCB spec)</span></div>
       <div class="row"><span class="k">Min trace / space</span><span class="v mono">0.2 mm / 0.2 mm</span></div>
-      <div class="row"><span class="k">Via size</span><span class="v mono">0.3 mm drill / 0.6 mm pad</span></div>
+      <div class="row"><span class="k">Power traces</span><span class="v mono">0.8 mm min &middot; VBAT 2.0 mm</span></div>
+      <div class="row"><span class="k">Min drill</span><span class="v mono">0.3 mm</span></div>
+      <div class="row"><span class="k">DRC</span><span class="v" style="color:var(--green)">0 violations &middot; 0 unconnected</span></div>
       <div class="row"><span class="k">Communication</span><span class="v">I2C, UART, SPI, PWM</span></div>
     </div>
 
