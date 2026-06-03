@@ -49,6 +49,9 @@ static void comms_parse(Command &cmd) {
     cmd.stand_request = false;
     cmd.sit_request   = false;
     cmd.print_request = false;
+    cmd.drive_active  = false;
+    cmd.drive_speed   = 0;
+    cmd.drive_turn    = 0;
     cmd.kp_adjust     = 0.0f;
     cmd.gain_set      = false;
 

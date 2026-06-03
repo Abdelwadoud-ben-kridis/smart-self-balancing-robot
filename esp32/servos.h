@@ -36,12 +36,16 @@ static void servos_start_stand() {
 }
 
 static void servos_start_sit() {
-    _interp_step = STANDUP_STEPS;
-    _interp_dir  = -1;
+    if (_interp_step == 0) return;
+    _interp_dir = -1;
 }
 
 static uint16_t servos_get_step() {
     return _interp_step;
+}
+
+static int8_t servos_get_dir() {
+    return _interp_dir;
 }
 
 static bool servos_interpolate_step() {

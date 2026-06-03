@@ -44,8 +44,6 @@
 
 #define MOTOR_PWM_FREQ      1000    // Hz
 #define MOTOR_PWM_RES       8       // bits → 0-255
-#define MOTOR_PWM_CH_L      0       // LEDC channel
-#define MOTOR_PWM_CH_R      1       // LEDC channel
 #define MOTOR_MAX_PWM       255
 
 // ── UART to Raspberry Pi 5 (Serial2) ────────────────────────────────

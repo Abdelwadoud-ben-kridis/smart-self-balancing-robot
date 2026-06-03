@@ -103,14 +103,14 @@ void loop() {
         {
             bool done = servos_interpolate_step();
 
-            if (_interp_dir >= 0 && servos_get_step() >= PID_ENABLE_STEP) {
+            if (servos_get_dir() >= 0 && servos_get_step() >= PID_ENABLE_STEP) {
                 integral   = 0.0f;
                 prev_error = 0.0f;
                 state = STATE_BALANCE;
                 Serial.println("PID enabled — balancing");
             }
 
-            if (_interp_dir < 0 && done) {
+            if (servos_get_dir() < 0 && done) {
                 state = STATE_SIT;
                 Serial.println("Seated");
             }
