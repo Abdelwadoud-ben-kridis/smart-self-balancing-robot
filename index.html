@@ -3,24 +3,44 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SBR-01 — Smart Self-Balancing Robot</title>
-<meta name="description" content="Smart two-wheeled self-balancing robot with ESP32, MPU-6500, custom 4-layer PCB, articulated legs, and Raspberry Pi 5 computer vision. Built by Abdelwadoud Ben Kridis.">
-<meta name="keywords" content="ESP32 Self-Balancing Robot, Self-Balancing Robot, MPU-6500 Robot, PID Robot, Smart Robot, Robotics Project, Custom PCB, ESP32 Project">
+<title>SBR-01 — Smart Self-Balancing Robot | ESP32 + Custom PCB + Computer Vision</title>
+<meta name="description" content="Two-wheeled self-balancing robot built from scratch: ESP32 real-time PID at 100 Hz, MPU-6500 IMU, custom 4-layer PCB (40 components, 0 DRC violations), articulated legs, and Raspberry Pi 5 computer vision. Designed and built by Abdelwadoud Ben Kridis.">
+<meta name="keywords" content="ESP32 Self-Balancing Robot, Self-Balancing Robot, MPU-6500 Robot, PID Control Robot, Custom PCB Design, KiCad PCB, Robotics Project, Computer Vision Robot, Raspberry Pi Robot, YOLOv8 Robot">
 <meta name="author" content="Abdelwadoud Ben Kridis">
 <meta name="robots" content="index, follow">
 <meta property="og:title" content="SBR-01 — Smart Self-Balancing Robot">
-<meta property="og:description" content="Two-wheeled self-balancing robot with articulated legs, custom 4-layer PCB, ESP32 real-time control, and Pi 5 computer vision.">
+<meta property="og:description" content="ESP32-powered self-balancing robot with custom 4-layer PCB, MPU-6500 IMU, articulated legs, and Pi 5 computer vision. Built from scratch.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://abdelwadoud-ben-kridis.github.io/smart-self-balancing-robot/">
 <meta property="og:image" content="https://abdelwadoud-ben-kridis.github.io/smart-self-balancing-robot/images/angle.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="SBR-01 — Smart Self-Balancing Robot">
-<meta name="twitter:description" content="Smart self-balancing robot with ESP32, custom PCB, and computer vision.">
+<meta name="twitter:description" content="ESP32 + custom PCB + computer vision. A self-balancing robot built from scratch.">
 <meta name="twitter:image" content="https://abdelwadoud-ben-kridis.github.io/smart-self-balancing-robot/images/angle.png">
 <link rel="canonical" href="https://abdelwadoud-ben-kridis.github.io/smart-self-balancing-robot/">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CreativeWork",
+  "name": "SBR-01 Smart Self-Balancing Robot",
+  "description": "Two-wheeled self-balancing robot with ESP32, custom 4-layer PCB, MPU-6500 IMU, articulated legs, and Raspberry Pi 5 computer vision.",
+  "author": {
+    "@type": "Person",
+    "name": "Abdelwadoud Ben Kridis",
+    "url": "https://github.com/Abdelwadoud-ben-kridis"
+  },
+  "url": "https://abdelwadoud-ben-kridis.github.io/smart-self-balancing-robot/",
+  "image": "https://abdelwadoud-ben-kridis.github.io/smart-self-balancing-robot/images/angle.png",
+  "keywords": ["robotics", "ESP32", "self-balancing", "custom PCB", "computer vision", "PID control"],
+  "dateCreated": "2026",
+  "license": "https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot"
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 <script type="importmap">
 {
   "imports": {
@@ -44,6 +64,7 @@
   --text-muted: #666666;
   --accent: #ff6b35;
   --accent-dim: rgba(255,107,53,0.1);
+  --accent-glow: rgba(255,107,53,0.15);
   --font-display: 'Inter', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
@@ -164,6 +185,14 @@ section {
   position: relative;
   padding: 140px 0;
 }
+.section-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
 .section-title {
   font-family: var(--font-display);
   font-size: clamp(36px, 5vw, 64px);
@@ -208,14 +237,40 @@ section {
   gap: 80px;
   align-items: center;
 }
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 20px;
+  padding: 6px 14px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(255,107,53,0.2);
+  border-radius: 100px;
+}
+.hero-eyebrow .dot-live {
+  width: 6px; height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: pulse-dot 2s ease infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
 .hero-title {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 800;
   font-size: clamp(40px, 5.5vw, 80px);
   line-height: 1.0;
   letter-spacing: -0.03em;
   margin: 0 0 24px;
 }
+.hero-title .accent { color: var(--accent); }
 .hero-sub {
   font-size: 18px;
   color: var(--text-secondary);
@@ -223,11 +278,27 @@ section {
   margin: 0 0 40px;
   max-width: 50ch;
 }
+.hero-tech-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+.hero-tech-pills span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  background: rgba(255,255,255,0.02);
+}
 .hero-buttons {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 48px;
+  margin-bottom: 0;
 }
 .btn-primary {
   display: inline-flex;
@@ -257,15 +328,6 @@ section {
   transition: border-color 0.2s;
 }
 .btn-secondary:hover { border-color: var(--border-hover); }
-.hero-stats {
-  display: flex;
-  gap: 32px;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-.hero-stats span { white-space: nowrap; }
-.hero-stats .dot { color: var(--text-muted); margin: 0 4px; }
 .hero-viewer {
   position: relative;
   width: 100%;
@@ -343,12 +405,52 @@ section {
 }
 .view-toggle button:hover { color: var(--text); }
 .view-toggle button.active { background: var(--accent); color: #fff; }
+
+/* HERO METRICS STRIP */
+.hero-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-top: 80px;
+}
+.hero-metric {
+  background: var(--bg-card);
+  padding: 32px 24px;
+  text-align: center;
+}
+.hero-metric .num {
+  font-family: var(--font-mono);
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.hero-metric .num .unit {
+  font-size: 0.5em;
+  font-weight: 500;
+  color: var(--accent);
+}
+.hero-metric .label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
 @media (max-width: 768px) {
   .hero-grid { grid-template-columns: 1fr; gap: 40px; }
   .hero { padding-top: calc(var(--nav-h) + 40px); padding-bottom: 40px; }
-  .hero-stats { flex-wrap: wrap; gap: 16px; }
   .hero-buttons { flex-direction: column; }
   .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
+  .hero-metrics { grid-template-columns: repeat(2, 1fr); }
+  .hero-tech-pills { gap: 6px; }
+}
+@media (max-width: 480px) {
+  .hero-metrics { grid-template-columns: 1fr 1fr; }
 }
 
 /* =====================================================================
@@ -365,12 +467,29 @@ section {
   border-radius: 12px;
   padding: 32px;
   transition: border-color 0.3s;
+  position: relative;
+  overflow: hidden;
 }
 .feature-card:hover { border-color: var(--border-hover); }
+.feature-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.feature-card:hover::before { opacity: 1; }
 .feature-icon {
-  font-size: 28px;
+  width: 48px; height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
   margin-bottom: 16px;
-  display: block;
+  background: var(--accent-dim);
+  border-radius: 12px;
 }
 .feature-card h3 {
   font-family: var(--font-display);
@@ -394,22 +513,32 @@ section {
 /* =====================================================================
    ARCHITECTURE
 ====================================================================== */
+.arch-diagram-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 48px 32px;
+  margin-bottom: 48px;
+  text-align: center;
+  overflow-x: auto;
+}
 .arch-flow {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0;
-  padding: 48px 0;
+  padding: 0;
   overflow-x: auto;
 }
 .arch-node {
   padding: 20px 24px;
-  background: var(--bg-card);
+  background: rgba(255,255,255,0.03);
   border: 1px solid var(--border);
   border-radius: 12px;
   text-align: center;
   min-width: 130px;
   flex-shrink: 0;
+  position: relative;
 }
 .arch-node .label {
   font-family: var(--font-mono);
@@ -423,7 +552,7 @@ section {
   font-weight: 600;
   font-size: 14px;
 }
-.arch-node.highlight { border-color: var(--accent); }
+.arch-node.highlight { border-color: var(--accent); background: var(--accent-dim); }
 .arch-node.highlight .name { color: var(--accent); }
 .arch-arrow {
   font-family: var(--font-mono);
@@ -432,11 +561,17 @@ section {
   padding: 0 8px;
   flex-shrink: 0;
 }
+.arch-feedback {
+  margin-top: 16px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
 .arch-specs {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
-  margin-top: 48px;
 }
 .arch-spec-card {
   background: var(--bg-card);
@@ -577,12 +712,46 @@ section {
 /* =====================================================================
    PCB SECTION
 ====================================================================== */
+.pcb-hero-banner {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 48px;
+}
+.pcb-stat {
+  background: var(--bg-card);
+  padding: 36px 24px;
+  text-align: center;
+}
+.pcb-stat .val {
+  font-family: var(--font-mono);
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+.pcb-stat .val .accent { color: var(--accent); }
+.pcb-stat .desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
 .pcb-hero-stats {
   font-family: var(--font-mono);
   font-size: 14px;
   color: var(--text-secondary);
   margin-bottom: 48px;
   letter-spacing: 0.02em;
+}
+.pcb-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 48px;
 }
 .pcb-table-wrap {
   background: var(--bg-card);
@@ -621,6 +790,38 @@ section {
   color: var(--text-secondary);
 }
 .comp-table td:first-child { color: var(--text); font-weight: 500; }
+
+/* PCB Feature Highlights */
+.pcb-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 48px;
+}
+.pcb-feature {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+}
+.pcb-feature .icon-mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.pcb-feature h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.pcb-feature p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
 
 /* =====================================================================
    SIGNAL FLOW
@@ -823,9 +1024,9 @@ section {
 .gallery-track::-webkit-scrollbar { height: 4px; }
 .gallery-track::-webkit-scrollbar-thumb { background: rgba(255,107,53,0.3); border-radius: 2px; }
 .g-card {
-  flex: 0 0 360px;
+  flex: 0 0 440px;
   aspect-ratio: 4/3;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
   background: #0a0a0a;
   border: 1px solid var(--border);
@@ -840,6 +1041,9 @@ section {
 }
 .g-card:hover img { transform: scale(1.03); }
 .g-card:hover { border-color: var(--border-hover); }
+@media (max-width: 768px) {
+  .g-card { flex: 0 0 320px; }
+}
 
 /* =====================================================================
    ROADMAP
@@ -1009,6 +1213,9 @@ section {
 }
 @media (max-width: 768px) {
   .pid-row { grid-template-columns: 1fr; }
+  .pcb-hero-banner { grid-template-columns: repeat(2, 1fr); }
+  .pcb-features { grid-template-columns: 1fr; }
+  .pcb-layout { grid-template-columns: 1fr; }
 }
 
 /* =====================================================================
@@ -1030,6 +1237,7 @@ section {
   <a class="nav-brand" href="#top">SBR-01</a>
   <div class="nav-links">
     <a href="#overview" class="nav-link">Overview</a>
+    <a href="#architecture" class="nav-link">Architecture</a>
     <a href="#engineering" class="nav-link">Engineering</a>
     <a href="#pcb" class="nav-link">PCB</a>
     <a href="#models" class="nav-link">CAD</a>
@@ -1050,29 +1258,29 @@ section {
   <div class="wrap">
     <div class="hero-grid">
       <div class="hero-left">
-        <h1 class="hero-title reveal">Smart<br>Self-Balancing<br>Robot</h1>
-        <p class="hero-sub reveal">ESP32-powered two-wheeled robot with articulated legs, custom PCB, and computer vision. Built from scratch.</p>
+        <div class="hero-eyebrow reveal"><span class="dot-live"></span> Robotics Project</div>
+        <h1 class="hero-title reveal">Smart<br><span class="accent">Self-Balancing</span><br>Robot</h1>
+        <p class="hero-sub reveal">A two-wheeled robot that balances itself using real-time PID control, a custom 4-layer PCB, and onboard computer vision. Designed and built from scratch.</p>
+        <div class="hero-tech-pills reveal">
+          <span>ESP32</span>
+          <span>MPU-6500</span>
+          <span>Custom PCB</span>
+          <span>Pi 5 Vision</span>
+          <span>PID Control</span>
+        </div>
         <div class="hero-buttons reveal">
           <a class="btn-primary" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot" target="_blank" rel="noopener">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-            GitHub
+            View on GitHub
           </a>
-          <a class="btn-secondary" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/blob/main/pcb/robot%20pcb.kicad_pro" target="_blank" rel="noopener">PCB Files</a>
-          <a class="btn-secondary" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/blob/main/3d/self%20balancing%20robot_.stl" target="_blank" rel="noopener">CAD Files</a>
-          <a class="btn-secondary" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot#readme" target="_blank" rel="noopener">Documentation</a>
-        </div>
-        <div class="hero-stats reveal">
-          <span>100 Hz Loop</span>
-          <span class="dot">&middot;</span>
-          <span>2.4x Torque Margin</span>
-          <span class="dot">&middot;</span>
-          <span>4-Layer PCB</span>
+          <a class="btn-secondary" href="#pcb">Explore PCB</a>
+          <a class="btn-secondary" href="#models">View 3D Model</a>
         </div>
       </div>
 
       <div class="hero-right reveal">
         <div class="hero-viewer" id="hero-viewer">
-          <img src="images/angle.png" alt="SBR-01 Robot — 3/4 angle view" />
+          <img src="images/angle.png" alt="SBR-01 Smart Self-Balancing Robot — 3/4 angle view showing custom PCB, ESP32, articulated legs, and mechanical assembly" />
           <canvas id="viewer-3d"></canvas>
           <div class="view-toggle" id="view-toggle">
             <button id="btn-photo">Photo</button>
@@ -1085,42 +1293,63 @@ section {
         </div>
       </div>
     </div>
+
+    <!-- Hero Metrics Strip -->
+    <div class="hero-metrics reveal">
+      <div class="hero-metric">
+        <div class="num">100<span class="unit">Hz</span></div>
+        <div class="label">Control Loop</div>
+      </div>
+      <div class="hero-metric">
+        <div class="num">4<span class="unit">-Layer</span></div>
+        <div class="label">Custom PCB</div>
+      </div>
+      <div class="hero-metric">
+        <div class="num">40</div>
+        <div class="label">PCB Components</div>
+      </div>
+      <div class="hero-metric">
+        <div class="num">6<span class="unit">-DOF</span></div>
+        <div class="label">IMU Sensing</div>
+      </div>
+    </div>
   </div>
 </section>
 
 <!-- ===================== KEY FEATURES ===================== -->
 <section id="overview">
   <div class="wrap">
+    <div class="section-eyebrow reveal">Overview</div>
     <h2 class="section-title reveal">Key Features</h2>
-    <p class="section-sub reveal" style="margin-bottom: 48px;">Six subsystems working together to keep a two-wheeled robot upright.</p>
+    <p class="section-sub reveal" style="margin-bottom: 48px;">Six integrated subsystems — sensing, control, actuation, power, structure, and vision.</p>
     <div class="features-grid">
       <div class="feature-card reveal">
-        <span class="feature-icon">&#9878;</span>
+        <div class="feature-icon">&#9878;</div>
         <h3>Self-Balancing</h3>
         <p>PID control at 100 Hz with complementary filter fusing gyroscope and accelerometer data.</p>
       </div>
       <div class="feature-card reveal">
-        <span class="feature-icon">&#9881;</span>
+        <div class="feature-icon">&#9881;</div>
         <h3>ESP32 Control</h3>
         <p>Dual-core 240 MHz microcontroller running real-time firmware with deterministic timing.</p>
       </div>
       <div class="feature-card reveal">
-        <span class="feature-icon">&#9783;</span>
+        <div class="feature-icon">&#9783;</div>
         <h3>MPU-6500 IMU</h3>
-        <p>6-axis inertial measurement unit on SPI interface with interrupt-driven data-ready at 100 Hz.</p>
+        <p>6-axis inertial measurement unit on SPI with interrupt-driven data-ready at 100 Hz.</p>
       </div>
       <div class="feature-card reveal">
-        <span class="feature-icon">&#9673;</span>
+        <div class="feature-icon">&#9673;</div>
         <h3>Computer Vision</h3>
         <p>Pi 5 runs YOLOv8n + MediaPipe at 20+ fps. Person following, gesture control, face recognition.</p>
       </div>
       <div class="feature-card reveal">
-        <span class="feature-icon">&#9632;</span>
+        <div class="feature-icon">&#9632;</div>
         <h3>Custom PCB</h3>
         <p>4-layer board with 40 components and 0 DRC violations. Replaces 40 jumper wires.</p>
       </div>
       <div class="feature-card reveal">
-        <span class="feature-icon">&#10697;</span>
+        <div class="feature-icon">&#10697;</div>
         <h3>Articulated Legs</h3>
         <p>4-bar linkage with equal 97 mm arms. 66 mm seated, 220 mm standing variable height.</p>
       </div>
@@ -1131,34 +1360,38 @@ section {
 <!-- ===================== SYSTEM ARCHITECTURE ===================== -->
 <section id="architecture">
   <div class="wrap">
-    <h2 class="section-title reveal">System Architecture</h2>
-    <p class="section-sub reveal" style="margin-bottom: 16px;">Closed-loop control from sensor to actuator at 100 Hz.</p>
+    <div class="section-eyebrow reveal">System Design</div>
+    <h2 class="section-title reveal">Architecture</h2>
+    <p class="section-sub reveal" style="margin-bottom: 32px;">Closed-loop control from sensor to actuator at 100 Hz.</p>
 
-    <div class="arch-flow reveal">
-      <div class="arch-node">
-        <div class="label">Sensor</div>
-        <div class="name">MPU-6500</div>
+    <div class="arch-diagram-wrap reveal">
+      <div class="arch-flow">
+        <div class="arch-node">
+          <div class="label">Sensor</div>
+          <div class="name">MPU-6500</div>
+        </div>
+        <div class="arch-arrow">&rarr;</div>
+        <div class="arch-node">
+          <div class="label">Fusion</div>
+          <div class="name">Comp. Filter</div>
+        </div>
+        <div class="arch-arrow">&rarr;</div>
+        <div class="arch-node highlight">
+          <div class="label">Control</div>
+          <div class="name">PID</div>
+        </div>
+        <div class="arch-arrow">&rarr;</div>
+        <div class="arch-node">
+          <div class="label">Driver</div>
+          <div class="name">L298N</div>
+        </div>
+        <div class="arch-arrow">&rarr;</div>
+        <div class="arch-node">
+          <div class="label">Output</div>
+          <div class="name">Motors</div>
+        </div>
       </div>
-      <div class="arch-arrow">&rarr;</div>
-      <div class="arch-node">
-        <div class="label">Fusion</div>
-        <div class="name">Comp. Filter</div>
-      </div>
-      <div class="arch-arrow">&rarr;</div>
-      <div class="arch-node highlight">
-        <div class="label">Control</div>
-        <div class="name">PID</div>
-      </div>
-      <div class="arch-arrow">&rarr;</div>
-      <div class="arch-node">
-        <div class="label">Driver</div>
-        <div class="name">L298N</div>
-      </div>
-      <div class="arch-arrow">&rarr;</div>
-      <div class="arch-node">
-        <div class="label">Feedback</div>
-        <div class="name">Encoders</div>
-      </div>
+      <div class="arch-feedback">&#8627; Encoder Feedback &#8594; PID Error Correction &#8627;</div>
     </div>
 
     <div class="arch-specs reveal">
@@ -1189,8 +1422,9 @@ section {
 <!-- ===================== ENGINEERING ===================== -->
 <section id="engineering">
   <div class="wrap">
+    <div class="section-eyebrow reveal">Deep Dive</div>
     <h2 class="section-title reveal">Engineering</h2>
-    <p class="section-sub reveal" style="margin-bottom: 32px;">Mechanical, electronics, power, software, and computer vision in one view.</p>
+    <p class="section-sub reveal" style="margin-bottom: 32px;">Mechanical, electronics, power, software, and computer vision.</p>
 
     <div class="eng-tabs reveal" id="eng-tabs">
       <button class="eng-tab active" data-eng="mechanical">Mechanical</button>
@@ -1478,45 +1712,86 @@ output = <span class="fn">constrain</span>(output, <span class="num">-255</span>
 <!-- ===================== PCB ===================== -->
 <section id="pcb">
   <div class="wrap">
+    <div class="section-eyebrow reveal">Electronics</div>
     <h2 class="section-title reveal">Custom PCB</h2>
-    <div class="pcb-hero-stats reveal">94.6 x 58.1 mm &middot; 4-Layer &middot; 40 Components &middot; 0 DRC Violations</div>
+    <p class="section-sub reveal" style="margin-bottom: 48px;">A purpose-built 4-layer board that replaces 40 jumper wires with a single, reliable PCB.</p>
 
-    <!-- On-Board Components Table -->
-    <div class="pcb-table-wrap reveal">
-      <h4>On-Board Components</h4>
-      <table class="comp-table">
-        <thead>
-          <tr><th>Component</th><th>Function</th><th>Notes</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>IRF9540N P-MOSFET</td><td>Reverse polarity protection</td><td>10k gate divider, SMBJ12A TVS</td></tr>
-          <tr><td>AMS1117-3.3 LDO</td><td>5V to 3.3V regulation</td><td>1A, 10uF + 100nF decoupling</td></tr>
-          <tr><td>ESP32 Headers (J12/J13)</td><td>MCU socket</td><td>2x15-pin, 22.86mm spacing</td></tr>
-          <tr><td>L298N Control (J9)</td><td>Motor driver interface</td><td>6-pin Phoenix 5.08mm terminal</td></tr>
-          <tr><td>GY-6500 IMU Socket (J5)</td><td>IMU SPI interface</td><td>4x33ohm series damping</td></tr>
-          <tr><td>PCA9685 Socket (J6)</td><td>Servo PWM driver</td><td>I2C, 4.7k pull-ups</td></tr>
-          <tr><td>Encoder RC Filters</td><td>Signal conditioning</td><td>4x RC at 15.9 kHz</td></tr>
-          <tr><td>Passives</td><td>Gate, pull-down, decoupling</td><td>14 resistors, 10 capacitors</td></tr>
-        </tbody>
-      </table>
+    <!-- PCB Stats Banner -->
+    <div class="pcb-hero-banner reveal">
+      <div class="pcb-stat">
+        <div class="val">94.6<span class="accent">mm</span></div>
+        <div class="desc">Board Width</div>
+      </div>
+      <div class="pcb-stat">
+        <div class="val">4</div>
+        <div class="desc">Copper Layers</div>
+      </div>
+      <div class="pcb-stat">
+        <div class="val">40</div>
+        <div class="desc">Components</div>
+      </div>
+      <div class="pcb-stat">
+        <div class="val" style="color:#22c55e;">0</div>
+        <div class="desc">DRC Violations</div>
+      </div>
     </div>
 
-    <!-- External Modules Table -->
-    <div class="pcb-table-wrap reveal">
-      <h4>External Modules (plug-in)</h4>
-      <table class="comp-table">
-        <thead>
-          <tr><th>Module</th><th>Role</th><th>Connection</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>ESP32-WROOM-32</td><td>Real-time control MCU</td><td>J12/J13 headers</td></tr>
-          <tr><td>L298N H-Bridge</td><td>Motor driver</td><td>J9 control signals</td></tr>
-          <tr><td>GY-6500 (MPU-6500)</td><td>6-axis IMU</td><td>J5 SPI</td></tr>
-          <tr><td>PCA9685</td><td>Servo PWM driver</td><td>J6 I2C</td></tr>
-          <tr><td>2x XL4016 Buck</td><td>6V + 5V regulation</td><td>J2, J3</td></tr>
-          <tr><td>Raspberry Pi 5</td><td>Vision compute</td><td>J10 (5V), J11 (UART)</td></tr>
-        </tbody>
-      </table>
+    <!-- PCB Feature Highlights -->
+    <div class="pcb-features reveal">
+      <div class="pcb-feature">
+        <div class="icon-mono">Protection</div>
+        <h4>Reverse Polarity</h4>
+        <p>IRF9540N P-MOSFET with 10k gate divider and SMBJ12A TVS clamp.</p>
+      </div>
+      <div class="pcb-feature">
+        <div class="icon-mono">Regulation</div>
+        <h4>3.3V LDO</h4>
+        <p>AMS1117-3.3 with 10uF + 100nF decoupling. Powers ESP32 and sensor logic.</p>
+      </div>
+      <div class="pcb-feature">
+        <div class="icon-mono">Signal</div>
+        <h4>RC Filtering</h4>
+        <p>4x encoder RC filters at 15.9 kHz cutoff for clean quadrature signals.</p>
+      </div>
+    </div>
+
+    <!-- On-Board Components Table -->
+    <div class="pcb-layout reveal">
+      <div class="pcb-table-wrap" style="margin-bottom:0;">
+        <h4>On-Board Components</h4>
+        <table class="comp-table">
+          <thead>
+            <tr><th>Component</th><th>Function</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>IRF9540N P-MOSFET</td><td>Reverse polarity protection</td><td>10k gate divider, SMBJ12A TVS</td></tr>
+            <tr><td>AMS1117-3.3 LDO</td><td>5V to 3.3V regulation</td><td>1A, 10uF + 100nF decoupling</td></tr>
+            <tr><td>ESP32 Headers (J12/J13)</td><td>MCU socket</td><td>2x15-pin, 22.86mm spacing</td></tr>
+            <tr><td>L298N Control (J9)</td><td>Motor driver interface</td><td>6-pin Phoenix 5.08mm terminal</td></tr>
+            <tr><td>GY-6500 IMU Socket (J5)</td><td>IMU SPI interface</td><td>4x33ohm series damping</td></tr>
+            <tr><td>PCA9685 Socket (J6)</td><td>Servo PWM driver</td><td>I2C, 4.7k pull-ups</td></tr>
+            <tr><td>Encoder RC Filters</td><td>Signal conditioning</td><td>4x RC at 15.9 kHz</td></tr>
+            <tr><td>Passives</td><td>Gate, pull-down, decoupling</td><td>14 resistors, 10 capacitors</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pcb-table-wrap" style="margin-bottom:0;">
+        <h4>External Modules (plug-in)</h4>
+        <table class="comp-table">
+          <thead>
+            <tr><th>Module</th><th>Role</th><th>Connection</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ESP32-WROOM-32</td><td>Real-time control MCU</td><td>J12/J13 headers</td></tr>
+            <tr><td>L298N H-Bridge</td><td>Motor driver</td><td>J9 control signals</td></tr>
+            <tr><td>GY-6500 (MPU-6500)</td><td>6-axis IMU</td><td>J5 SPI</td></tr>
+            <tr><td>PCA9685</td><td>Servo PWM driver</td><td>J6 I2C</td></tr>
+            <tr><td>2x XL4016 Buck</td><td>6V + 5V regulation</td><td>J2, J3</td></tr>
+            <tr><td>Raspberry Pi 5</td><td>Vision compute</td><td>J10 (5V), J11 (UART)</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Board Specs -->
@@ -1571,7 +1846,7 @@ output = <span class="fn">constrain</span>(output, <span class="num">-255</span>
     </div>
 
     <!-- Download KiCad Files -->
-    <h4 style="font-family:var(--font-mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:16px;">Design Files</h4>
+    <h4 style="font-family:var(--font-mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:16px;" class="reveal">Design Files</h4>
     <div class="dl-grid reveal">
       <a class="dl-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/blob/main/pcb/robot%20pcb.kicad_pro" target="_blank" rel="noopener">
         <div class="dl-icon">PRO</div>
@@ -1596,6 +1871,7 @@ output = <span class="fn">constrain</span>(output, <span class="num">-255</span>
 <!-- ===================== 3D MODELS ===================== -->
 <section id="models">
   <div class="wrap">
+    <div class="section-eyebrow reveal">Mechanical</div>
     <h2 class="section-title reveal">3D Models</h2>
     <p class="section-sub reveal" style="margin-bottom: 48px;">Full assembly viewable in the browser. Orbit, zoom, and inspect all 24 printed parts.</p>
 
@@ -1624,7 +1900,7 @@ output = <span class="fn">constrain</span>(output, <span class="num">-255</span>
       </div>
     </div>
 
-    <h4 style="font-family:var(--font-mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:16px;">Download Files</h4>
+    <h4 style="font-family:var(--font-mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:16px;" class="reveal">Download Files</h4>
     <div class="dl-grid reveal">
       <a class="dl-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/blob/main/3d/self%20balancing%20robot_.stl" target="_blank" rel="noopener">
         <div class="dl-icon">STL</div>
@@ -1645,16 +1921,17 @@ output = <span class="fn">constrain</span>(output, <span class="num">-255</span>
 <!-- ===================== GALLERY ===================== -->
 <section id="gallery">
   <div class="wrap">
+    <div class="section-eyebrow reveal">Build Log</div>
     <h2 class="section-title reveal">Gallery</h2>
     <p class="section-sub reveal" style="margin-bottom: 32px;">Drag to explore reference views.</p>
     <div class="reveal">
       <div class="gallery-track" id="gallery-track">
-        <div class="g-card"><img src="images/angle.png" alt="3/4 angle view" draggable="false"/></div>
-        <div class="g-card"><img src="images/standing-side.png" alt="Standing side" draggable="false"/></div>
-        <div class="g-card"><img src="images/side-sitting.png" alt="Sitting side" draggable="false"/></div>
-        <div class="g-card"><img src="images/top-down.png" alt="Top-down view" draggable="false"/></div>
-        <div class="g-card"><img src="images/front.png" alt="Front view" draggable="false"/></div>
-        <div class="g-card"><img src="images/rear.png" alt="Rear view" draggable="false"/></div>
+        <div class="g-card"><img src="images/angle.png" alt="SBR-01 robot 3/4 angle view showing full assembly" draggable="false"/></div>
+        <div class="g-card"><img src="images/standing-side.png" alt="SBR-01 standing side profile — articulated legs extended" draggable="false"/></div>
+        <div class="g-card"><img src="images/side-sitting.png" alt="SBR-01 sitting side profile — legs retracted to 66mm" draggable="false"/></div>
+        <div class="g-card"><img src="images/top-down.png" alt="SBR-01 top-down view showing custom PCB and ESP32" draggable="false"/></div>
+        <div class="g-card"><img src="images/front.png" alt="SBR-01 front view showing wheel assembly and body" draggable="false"/></div>
+        <div class="g-card"><img src="images/rear.png" alt="SBR-01 rear view showing motor mounts and wiring" draggable="false"/></div>
       </div>
     </div>
   </div>
@@ -1663,6 +1940,7 @@ output = <span class="fn">constrain</span>(output, <span class="num">-255</span>
 <!-- ===================== ROADMAP ===================== -->
 <section id="roadmap">
   <div class="wrap">
+    <div class="section-eyebrow reveal">Progress</div>
     <h2 class="section-title reveal">Roadmap</h2>
     <div class="roadmap-header reveal">
       <div class="progress-circle">
@@ -1719,6 +1997,7 @@ output = <span class="fn">constrain</span>(output, <span class="num">-255</span>
 <!-- ===================== DOWNLOADS ===================== -->
 <section id="downloads">
   <div class="wrap">
+    <div class="section-eyebrow reveal">Open Files</div>
     <h2 class="section-title reveal">Downloads</h2>
     <p class="section-sub reveal" style="margin-bottom: 48px;">Everything you need to build your own.</p>
     <div class="downloads-grid reveal">
@@ -1754,7 +2033,7 @@ output = <span class="fn">constrain</span>(output, <span class="num">-255</span>
 <!-- ===================== FOOTER ===================== -->
 <footer class="footer">
   <div class="wrap">
-    <p>SBR-01 &middot; Abdelwadoud Ben Kridis &middot; 2026 &middot; <a href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot" target="_blank" rel="noopener">GitHub</a></p>
+    <p>SBR-01 &middot; Designed & built by <a href="https://github.com/Abdelwadoud-ben-kridis" target="_blank" rel="noopener">Abdelwadoud Ben Kridis</a> &middot; 2026 &middot; <a href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot" target="_blank" rel="noopener">GitHub</a></p>
   </div>
 </footer>
 
