@@ -490,6 +490,9 @@ section {
 .eng-tab.active { color: var(--text); border-bottom-color: var(--accent); }
 .eng-pane { display: none; }
 .eng-pane.active { display: block; }
+@media (max-width: 768px) {
+  .eng-pane > div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+}
 
 /* =====================================================================
    SPEC TABLE
@@ -1107,9 +1110,9 @@ section {
         <p>6-axis inertial measurement unit on SPI interface with interrupt-driven data-ready at 100 Hz.</p>
       </div>
       <div class="feature-card reveal">
-        <span class="feature-icon">&#8634;</span>
-        <h3>Encoder Feedback</h3>
-        <p>Closed-loop motor control with hall encoders and RC-filtered inputs for clean edge counting.</p>
+        <span class="feature-icon">&#9673;</span>
+        <h3>Computer Vision</h3>
+        <p>Pi 5 runs YOLOv8n + MediaPipe at 20+ fps. Person following, gesture control, face recognition.</p>
       </div>
       <div class="feature-card reveal">
         <span class="feature-icon">&#9632;</span>
@@ -1187,7 +1190,7 @@ section {
 <section id="engineering">
   <div class="wrap">
     <h2 class="section-title reveal">Engineering</h2>
-    <p class="section-sub reveal" style="margin-bottom: 32px;">Mechanical, electronics, power, and software in one view.</p>
+    <p class="section-sub reveal" style="margin-bottom: 32px;">Mechanical, electronics, power, software, and computer vision in one view.</p>
 
     <div class="eng-tabs reveal" id="eng-tabs">
       <button class="eng-tab active" data-eng="mechanical">Mechanical</button>
