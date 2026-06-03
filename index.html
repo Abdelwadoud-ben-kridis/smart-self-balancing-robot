@@ -1194,6 +1194,7 @@ section {
       <button class="eng-tab" data-eng="electronics">Electronics</button>
       <button class="eng-tab" data-eng="power">Power</button>
       <button class="eng-tab" data-eng="software">Software</button>
+      <button class="eng-tab" data-eng="vision">Vision & AI</button>
     </div>
 
     <!-- MECHANICAL -->
@@ -1418,6 +1419,54 @@ integral += error * dt;
 <span class="cm">// Motor output</span>
 output = <span class="fn">constrain</span>(output, <span class="num">-255</span>, <span class="num">255</span>);
 <span class="fn">setMotors</span>(output);
+      </div>
+    </div>
+
+    <!-- VISION & AI -->
+    <div class="eng-pane" id="pane-vision">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:32px;">
+        <div>
+          <h4 style="font-family:var(--font-mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:16px;">Vision Pipeline</h4>
+          <table class="spec-table">
+            <tr><td>Compute</td><td>Raspberry Pi 5 &middot; 4 GB</td></tr>
+            <tr><td>Camera</td><td>USB webcam &middot; 640x480</td></tr>
+            <tr><td>Object Detection</td><td>YOLOv8n &middot; 20+ fps</td></tr>
+            <tr><td>Hand Tracking</td><td>MediaPipe Hands &middot; 20 fps</td></tr>
+            <tr><td>Pose Estimation</td><td>MediaPipe Pose &middot; 25 fps</td></tr>
+            <tr><td>Face Recognition</td><td>InsightFace &middot; 10 fps</td></tr>
+            <tr><td>Inference</td><td>100% local &middot; no cloud</td></tr>
+            <tr><td>Optional Accelerator</td><td>Hailo-8L &middot; 13 TOPS</td></tr>
+          </table>
+        </div>
+        <div>
+          <h4 style="font-family:var(--font-mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:16px;">AI Capabilities</h4>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:16px;">
+              <div style="font-size:14px; font-weight:600; margin-bottom:4px;">Person Following</div>
+              <div style="font-size:12px; color:var(--text-secondary);">YOLOv8n centroid tracking, turn + distance error at 10 Hz</div>
+            </div>
+            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:16px;">
+              <div style="font-size:14px; font-weight:600; margin-bottom:4px;">Gesture Control</div>
+              <div style="font-size:12px; color:var(--text-secondary);">Palm: STOP &middot; Fist: SIT &middot; Peace: STAND &middot; Point: GO</div>
+            </div>
+            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:16px;">
+              <div style="font-size:14px; font-weight:600; margin-bottom:4px;">Fall Detection</div>
+              <div style="font-size:12px; color:var(--text-secondary);">Pitch > 45&deg; triggers controlled sit in &lt;50 ms</div>
+            </div>
+            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:16px;">
+              <div style="font-size:14px; font-weight:600; margin-bottom:4px;">Face Recognition</div>
+              <div style="font-size:12px; color:var(--text-secondary);">Known/unknown face detection, Telegram alerts on intrusion</div>
+            </div>
+            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:16px;">
+              <div style="font-size:14px; font-weight:600; margin-bottom:4px;">Obstacle Avoidance</div>
+              <div style="font-size:12px; color:var(--text-secondary);">MiDaS monocular depth estimation for navigation</div>
+            </div>
+            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:16px;">
+              <div style="font-size:14px; font-weight:600; margin-bottom:4px;">State Machine</div>
+              <div style="font-size:12px; color:var(--text-secondary);">IDLE &rarr; STANDING &rarr; FOLLOWING &rarr; GESTURE &rarr; PATROL</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
