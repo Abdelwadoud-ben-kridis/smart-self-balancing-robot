@@ -20,14 +20,14 @@
 | Infill density | 25% |
 | Infill pattern | Gyroid |
 | Nozzle temperature | 235 °C |
-| First layer nozzle temp | 240 °C |
+| First layer nozzle temp | 238 °C |
 | Bed temperature | 80 °C |
 | First layer bed temp | 85 °C |
 | Print speed | 50 mm/s |
 | First layer speed | 25 mm/s |
 | Wall speed | 40 mm/s |
 | Travel speed | 150 mm/s |
-| Retraction distance | 5 mm |
+| Retraction distance | 6.5 mm |
 | Retraction speed | 25 mm/s |
 | Cooling fan | 30–50% (off for first 2 layers) |
 | Z-hop | 0.2 mm (enabled) |
@@ -72,6 +72,7 @@ Parts that need different settings from the general profile are noted below. All
 ## Ender 3 Max PETG Tips
 
 - **Bed adhesion:** Clean glass bed with IPA, apply thin glue stick layer. PETG bonds aggressively to bare glass — glue stick acts as a release agent.
+- **PTFE tube limit:** The stock Bowden PTFE tube degrades above 240 °C. Do not exceed 238 °C for sustained printing. If you need higher temps, upgrade to a Capricorn PTFE tube (rated to 260 °C) or an all-metal hotend.
 - **Stringing:** PETG strings more than PLA. If stringing is excessive, increase retraction to 6 mm or reduce nozzle temp to 230 °C. Enable "combing" in Cura or "avoid crossing perimeters" in PrusaSlicer.
 - **First layer:** Slightly increase Z-offset (+0.02–0.04 mm) vs PLA. PETG squished too flat will stick permanently to glass.
 - **Cooling:** Keep fan low (30–50%). Too much cooling causes layer delamination with PETG. No fan on first 2 layers.
