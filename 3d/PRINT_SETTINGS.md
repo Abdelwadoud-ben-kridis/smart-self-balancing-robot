@@ -1,7 +1,7 @@
 # 3D Print Settings — Self-Balancing Robot
 
 **Printer:** Creality Ender 3 Max (300 x 300 x 340 mm build volume)
-**Filament:** PETG
+**Filament:** eSUN PETG (Gray)
 **Nozzle:** 0.4 mm (stock brass)
 **Slicer:** Cura / PrusaSlicer / OrcaSlicer — settings below are slicer-agnostic
 
@@ -19,10 +19,10 @@
 | Bottom layers | 4 |
 | Infill density | 25% |
 | Infill pattern | Gyroid |
-| Nozzle temperature | 235 °C |
-| First layer nozzle temp | 238 °C |
-| Bed temperature | 85 °C |
-| First layer bed temp | 85 °C |
+| Nozzle temperature | 240 °C |
+| First layer nozzle temp | 240 °C |
+| Bed temperature | 80 °C |
+| First layer bed temp | 80 °C |
 | Print speed | 50 mm/s |
 | First layer speed | 25 mm/s |
 | Wall speed | 40 mm/s |
@@ -72,7 +72,7 @@ Parts that need different settings from the general profile are noted below. All
 ## Ender 3 Max PETG Tips
 
 - **Bed adhesion:** Clean glass bed with IPA, apply thin glue stick layer. PETG bonds aggressively to bare glass — glue stick acts as a release agent.
-- **PTFE tube limit:** The stock Bowden PTFE tube degrades above 240 °C. Do not exceed 238 °C for sustained printing. If you need higher temps, upgrade to a Capricorn PTFE tube (rated to 260 °C) or an all-metal hotend.
+- **PTFE tube vs eSUN temps:** eSUN PETG is rated for 230–250 °C (optimal 245 °C), but the stock Bowden PTFE tube degrades above 240 °C. We cap at 240 °C as a compromise. If you see poor layer adhesion, upgrade to a Capricorn PTFE tube (rated to 260 °C) or an all-metal hotend so you can print at eSUN's recommended 245 °C.
 - **Stringing:** PETG strings more than PLA. If stringing is excessive, increase retraction to 6 mm or reduce nozzle temp to 230 °C. Enable "combing" in Cura or "avoid crossing perimeters" in PrusaSlicer.
 - **First layer:** Slightly increase Z-offset (+0.02–0.04 mm) vs PLA. PETG squished too flat will stick permanently to glass.
 - **Cooling:** Keep fan low (30–50%). Too much cooling causes layer delamination with PETG. No fan on first 2 layers.
