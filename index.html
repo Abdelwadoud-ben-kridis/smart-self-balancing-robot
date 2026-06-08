@@ -1542,7 +1542,7 @@ section {
 
           <rect x="555" y="152" width="170" height="46" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.13)"/>
           <text x="640" y="172" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" fill="#fff">L298N</text>
-          <text x="640" y="187" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#a0a0a0">dual H-bridge · PWM+DIR</text>
+          <text x="640" y="187" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#a0a0a0">L298N dual H-bridge · PWM+DIR · no voltage drop</text>
 
           <rect x="555" y="210" width="170" height="46" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.13)"/>
           <text x="640" y="230" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" fill="#fff">3.5" SPI Display</text>
@@ -1557,7 +1557,7 @@ section {
           <text x="895" y="129" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#a0a0a0">hip · knee · L · R</text>
 
           <rect x="810" y="152" width="170" height="46" rx="8" fill="rgba(251,191,36,0.06)" stroke="rgba(251,191,36,0.4)"/>
-          <text x="895" y="172" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" fill="#fff">2x JGA 25-370</text>
+          <text x="895" y="172" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" fill="#fff">2x JGA25-370 encoder · 1:34</text>
           <text x="895" y="187" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#a0a0a0">drive motors</text>
 
           <!-- Power lines -->
@@ -1768,7 +1768,7 @@ output = <span class="fn">constrain</span>(output, <span class="num">-255</span>
             <tr><td>AMS1117-3.3 LDO</td><td>5V to 3.3V regulation</td><td>1A, 10uF + 100nF decoupling</td></tr>
             <tr><td>ESP32 Headers (J12/J13)</td><td>MCU socket</td><td>2x15-pin, 22.86mm spacing</td></tr>
             <tr><td>L298N Control (J9)</td><td>Motor driver interface</td><td>6-pin Phoenix 5.08mm terminal</td></tr>
-            <tr><td>GY-6500 IMU Socket (J5)</td><td>IMU I2C interface</td><td>4x33ohm series damping</td></tr>
+            <tr><td>GY-6500 IMU Socket (J5)</td><td>IMU SPI interface</td><td>4x33ohm series damping</td></tr>
             <tr><td>PCA9685 Socket (J6)</td><td>Servo PWM driver</td><td>I2C, 4.7k pull-ups</td></tr>
             <tr><td>Encoder RC Filters</td><td>Signal conditioning</td><td>4x RC at 15.9 kHz</td></tr>
             <tr><td>Passives</td><td>Gate, pull-down, decoupling</td><td>14 resistors, 10 capacitors</td></tr>
@@ -1785,7 +1785,7 @@ output = <span class="fn">constrain</span>(output, <span class="num">-255</span>
           <tbody>
             <tr><td>ESP32-WROOM-32</td><td>Real-time control MCU</td><td>J12/J13 headers</td></tr>
             <tr><td>L298N H-Bridge</td><td>Motor driver</td><td>J9 control signals</td></tr>
-            <tr><td>GY-6500 (MPU-6500)</td><td>6-axis IMU</td><td>J5 I2C</td></tr>
+            <tr><td>GY-6500 (MPU-6500)</td><td>6-axis IMU</td><td>J5 SPI</td></tr>
             <tr><td>PCA9685</td><td>Servo PWM driver</td><td>J6 I2C</td></tr>
             <tr><td>2x XL4016 Buck</td><td>6V + 5V regulation</td><td>J2, J3</td></tr>
             <tr><td>Raspberry Pi 5</td><td>Vision compute</td><td>J10 (5V), J11 (UART)</td></tr>

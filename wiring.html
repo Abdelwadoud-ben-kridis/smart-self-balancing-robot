@@ -713,7 +713,7 @@ td .tbd {
   </div>
 
   <div class="callout">
-    <strong>RC filter cutoff:</strong> <code>1/(2&pi; &times; 10k&Omega; &times; 1nF) &asymp; 16 kHz</code> &mdash; kills motor PWM switching noise
+    <strong>RC filter cutoff:</strong> <code>1/(2&pi; &times; 1k&Omega; &times; 10nF) &asymp; 15.9 kHz</code> &mdash; kills motor PWM switching noise
   </div>
 
   <h3 style="font-family:var(--font-display); font-style:italic; font-size:18px; margin:32px 0 16px; color:var(--text);">J5 &mdash; ESP32 Output Header (9-pin)</h3>
@@ -728,11 +728,11 @@ td .tbd {
         <tr><td><span class="pin">2</span></td><td>GND</td><td>&mdash;</td></tr>
         <tr><td><span class="pin">3</span></td><td>I2C_SDA</td><td><code>GPIO 21</code></td></tr>
         <tr><td><span class="pin">4</span></td><td>I2C_SCL</td><td><code>GPIO 22</code></td></tr>
-        <tr><td><span class="pin">5</span></td><td>ENC1_A (filtered)</td><td><span class="tbd">TBD</span></td></tr>
-        <tr><td><span class="pin">6</span></td><td>ENC1_B (filtered)</td><td><span class="tbd">TBD</span></td></tr>
-        <tr><td><span class="pin">7</span></td><td>ENC2_A (filtered)</td><td><span class="tbd">TBD</span></td></tr>
-        <tr><td><span class="pin">8</span></td><td>ENC2_B (filtered)</td><td><span class="tbd">TBD</span></td></tr>
-        <tr><td><span class="pin">9</span></td><td>MPU_INT</td><td><span class="tbd">TBD</span></td></tr>
+        <tr><td><span class="pin">5</span></td><td>ENC1_A (filtered)</td><td><code>GPIO 13</code></td></tr>
+        <tr><td><span class="pin">6</span></td><td>ENC1_B (filtered)</td><td><code>GPIO 14</code></td></tr>
+        <tr><td><span class="pin">7</span></td><td>ENC2_A (filtered)</td><td><code>GPIO 16</code></td></tr>
+        <tr><td><span class="pin">8</span></td><td>ENC2_B (filtered)</td><td><code>GPIO 17</code></td></tr>
+        <tr><td><span class="pin">9</span></td><td>MPU_INT</td><td><code>GPIO 4</code></td></tr>
       </tbody>
     </table>
   </div>
@@ -754,19 +754,23 @@ td .tbd {
         <tr><th>GPIO</th><th>Connected to</th><th>Function</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>21</code></td><td>Signal PCB J5-3 / IMU SDA / PCA SDA</td><td>I2C SDA (400 kHz)</td></tr>
-        <tr><td><code>22</code></td><td>Signal PCB J5-4 / IMU SCL / PCA SCL</td><td>I2C SCL (400 kHz)</td></tr>
+        <tr><td><code>21</code></td><td>PCA9685 SDA</td><td>I2C SDA (400 kHz)</td></tr>
+        <tr><td><code>22</code></td><td>PCA9685 SCL</td><td>I2C SCL (400 kHz)</td></tr>
+        <tr><td><code>5</code></td><td>MPU-6500 CS</td><td>SPI chip select (idle HIGH)</td></tr>
+        <tr><td><code>18</code></td><td>MPU-6500 CLK</td><td>SPI clock (VSPI)</td></tr>
+        <tr><td><code>19</code></td><td>MPU-6500 MISO</td><td>SPI MISO (VSPI)</td></tr>
+        <tr><td><code>23</code></td><td>MPU-6500 MOSI</td><td>SPI MOSI (VSPI)</td></tr>
         <tr><td><code>25</code></td><td>L298N ENA</td><td>Left motor speed (PWM, 1 kHz)</td></tr>
-        <tr><td><code>26</code></td><td>L298N IN1</td><td>Left motor direction 1</td></tr>
-        <tr><td><code>27</code></td><td>L298N IN2</td><td>Left motor direction 2</td></tr>
-        <tr><td><code>32</code></td><td>L298N ENB</td><td>Right motor speed (PWM, 1 kHz)</td></tr>
+        <tr><td><code>26</code></td><td>L298N ENB</td><td>Right motor speed (PWM, 1 kHz)</td></tr>
+        <tr><td><code>27</code></td><td>L298N IN1</td><td>Left motor direction 1</td></tr>
+        <tr><td><code>32</code></td><td>L298N IN2</td><td>Left motor direction 2</td></tr>
         <tr><td><code>33</code></td><td>L298N IN3</td><td>Right motor direction 1</td></tr>
-        <tr><td><code>4</code></td><td>L298N IN4</td><td>Right motor direction 2</td></tr>
-        <tr><td><span class="tbd">TBD</span></td><td>Signal PCB J5-5</td><td>ENC1_A</td></tr>
-        <tr><td><span class="tbd">TBD</span></td><td>Signal PCB J5-6</td><td>ENC1_B</td></tr>
-        <tr><td><span class="tbd">TBD</span></td><td>Signal PCB J5-7</td><td>ENC2_A</td></tr>
-        <tr><td><span class="tbd">TBD</span></td><td>Signal PCB J5-8</td><td>ENC2_B</td></tr>
-        <tr><td><span class="tbd">TBD</span></td><td>Signal PCB J5-9</td><td>MPU_INT</td></tr>
+        <tr><td><code>15</code></td><td>L298N IN4</td><td>Right motor direction 2 (HIGH at boot &mdash; drive LOW in setup)</td></tr>
+        <tr><td><code>4</code></td><td>MPU-6500 INT</td><td>IMU interrupt</td></tr>
+        <tr><td><code>13</code></td><td>ENC1_A</td><td>Encoder 1 channel A</td></tr>
+        <tr><td><code>14</code></td><td>ENC1_B</td><td>Encoder 1 channel B</td></tr>
+        <tr><td><code>16</code></td><td>ENC2_A</td><td>Encoder 2 channel A</td></tr>
+        <tr><td><code>17</code></td><td>ENC2_B</td><td>Encoder 2 channel B</td></tr>
       </tbody>
     </table>
   </div>
@@ -792,11 +796,11 @@ td .tbd {
         <tr><td><span class="pin">VCC</span></td><td>5V</td><td>Logic power</td></tr>
         <tr><td><span class="pin">GND</span></td><td>GND</td><td>&mdash;</td></tr>
         <tr><td><span class="pin">ENA</span></td><td><code>GPIO 25</code></td><td>Left motor enable / speed (PWM)</td></tr>
-        <tr><td><span class="pin">IN1</span></td><td><code>GPIO 26</code></td><td>Left motor direction</td></tr>
-        <tr><td><span class="pin">IN2</span></td><td><code>GPIO 27</code></td><td>Left motor direction</td></tr>
-        <tr><td><span class="pin">ENB</span></td><td><code>GPIO 32</code></td><td>Right motor enable / speed (PWM)</td></tr>
+        <tr><td><span class="pin">IN1</span></td><td><code>GPIO 27</code></td><td>Left motor direction</td></tr>
+        <tr><td><span class="pin">IN2</span></td><td><code>GPIO 32</code></td><td>Left motor direction</td></tr>
+        <tr><td><span class="pin">ENB</span></td><td><code>GPIO 26</code></td><td>Right motor enable / speed (PWM)</td></tr>
         <tr><td><span class="pin">IN3</span></td><td><code>GPIO 33</code></td><td>Right motor direction</td></tr>
-        <tr><td><span class="pin">IN4</span></td><td><code>GPIO 4</code></td><td>Right motor direction</td></tr>
+        <tr><td><span class="pin">IN4</span></td><td><code>GPIO 15</code></td><td>Right motor direction (HIGH at boot)</td></tr>
         <tr><td><span class="pin">OUT1+2</span></td><td>Left JGA25-370</td><td>Motor terminals</td></tr>
         <tr><td><span class="pin">OUT3+4</span></td><td>Right JGA25-370</td><td>Motor terminals</td></tr>
       </tbody>
