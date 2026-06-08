@@ -64,7 +64,7 @@ Parts that need different settings from the general profile are noted below. All
 | STL File | Qty | Infill | Walls | Orientation | Notes |
 |----------|:---:|:------:|:-----:|-------------|-------|
 | `top.stl` | 1 | 25% | 3 | Flat (top face up) | Floor 1 — mounts Pi 5, ESP32, IMU, display |
-| `bottom.stl` | 1 | 25% | 3 | Flat (top face up) | Floor 2 — mounts battery, BMS, bucks, PCA9685 |
+| `bottom.stl` | 1 | 20% Lines | 3 | Flat (top face up) | Floor 2 — low stress, faster print |
 | `floor 2.stl` | 1 | 25% | 3 | Flat | Internal floor divider |
 
 ---
