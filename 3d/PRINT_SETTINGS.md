@@ -21,8 +21,8 @@
 | Infill pattern | Gyroid |
 | Nozzle temperature | 240 °C |
 | First layer nozzle temp | 240 °C |
-| Bed temperature | 80 °C |
-| First layer bed temp | 80 °C |
+| Bed temperature | 70 °C |
+| First layer bed temp | 75 °C |
 | Print speed | 50 mm/s |
 | First layer speed | 25 mm/s |
 | Wall speed | 40 mm/s |
