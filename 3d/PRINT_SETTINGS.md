@@ -69,6 +69,39 @@ Parts that need different settings from the general profile are noted below. All
 
 ---
 
+## Support Settings
+
+| Parameter | Value |
+|-----------|-------|
+| Support type | Tree (Cura) / Organic (PrusaSlicer/OrcaSlicer) |
+| Overhang threshold | 50° |
+| Support density | 10% |
+| Support Z distance | 0.2 mm (1 layer gap) |
+| Support XY distance | 0.8 mm |
+| Support interface | Enabled |
+| Interface layers | 2 top / 1 bottom |
+| Interface density | 80% |
+| Interface pattern | Grid |
+| Support material | Same (eSUN PETG Gray) |
+
+### Which parts likely need supports
+
+| Part | Supports? | Why |
+|------|-----------|-----|
+| Leg parts (all 4) | Likely yes | Pivot holes, bearing seats, or curved linkage geometry |
+| Body side panels | Maybe | Depends on screw boss or mounting tab angles |
+| Front/back panels | Probably no | Flat panels, print face-down |
+| Floors (top, bottom, floor 2) | Probably no | Flat plates — print flat, no overhangs |
+
+### Tips for supports with PETG
+
+- **Tree/organic supports are strongly recommended** over normal supports. PETG supports are notoriously hard to remove — tree supports use less material and have smaller contact points.
+- **Increase Z distance to 0.24 mm** if supports are fusing to the part surface. PETG is stickier than PLA.
+- **Preview in slicer before printing** — check every part for unsupported overhangs. Rotate parts to minimize support usage where possible.
+- **Support blockers** — if the slicer adds supports to small holes or features that can bridge fine, use manual support blockers to remove them.
+
+---
+
 ## Ender 3 Max PETG Tips
 
 - **Bed adhesion:** Clean glass bed with IPA, apply thin glue stick layer. PETG bonds aggressively to bare glass — glue stick acts as a release agent.
