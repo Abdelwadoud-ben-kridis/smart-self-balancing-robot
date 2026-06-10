@@ -196,8 +196,8 @@ One-way: RPi → ESP32 only. ESP32 receives on GPIO35 (input-only pin).
 | ENB | ESP32 GPIO26 via PCB J9.P2 | Right motor enable / PWM (1kHz) |
 | IN3 | ESP32 GPIO33 via PCB J9.P5 | Right motor direction A |
 | IN4 | ESP32 GPIO15 via PCB J9.P6 | Right motor direction B — ⚠ HIGH at boot |
-| OUT1 + OUT2 | Left JGA25-370 motor terminals | |
-| OUT3 + OUT4 | Right JGA25-370 motor terminals | |
+| OUT1 + OUT2 | Left JGB37-520 motor terminals | |
+| OUT3 + OUT4 | Right JGB37-520 motor terminals | |
 
 > **Motor control logic:**
 > - Forward: ENA/ENB PWM, IN1=HIGH IN2=LOW, IN3=HIGH IN4=LOW
@@ -267,7 +267,7 @@ Axis convention: pitch rate = gyro Y · pitch angle = atan2(ax, az)
 
 ---
 
-## 8. JGA25-370 MOTORS WITH ENCODERS
+## 8. JGB37-520 MOTORS WITH ENCODERS
 
 Each motor has 6 wires:
 

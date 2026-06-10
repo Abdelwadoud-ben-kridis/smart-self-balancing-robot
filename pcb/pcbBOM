@@ -259,8 +259,8 @@ At 12.6V: Vgs = −6.3V   IRF9540N threshold: −2V to −4V → FET ON ✓
 
 | Ref | Qty | Component | Value | Package | Notes |
 |-----|-----|-----------|-------|---------|-------|
-| J7 | 1 | Screw terminal | ENC1 | Phoenix 4-pin 5.08mm | Encoder 1 (JGA37-370) |
-| J8 | 1 | Screw terminal | ENC2 | Phoenix 4-pin 5.08mm | Encoder 2 (JGA37-370) |
+| J7 | 1 | Screw terminal | ENC1 | Phoenix 4-pin 5.08mm | Encoder 1 (JGB37-520) |
+| J8 | 1 | Screw terminal | ENC2 | Phoenix 4-pin 5.08mm | Encoder 2 (JGB37-520) |
 | R13 | 1 | Resistor | 1kΩ | Axial THT | /ENC1_A RC filter series |
 | R14 | 1 | Resistor | 1kΩ | Axial THT | /ENC1_B RC filter series |
 | R15 | 1 | Resistor | 1kΩ | Axial THT | /ENC2_A RC filter series |

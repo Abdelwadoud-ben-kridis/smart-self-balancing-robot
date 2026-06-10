@@ -19,13 +19,13 @@
 | # | Component | Spec | Qty | Notes |
 |---|-----------|------|:---:|-------|
 | 5 | MG996R Servo Motor | 11.0 kg-cm torque, metal gear | 4 | Hip (x2) and knee (x2) joints |
-| 6 | JGA25-370 DC Geared Motor | 11.1V direct drive, ~1.2A peak | 2 | Wheel drive motors |
+| 6 | JGB37-520 DC Geared Motor | 12V class (run at 11.1V), hall encoder, 37mm gearbox | 2 | Wheel drive motors — verify stall current vs L298N 2A/ch rating |
 
 ## 4. Motor Drivers & PWM
 
 | # | Component | Spec | Qty | Notes |
 |---|-----------|------|:---:|-------|
-| 7 | L298N Dual H-Bridge Module | 2-ch, up to 2A/ch | 1 | PWM+DIR for 2x JGA25-370 |
+| 7 | L298N Dual H-Bridge Module | 2-ch, up to 2A/ch | 1 | PWM+DIR for 2x JGB37-520 |
 | 8 | PCA9685 16-Ch PWM Driver | I2C, 12-bit resolution | 1 | 4 channels used for MG996R servos |
 
 ## 5. Power System
@@ -49,8 +49,8 @@
 
 | # | Component | Spec | Qty | Notes |
 |---|-----------|------|:---:|-------|
-| 16 | Rubber Wheel | 65 mm diameter | 2 | Press-fit or hub-mount to JGA25-370 |
-| 17 | Motor Mounting Bracket (JGA25-370) | Aluminum/3D-printed | 2 | Secure DC motors to chassis |
+| 16 | Rubber Wheel | 65 mm diameter | 2 | Press-fit or hub-mount to JGB37-520 |
+| 17 | Motor Mounting Bracket (JGB37-520) | Aluminum/3D-printed | 2 | Secure DC motors to chassis |
 | 18 | Servo Horn / Arm | 97 mm effective length, MG996R compatible | 4 | Four-bar linkage arms |
 | 19 | 20T Spur Gear | 1:1 ratio pair | 4 pairs | Linkage gear train |
 
