@@ -1,0 +1,2449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Engineering Doc · SBR-01 — Smart Self-Balancing Robot | ESP32 + Custom PCB + Computer Vision</title>
+<meta name="description" content="Two-wheeled self-balancing robot built from scratch: ESP32 real-time PID at 100 Hz, MPU-6500 IMU, custom 4-layer PCB (40 components, 0 DRC violations), articulated legs, and Raspberry Pi 5 computer vision. Designed and built by Abdelwadoud Ben Kridis.">
+<meta name="keywords" content="ESP32 Self-Balancing Robot, Self-Balancing Robot, MPU-6500 Robot, PID Control Robot, Custom PCB Design, KiCad PCB, Robotics Project, Computer Vision Robot, Raspberry Pi Robot, YOLOv8 Robot">
+<meta name="author" content="Abdelwadoud Ben Kridis">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Engineering Doc · SBR-01 — Smart Self-Balancing Robot">
+<meta property="og:description" content="ESP32-powered self-balancing robot with custom 4-layer PCB, MPU-6500 IMU, articulated legs, and Pi 5 computer vision. Built from scratch.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://abdelwadoud-ben-kridis.github.io/smart-self-balancing-robot/engineering.html">
+<meta property="og:image" content="https://abdelwadoud-ben-kridis.github.io/smart-self-balancing-robot/images/angle.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SBR-01 — Smart Self-Balancing Robot">
+<meta name="twitter:description" content="ESP32 + custom PCB + computer vision. A self-balancing robot built from scratch.">
+<meta name="twitter:image" content="https://abdelwadoud-ben-kridis.github.io/smart-self-balancing-robot/images/angle.png">
+<link rel="canonical" href="https://abdelwadoud-ben-kridis.github.io/smart-self-balancing-robot/engineering.html">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CreativeWork",
+  "name": "SBR-01 Smart Self-Balancing Robot",
+  "description": "Two-wheeled self-balancing robot with ESP32, custom 4-layer PCB, MPU-6500 IMU, articulated legs, and Raspberry Pi 5 computer vision.",
+  "author": {
+    "@type": "Person",
+    "name": "Abdelwadoud Ben Kridis",
+    "url": "https://github.com/Abdelwadoud-ben-kridis"
+  },
+  "url": "https://abdelwadoud-ben-kridis.github.io/smart-self-balancing-robot/",
+  "image": "https://abdelwadoud-ben-kridis.github.io/smart-self-balancing-robot/images/angle.png",
+  "keywords": ["robotics", "ESP32", "self-balancing", "custom PCB", "computer vision", "PID control"],
+  "dateCreated": "2026",
+  "license": "https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot"
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<style>
+/* =====================================================================
+   TOKENS
+====================================================================== */
+:root {
+  --bg: #000000;
+  --bg-card: #0a0a0a;
+  --bg-card-hover: #111111;
+  --border: rgba(255,255,255,0.08);
+  --border-hover: rgba(255,255,255,0.15);
+  --text: #ffffff;
+  --text-secondary: #a0a0a0;
+  --text-muted: #666666;
+  --accent: #ff6b35;
+  --accent-dim: rgba(255,107,53,0.1);
+  --accent-glow: rgba(255,107,53,0.15);
+  --font-display: 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --nav-h: 64px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+::selection { background: rgba(255,107,53,0.3); color: #fff; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
+button { font-family: inherit; cursor: pointer; }
+
+/* =====================================================================
+   SCROLL PROGRESS
+====================================================================== */
+.scroll-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  width: 0%;
+  background: var(--accent);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* =====================================================================
+   NAVIGATION
+====================================================================== */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--nav-h);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.3s;
+}
+.nav-brand {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  flex-shrink: 0;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.nav-links a {
+  padding: 8px 14px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 400;
+  border-radius: 8px;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text-secondary); }
+.nav-links a.active { color: var(--text); }
+.nav-github {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  transition: border-color 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+.nav-github:hover { border-color: var(--border-hover); color: var(--text); }
+.nav-github svg { width: 18px; height: 18px; fill: currentColor; }
+.nav-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text);
+  padding: 8px;
+}
+.nav-hamburger svg { width: 24px; height: 24px; }
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .nav-hamburger { display: block; }
+  .nav { padding: 0 20px; }
+}
+
+/* =====================================================================
+   LAYOUT
+====================================================================== */
+.wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+section {
+  position: relative;
+  padding: 140px 0;
+}
+.section-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin: 0 0 20px;
+}
+.section-sub {
+  font-size: 18px;
+  color: var(--text-secondary);
+  max-width: 60ch;
+  line-height: 1.6;
+}
+
+/* =====================================================================
+   REVEAL ANIMATION
+====================================================================== */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* =====================================================================
+   HERO
+====================================================================== */
+.hero {
+  min-height: 100vh;
+  padding-top: calc(var(--nav-h) + 80px);
+  padding-bottom: 80px;
+  display: flex;
+  align-items: center;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 20px;
+  padding: 6px 14px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(255,107,53,0.2);
+  border-radius: 100px;
+}
+.hero-eyebrow .dot-live {
+  width: 6px; height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: pulse-dot 2s ease infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.hero-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(40px, 5.5vw, 80px);
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  margin: 0 0 24px;
+}
+.hero-title .accent { color: var(--accent); }
+.hero-sub {
+  font-size: 18px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 40px;
+  max-width: 50ch;
+}
+.hero-tech-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+.hero-tech-pills span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  background: rgba(255,255,255,0.02);
+}
+.hero-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 0;
+}
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  transition: filter 0.2s;
+}
+.btn-primary:hover { filter: brightness(1.15); }
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: border-color 0.2s;
+}
+.btn-secondary:hover { border-color: var(--border-hover); }
+.hero-viewer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 0.9;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #0a0a0a;
+  border: 1px solid var(--border);
+}
+.hero-viewer img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: opacity 0.6s;
+}
+.hero-viewer.viewer-ready img { opacity: 0; pointer-events: none; }
+#viewer-3d {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.8s;
+  cursor: grab;
+}
+#viewer-3d.ready { opacity: 1; }
+#viewer-3d:active { cursor: grabbing; }
+.viewer-loader {
+  position: absolute;
+  bottom: 20px; left: 20px; right: 20px;
+  z-index: 3;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  display: flex; flex-direction: column; gap: 8px;
+  transition: opacity 0.4s;
+}
+.viewer-loader.done { opacity: 0; pointer-events: none; }
+.viewer-loader .lh { display: flex; justify-content: space-between; }
+.viewer-loader .lh .v { color: var(--accent); }
+.viewer-loader .bar {
+  height: 2px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.viewer-loader .bar > i {
+  display: block; height: 100%;
+  width: 0%;
+  background: var(--accent);
+  transition: width 0.2s;
+}
+.view-toggle {
+  position: absolute;
+  top: 16px; left: 16px;
+  z-index: 4;
+  display: none;
+  align-items: center;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+}
+.view-toggle.show { display: flex; }
+.view-toggle button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+.view-toggle button:hover { color: var(--text); }
+.view-toggle button.active { background: var(--accent); color: #fff; }
+
+/* HERO METRICS STRIP */
+.hero-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-top: 80px;
+}
+.hero-metric {
+  background: var(--bg-card);
+  padding: 32px 24px;
+  text-align: center;
+}
+.hero-metric .num {
+  font-family: var(--font-mono);
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.hero-metric .num .unit {
+  font-size: 0.5em;
+  font-weight: 500;
+  color: var(--accent);
+}
+.hero-metric .label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+  .hero { padding-top: calc(var(--nav-h) + 40px); padding-bottom: 40px; }
+  .hero-buttons { flex-direction: column; }
+  .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
+  .hero-metrics { grid-template-columns: repeat(2, 1fr); }
+  .hero-tech-pills { gap: 6px; }
+}
+@media (max-width: 480px) {
+  .hero-metrics { grid-template-columns: 1fr 1fr; }
+}
+
+/* =====================================================================
+   FEATURE CARDS
+====================================================================== */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.feature-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px;
+  transition: border-color 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.feature-card:hover { border-color: var(--border-hover); }
+.feature-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.feature-card:hover::before { opacity: 1; }
+.feature-icon {
+  width: 48px; height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin-bottom: 16px;
+  background: var(--accent-dim);
+  border-radius: 12px;
+}
+.feature-card h3 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.feature-card p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+@media (max-width: 768px) {
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .features-grid { grid-template-columns: 1fr; }
+}
+
+/* =====================================================================
+   ARCHITECTURE
+====================================================================== */
+.arch-diagram-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 48px 32px;
+  margin-bottom: 48px;
+  text-align: center;
+  overflow-x: auto;
+}
+.arch-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 0;
+  overflow-x: auto;
+}
+.arch-node {
+  padding: 20px 24px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-align: center;
+  min-width: 130px;
+  flex-shrink: 0;
+  position: relative;
+}
+.arch-node .label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.arch-node .name {
+  font-weight: 600;
+  font-size: 14px;
+}
+.arch-node.highlight { border-color: var(--accent); background: var(--accent-dim); }
+.arch-node.highlight .name { color: var(--accent); }
+.arch-arrow {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  color: var(--text-muted);
+  padding: 0 8px;
+  flex-shrink: 0;
+}
+.arch-feedback {
+  margin-top: 16px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.arch-specs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.arch-spec-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px;
+}
+.arch-spec-card h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.arch-spec-card h4 .tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+@media (max-width: 768px) {
+  .arch-specs { grid-template-columns: 1fr; }
+  .arch-flow { justify-content: flex-start; }
+}
+
+/* =====================================================================
+   ENGINEERING TABS
+====================================================================== */
+.eng-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.eng-tab {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+.eng-tab:hover { color: var(--text-secondary); }
+.eng-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+.eng-pane { display: none; }
+.eng-pane.active { display: block; }
+@media (max-width: 768px) {
+  .eng-pane > div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+}
+
+/* =====================================================================
+   SPEC TABLE
+====================================================================== */
+.spec-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.spec-table tr {
+  border-bottom: 1px solid var(--border);
+}
+.spec-table td {
+  padding: 14px 0;
+  font-size: 14px;
+}
+.spec-table td:first-child {
+  color: var(--text-secondary);
+  width: 45%;
+}
+.spec-table td:last-child {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text);
+}
+
+/* =====================================================================
+   SVG DIAGRAM
+====================================================================== */
+.diagram-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px;
+  overflow-x: auto;
+}
+.diagram-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.diagram-legend {
+  display: flex;
+  gap: 16px;
+}
+.diagram-legend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.diagram-legend i {
+  display: inline-block;
+  width: 14px;
+  height: 2px;
+}
+
+/* =====================================================================
+   CODE BLOCK
+====================================================================== */
+.code-block {
+  background: #0a0a0a;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.8;
+  color: #d1d5db;
+  overflow-x: auto;
+}
+.code-block .cm { color: #6b7280; }
+.code-block .kw { color: #c084fc; }
+.code-block .fn { color: #60a5fa; }
+.code-block .num { color: var(--accent); }
+.code-block .str { color: #34d399; }
+
+/* =====================================================================
+   PCB SECTION
+====================================================================== */
+.pcb-hero-banner {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 48px;
+}
+.pcb-stat {
+  background: var(--bg-card);
+  padding: 36px 24px;
+  text-align: center;
+}
+.pcb-stat .val {
+  font-family: var(--font-mono);
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+.pcb-stat .val .accent { color: var(--accent); }
+.pcb-stat .desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+.pcb-hero-stats {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 48px;
+  letter-spacing: 0.02em;
+}
+.pcb-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 48px;
+}
+.pcb-table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: 32px;
+}
+.pcb-table-wrap h4 {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+.comp-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.comp-table th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-weight: 500;
+}
+.comp-table td {
+  padding: 12px 0;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.comp-table td:first-child { color: var(--text); font-weight: 500; }
+
+/* PCB Feature Highlights */
+.pcb-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 48px;
+}
+.pcb-feature {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+}
+.pcb-feature .icon-mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.pcb-feature h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.pcb-feature p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* =====================================================================
+   SIGNAL FLOW
+====================================================================== */
+.signal-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 32px 0;
+  overflow-x: auto;
+}
+.sf-node {
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-align: center;
+  min-width: 110px;
+  flex-shrink: 0;
+}
+.sf-node .sf-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.sf-node .sf-name { font-weight: 600; font-size: 13px; }
+.sf-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 6px;
+  flex-shrink: 0;
+}
+.sf-proto {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+.sf-line {
+  width: 40px;
+  height: 2px;
+  background: var(--border-hover);
+  position: relative;
+}
+.sf-line::after {
+  content: "";
+  position: absolute;
+  right: -1px; top: -3px;
+  border: 4px solid transparent;
+  border-left: 6px solid var(--border-hover);
+}
+
+/* =====================================================================
+   STL VIEWER
+====================================================================== */
+.stl-viewer-wrap {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+  margin-bottom: 48px;
+}
+.stl-viewer-card {
+  position: relative;
+  background: #0a0a0a;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  aspect-ratio: 16/10;
+}
+.stl-viewer-card canvas {
+  width: 100%; height: 100%;
+  display: block;
+}
+.stl-loader-bar {
+  position: absolute;
+  bottom: 16px; left: 16px; right: 16px;
+  z-index: 2;
+  transition: opacity 0.4s;
+}
+.stl-loader-bar.done { opacity: 0; pointer-events: none; }
+.stl-pct {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.stl-track {
+  height: 2px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.stl-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  transition: width 0.2s;
+}
+.stl-toolbar {
+  position: absolute;
+  top: 16px; right: 16px;
+  z-index: 2;
+  display: flex;
+  gap: 8px;
+}
+.stl-toolbar button {
+  padding: 8px 16px;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  transition: border-color 0.2s;
+}
+.stl-toolbar button:hover { border-color: var(--border-hover); }
+.stl-toolbar button.active { border-color: var(--accent); color: var(--accent); }
+.model-meta {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+}
+.model-meta h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.meta-row:last-child { border-bottom: none; }
+.meta-row .mk { color: var(--text-secondary); }
+.meta-row .mv { font-family: var(--font-mono); font-size: 13px; }
+@media (max-width: 768px) {
+  .stl-viewer-wrap { grid-template-columns: 1fr; }
+}
+
+/* =====================================================================
+   DOWNLOAD CARDS
+====================================================================== */
+.dl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+.dl-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: border-color 0.3s;
+}
+.dl-card:hover { border-color: var(--border-hover); }
+.dl-icon {
+  width: 44px; height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.dl-name { font-weight: 600; font-size: 14px; }
+.dl-ext { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+/* =====================================================================
+   GALLERY
+====================================================================== */
+.gallery-track {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 8px 0 24px;
+  cursor: grab;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+}
+.gallery-track.dragging { cursor: grabbing; scroll-behavior: auto; }
+.gallery-track::-webkit-scrollbar { height: 4px; }
+.gallery-track::-webkit-scrollbar-thumb { background: rgba(255,107,53,0.3); border-radius: 2px; }
+.g-card {
+  flex: 0 0 440px;
+  aspect-ratio: 4/3;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #0a0a0a;
+  border: 1px solid var(--border);
+  position: relative;
+  transition: border-color 0.3s;
+}
+.g-card img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  transition: transform 0.6s;
+}
+.g-card:hover img { transform: scale(1.03); }
+.g-card:hover { border-color: var(--border-hover); }
+@media (max-width: 768px) {
+  .g-card { flex: 0 0 320px; }
+}
+
+/* =====================================================================
+   ROADMAP
+====================================================================== */
+.roadmap-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 48px;
+}
+.progress-circle {
+  position: relative;
+  width: 80px; height: 80px;
+  flex-shrink: 0;
+}
+.progress-circle svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.progress-circle .bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 6; }
+.progress-circle .fill { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; }
+.progress-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+}
+.progress-label small { font-size: 10px; color: var(--text-muted); font-weight: 400; }
+.roadmap-phases {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.phase-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+}
+.phase-card h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.phase-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.phase-tag.done { background: rgba(34,197,94,0.1); color: #22c55e; }
+.phase-tag.active { background: var(--accent-dim); color: var(--accent); }
+.phase-tag.planned { background: rgba(255,255,255,0.04); color: var(--text-muted); }
+.phase-card ul {
+  list-style: none;
+  padding: 0;
+}
+.phase-card li {
+  padding: 6px 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.phase-card li .check { color: #22c55e; font-size: 14px; }
+.phase-card li .pending { color: var(--text-muted); font-size: 14px; }
+@media (max-width: 768px) {
+  .roadmap-phases { grid-template-columns: 1fr; }
+}
+
+/* =====================================================================
+   DOWNLOADS SECTION
+====================================================================== */
+.downloads-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+.download-card {
+  display: flex;
+  flex-direction: column;
+  padding: 28px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: border-color 0.3s;
+}
+.download-card:hover { border-color: var(--border-hover); }
+.download-card .icon {
+  width: 48px; height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-radius: 12px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.download-card .name { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+.download-card .type { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); }
+
+/* =====================================================================
+   FOOTER
+====================================================================== */
+.footer {
+  padding: 48px 0;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+.footer p {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.footer a { color: var(--text-secondary); transition: color 0.2s; }
+.footer a:hover { color: var(--text); }
+
+/* =====================================================================
+   PID CARDS
+====================================================================== */
+.pid-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.pid-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+}
+.pid-card .kchar {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 48px;
+  font-weight: 300;
+  color: var(--accent);
+  line-height: 1;
+}
+.pid-card .kval {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.pid-card .kname {
+  font-weight: 600;
+  font-size: 14px;
+  margin-top: 12px;
+}
+.pid-card .kdesc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+@media (max-width: 768px) {
+  .pid-row { grid-template-columns: 1fr; }
+  .pcb-hero-banner { grid-template-columns: repeat(2, 1fr); }
+  .pcb-features { grid-template-columns: 1fr; }
+  .pcb-layout { grid-template-columns: 1fr; }
+}
+
+/* =====================================================================
+   RESPONSIVE UTILITIES
+====================================================================== */
+@media (max-width: 768px) {
+  .wrap { padding: 0 20px; }
+  section { padding: 80px 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- SCROLL PROGRESS -->
+<div class="scroll-progress" id="scroll-progress"></div>
+
+<!-- NAVIGATION -->
+<nav class="nav" id="nav">
+  <a class="nav-brand" href="index.html">SBR-01</a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="#overview" class="nav-link">Overview</a>
+    <a href="#architecture" class="nav-link">Architecture</a>
+    <a href="#engineering" class="nav-link">Engineering</a>
+    <a href="#pcb" class="nav-link">PCB</a>
+    <a href="#models" class="nav-link">CAD</a>
+    <a href="#gallery" class="nav-link">Gallery</a>
+    <a href="#downloads" class="nav-link">Downloads</a>
+  </div>
+  <a class="nav-github" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot" target="_blank" rel="noopener">
+    <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+    GitHub
+  </a>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</nav>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero" id="top">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div class="hero-left">
+        <div class="hero-eyebrow reveal"><span class="dot-live"></span> Robotics Project</div>
+        <h1 class="hero-title reveal">Smart<br><span class="accent">Self-Balancing</span><br>Robot</h1>
+        <p class="hero-sub reveal">A two-wheeled robot that balances itself using real-time PID control, a custom 4-layer PCB, and onboard computer vision. Designed and built from scratch.</p>
+        <div class="hero-tech-pills reveal">
+          <span>ESP32</span>
+          <span>MPU-6500</span>
+          <span>Custom PCB</span>
+          <span>Pi 5 Vision</span>
+          <span>PID Control</span>
+        </div>
+        <div class="hero-buttons reveal">
+          <a class="btn-primary" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            View on GitHub
+          </a>
+          <a class="btn-secondary" href="#pcb">Explore PCB</a>
+          <a class="btn-secondary" href="#models">View 3D Model</a>
+        </div>
+      </div>
+
+      <div class="hero-right reveal">
+        <div class="hero-viewer" id="hero-viewer">
+          <img src="images/angle.png" alt="SBR-01 Smart Self-Balancing Robot — 3/4 angle view showing custom PCB, ESP32, articulated legs, and mechanical assembly" />
+          <canvas id="viewer-3d"></canvas>
+          <div class="view-toggle" id="view-toggle">
+            <button id="btn-photo">Photo</button>
+            <button id="btn-3d" class="active">3D</button>
+          </div>
+          <div class="viewer-loader" id="viewer-loader">
+            <div class="lh"><span>Loading 3D model</span><span class="v" id="vl-pct">0%</span></div>
+            <div class="bar"><i id="vl-bar"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero Metrics Strip -->
+    <div class="hero-metrics reveal">
+      <div class="hero-metric">
+        <div class="num">100<span class="unit">Hz</span></div>
+        <div class="label">Control Loop</div>
+      </div>
+      <div class="hero-metric">
+        <div class="num">4<span class="unit">-Layer</span></div>
+        <div class="label">Custom PCB</div>
+      </div>
+      <div class="hero-metric">
+        <div class="num">40</div>
+        <div class="label">PCB Components</div>
+      </div>
+      <div class="hero-metric">
+        <div class="num">6<span class="unit">-DOF</span></div>
+        <div class="label">IMU Sensing</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== KEY FEATURES ===================== -->
+<section id="overview">
+  <div class="wrap">
+    <div class="section-eyebrow reveal">Overview</div>
+    <h2 class="section-title reveal">Key Features</h2>
+    <p class="section-sub reveal" style="margin-bottom: 48px;">Six integrated subsystems — sensing, control, actuation, power, structure, and vision.</p>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon">&#9878;</div>
+        <h3>Self-Balancing</h3>
+        <p>PID control at 100 Hz with complementary filter fusing gyroscope and accelerometer data.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">&#9881;</div>
+        <h3>ESP32 Control</h3>
+        <p>Dual-core 240 MHz microcontroller running real-time firmware with deterministic timing.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">&#9783;</div>
+        <h3>MPU-6500 IMU</h3>
+        <p>6-axis inertial measurement unit on I2C with interrupt-driven data-ready at 100 Hz.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">&#9673;</div>
+        <h3>Computer Vision</h3>
+        <p>Pi 5 runs YOLOv8n + MediaPipe at 20+ fps. Person following, gesture control, face recognition.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">&#9632;</div>
+        <h3>Custom PCB</h3>
+        <p>4-layer board with 40 components and 0 DRC violations. Replaces 40 jumper wires.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">&#10697;</div>
+        <h3>Articulated Legs</h3>
+        <p>4-bar linkage with equal 97 mm arms. 66 mm seated, 220 mm standing variable height.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SYSTEM ARCHITECTURE ===================== -->
+<section id="architecture">
+  <div class="wrap">
+    <div class="section-eyebrow reveal">System Design</div>
+    <h2 class="section-title reveal">Architecture</h2>
+    <p class="section-sub reveal" style="margin-bottom: 32px;">Closed-loop control from sensor to actuator at 100 Hz.</p>
+
+    <div class="arch-diagram-wrap reveal">
+      <div class="arch-flow">
+        <div class="arch-node">
+          <div class="label">Sensor</div>
+          <div class="name">MPU-6500</div>
+        </div>
+        <div class="arch-arrow">&rarr;</div>
+        <div class="arch-node">
+          <div class="label">Fusion</div>
+          <div class="name">Comp. Filter</div>
+        </div>
+        <div class="arch-arrow">&rarr;</div>
+        <div class="arch-node highlight">
+          <div class="label">Control</div>
+          <div class="name">PID</div>
+        </div>
+        <div class="arch-arrow">&rarr;</div>
+        <div class="arch-node">
+          <div class="label">Driver</div>
+          <div class="name">L298N</div>
+        </div>
+        <div class="arch-arrow">&rarr;</div>
+        <div class="arch-node">
+          <div class="label">Output</div>
+          <div class="name">Motors</div>
+        </div>
+      </div>
+      <div class="arch-feedback">&#8627; Encoder Feedback &#8594; PID Error Correction &#8627;</div>
+    </div>
+
+    <div class="arch-specs reveal">
+      <div class="arch-spec-card">
+        <h4>ESP32 <span class="tag">Real-Time</span></h4>
+        <table class="spec-table">
+          <tr><td>Role</td><td>Balance + motor control</td></tr>
+          <tr><td>Clock</td><td>240 MHz dual-core</td></tr>
+          <tr><td>Loop rate</td><td>100 Hz (10 ms)</td></tr>
+          <tr><td>Interfaces</td><td>SPI, I2C, UART, GPIO</td></tr>
+          <tr><td>Firmware</td><td>Arduino / C++</td></tr>
+        </table>
+      </div>
+      <div class="arch-spec-card">
+        <h4>Raspberry Pi 5 <span class="tag">Vision</span></h4>
+        <table class="spec-table">
+          <tr><td>Role</td><td>CV + behaviour layer</td></tr>
+          <tr><td>Pipeline</td><td>YOLOv8n + MediaPipe</td></tr>
+          <tr><td>Throughput</td><td>20+ fps</td></tr>
+          <tr><td>Link to ESP32</td><td>UART 115200 baud</td></tr>
+          <tr><td>Workers</td><td>4 async threads</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ENGINEERING ===================== -->
+<section id="engineering">
+  <div class="wrap">
+    <div class="section-eyebrow reveal">Deep Dive</div>
+    <h2 class="section-title reveal">Engineering</h2>
+    <p class="section-sub reveal" style="margin-bottom: 32px;">Mechanical, electronics, power, software, and computer vision.</p>
+
+    <div class="eng-tabs reveal" id="eng-tabs">
+      <button class="eng-tab active" data-eng="mechanical">Mechanical</button>
+      <button class="eng-tab" data-eng="electronics">Electronics</button>
+      <button class="eng-tab" data-eng="power">Power</button>
+      <button class="eng-tab" data-eng="software">Software</button>
+      <button class="eng-tab" data-eng="vision">Vision & AI</button>
+    </div>
+
+    <!-- MECHANICAL -->
+    <div class="eng-pane active" id="pane-mechanical">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:32px;">
+        <div>
+          <table class="spec-table">
+            <tr><td>Standing height</td><td>~220 mm</td></tr>
+            <tr><td>Sitting height</td><td>~66 mm</td></tr>
+            <tr><td>Vertical travel</td><td>~155 mm</td></tr>
+            <tr><td>Wheel diameter</td><td>65 mm</td></tr>
+            <tr><td>Body footprint</td><td>18 x 15 cm</td></tr>
+            <tr><td>Arm length</td><td>97 mm (equal)</td></tr>
+            <tr><td>Linkage</td><td>4-bar parallel</td></tr>
+            <tr><td>Gear train</td><td>20T spur, 1:1</td></tr>
+            <tr><td>Material</td><td>PLA / PETG</td></tr>
+            <tr><td>Total print mass</td><td>~471 g</td></tr>
+          </table>
+        </div>
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:28px;">
+          <h4 style="font-size:16px; font-weight:600; margin-bottom:12px;">Why equal-length arms?</h4>
+          <p style="font-size:14px; color:var(--text-secondary); line-height:1.7;">With two equal 97 mm links, the upper-arm and lower-arm angles always sum to a constant relative to gravity. The foot tracks essentially straight up and down through the travel range. CAD walk-through confirms 4 mm of forward drift at full extension.</p>
+          <p style="font-size:14px; color:var(--text-secondary); line-height:1.7; margin-top:12px;">This keeps the center of gravity directly above the wheel axle during stand-up, so the PID controller doesn't fight a moving setpoint.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ELECTRONICS -->
+    <div class="eng-pane" id="pane-electronics">
+      <div class="diagram-container">
+        <div class="diagram-header">
+          <span>System Block Diagram</span>
+          <div class="diagram-legend">
+            <span><i style="background:#60a5fa"></i> Signal</span>
+            <span><i style="background:#fbbf24"></i> Power</span>
+            <span><i style="background:#c084fc"></i> UART</span>
+          </div>
+        </div>
+        <svg viewBox="0 0 1000 360" width="100%" style="display:block;">
+          <defs>
+            <marker id="arrS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 Z" fill="#60a5fa"/>
+            </marker>
+            <marker id="arrP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 Z" fill="#fbbf24"/>
+            </marker>
+            <marker id="arrU" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 Z" fill="#c084fc"/>
+            </marker>
+          </defs>
+
+          <!-- POWER COLUMN -->
+          <g font-family="JetBrains Mono, monospace" font-size="9" letter-spacing="1.5">
+            <text x="80" y="22" fill="#fbbf24" text-anchor="middle">POWER</text>
+          </g>
+          <rect x="20" y="34" width="140" height="56" rx="10" fill="rgba(251,191,36,0.06)" stroke="rgba(251,191,36,0.4)"/>
+          <text x="90" y="56" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" font-weight="600" fill="#fff">3S 18650</text>
+          <text x="90" y="74" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#a0a0a0">11.1V · 2600mAh</text>
+
+          <rect x="20" y="100" width="140" height="34" rx="8" fill="rgba(251,191,36,0.04)" stroke="rgba(251,191,36,0.25)"/>
+          <text x="90" y="122" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" fill="#fff">BMS · protection</text>
+
+          <rect x="20" y="148" width="64" height="42" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)"/>
+          <text x="52" y="166" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#fff">Buck 1</text>
+          <text x="52" y="180" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#fbbf24">&#8594; 6V</text>
+
+          <rect x="96" y="148" width="64" height="42" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)"/>
+          <text x="128" y="166" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#fff">Buck 2</text>
+          <text x="128" y="180" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#fbbf24">&#8594; 5V</text>
+
+          <rect x="20" y="202" width="140" height="36" rx="8" fill="rgba(251,191,36,0.04)" stroke="rgba(251,191,36,0.25)"/>
+          <text x="90" y="224" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" fill="#fff">Direct 11.1V &#8594; L298N</text>
+
+          <!-- power wires inside -->
+          <path d="M90 90 V 100" stroke="#fbbf24" stroke-width="1.4"/>
+          <path d="M90 134 V 142 M52 142 V 148 M128 142 V 148 M90 134 H 52 M90 134 H 128" stroke="#fbbf24" stroke-width="1.2" fill="none"/>
+          <path d="M90 134 V 202" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="3 3"/>
+
+          <!-- COMPUTE COLUMN -->
+          <g font-family="JetBrains Mono, monospace" font-size="9" letter-spacing="1.5">
+            <text x="380" y="22" fill="#60a5fa" text-anchor="middle">COMPUTE</text>
+          </g>
+          <rect x="290" y="70" width="180" height="80" rx="12" fill="rgba(96,165,250,0.06)" stroke="rgba(96,165,250,0.5)"/>
+          <text x="380" y="98" text-anchor="middle" font-family="Inter, sans-serif" font-size="18" font-weight="600" fill="#60a5fa">ESP32</text>
+          <text x="380" y="116" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#fff">real-time loop</text>
+          <text x="380" y="132" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#a0a0a0">PID · 100 Hz · I&#178;C · GPIO</text>
+
+          <rect x="290" y="180" width="180" height="64" rx="12" fill="rgba(192,132,252,0.06)" stroke="rgba(192,132,252,0.5)"/>
+          <text x="380" y="204" text-anchor="middle" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#c084fc">Raspberry Pi 5</text>
+          <text x="380" y="222" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#fff">vision · behaviour</text>
+          <text x="380" y="236" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#a0a0a0">YOLOv8 · MediaPipe</text>
+
+          <!-- UART -->
+          <path d="M380 150 V 180" stroke="#c084fc" stroke-width="1.4" marker-end="url(#arrU)"/>
+          <text x="388" y="170" font-family="JetBrains Mono, monospace" font-size="9" fill="#c084fc">UART</text>
+
+          <!-- PERIPHERALS COLUMN -->
+          <g font-family="JetBrains Mono, monospace" font-size="9" letter-spacing="1.5">
+            <text x="640" y="22" fill="#60a5fa" text-anchor="middle">PERIPHERALS</text>
+          </g>
+          <rect x="555" y="36" width="170" height="46" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.13)"/>
+          <text x="640" y="56" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" fill="#fff">MPU-6500</text>
+          <text x="640" y="71" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#a0a0a0">gyro · accel · I2C</text>
+
+          <rect x="555" y="94" width="170" height="46" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.13)"/>
+          <text x="640" y="114" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" fill="#fff">PCA9685</text>
+          <text x="640" y="129" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#a0a0a0">16-ch PWM · I&#178;C</text>
+
+          <rect x="555" y="152" width="170" height="46" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.13)"/>
+          <text x="640" y="172" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" fill="#fff">L298N</text>
+          <text x="640" y="187" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#a0a0a0">L298N dual H-bridge · PWM+DIR · no voltage drop</text>
+
+          <rect x="555" y="210" width="170" height="46" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.13)"/>
+          <text x="640" y="230" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" fill="#fff">3.5" SPI Display</text>
+          <text x="640" y="245" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#a0a0a0">status · diag</text>
+
+          <!-- ACTUATORS COLUMN -->
+          <g font-family="JetBrains Mono, monospace" font-size="9" letter-spacing="1.5">
+            <text x="890" y="22" fill="#fbbf24" text-anchor="middle">ACTUATORS</text>
+          </g>
+          <rect x="810" y="94" width="170" height="46" rx="8" fill="rgba(251,191,36,0.06)" stroke="rgba(251,191,36,0.4)"/>
+          <text x="895" y="114" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" fill="#fff">4x MG996R</text>
+          <text x="895" y="129" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#a0a0a0">hip · knee · L · R</text>
+
+          <rect x="810" y="152" width="170" height="46" rx="8" fill="rgba(251,191,36,0.06)" stroke="rgba(251,191,36,0.4)"/>
+          <text x="895" y="172" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" fill="#fff">2x JGA25-370 encoder · 1:34</text>
+          <text x="895" y="187" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#a0a0a0">drive motors</text>
+
+          <!-- Power lines -->
+          <path d="M160 169 H 240 V 117 H 555" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="3 3" fill="none"/>
+          <path d="M725 117 H 810" stroke="#fbbf24" stroke-width="1.4" marker-end="url(#arrP)"/>
+          <text x="730" y="110" font-family="JetBrains Mono, monospace" font-size="8.5" fill="#fbbf24">6V</text>
+
+          <path d="M160 169 H 220 V 220 H 270 V 110 H 290" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="3 3" fill="none"/>
+          <text x="226" y="106" font-family="JetBrains Mono, monospace" font-size="8.5" fill="#fbbf24">5V</text>
+
+          <path d="M160 220 H 240 V 175 H 555" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="3 3" fill="none"/>
+          <path d="M725 175 H 810" stroke="#fbbf24" stroke-width="1.4" marker-end="url(#arrP)"/>
+          <text x="730" y="168" font-family="JetBrains Mono, monospace" font-size="8.5" fill="#fbbf24">11.1V</text>
+
+          <!-- Signal lines -->
+          <path d="M470 90 H 510 V 60 H 555" stroke="#60a5fa" stroke-width="1.4" fill="none" marker-end="url(#arrS)"/>
+          <text x="475" y="56" font-family="JetBrains Mono, monospace" font-size="8.5" fill="#a0a0a0">I&#178;C</text>
+          <path d="M470 110 H 555" stroke="#60a5fa" stroke-width="1.4" fill="none" marker-end="url(#arrS)"/>
+          <text x="475" y="106" font-family="JetBrains Mono, monospace" font-size="8.5" fill="#a0a0a0">I&#178;C</text>
+          <path d="M470 130 H 510 V 175 H 555" stroke="#60a5fa" stroke-width="1.4" fill="none" marker-end="url(#arrS)"/>
+          <text x="513" y="158" font-family="JetBrains Mono, monospace" font-size="8.5" fill="#a0a0a0">GPIO</text>
+          <path d="M470 130 H 500 V 232 H 555" stroke="#60a5fa" stroke-width="1.4" fill="none" marker-end="url(#arrS)"/>
+          <text x="503" y="226" font-family="JetBrains Mono, monospace" font-size="8.5" fill="#a0a0a0">SPI</text>
+
+          <!-- PCA -> Servos, L298N -> motors -->
+          <path d="M725 117 H 745 V 117 H 810" stroke="#60a5fa" stroke-width="1.4" fill="none" marker-end="url(#arrS)"/>
+          <text x="745" y="110" font-family="JetBrains Mono, monospace" font-size="8.5" fill="#a0a0a0">PWM x4</text>
+          <path d="M725 175 H 810" stroke="#60a5fa" stroke-width="1.4" fill="none" marker-end="url(#arrS)"/>
+          <text x="745" y="168" font-family="JetBrains Mono, monospace" font-size="8.5" fill="#a0a0a0">DC x2</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- POWER -->
+    <div class="eng-pane" id="pane-power">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:32px;">
+        <div>
+          <h4 style="font-size:16px; font-weight:600; margin-bottom:16px;">Power Rails</h4>
+          <table class="spec-table">
+            <tr><td>Battery</td><td>3S 18650, 11.1V 2600mAh</td></tr>
+            <tr><td>VBAT (11.1V)</td><td>Direct to L298N motors</td></tr>
+            <tr><td>+6V Servo</td><td>XL4016 buck, 10A max</td></tr>
+            <tr><td>+5V Logic</td><td>XL4016 buck, 10A max</td></tr>
+            <tr><td>+3.3V</td><td>AMS1117-3.3 LDO from 5V</td></tr>
+            <tr><td>Protection</td><td>IRF9540N reverse polarity</td></tr>
+            <tr><td>BMS</td><td>3S cell-level cutoff</td></tr>
+          </table>
+        </div>
+        <div>
+          <h4 style="font-size:16px; font-weight:600; margin-bottom:16px;">Power Budget</h4>
+          <table class="spec-table">
+            <tr><td>Motors (stall)</td><td>2 x 2.4A = 4.8A</td></tr>
+            <tr><td>Servos (peak)</td><td>4 x 2.5A = 10A</td></tr>
+            <tr><td>ESP32</td><td>~240 mA</td></tr>
+            <tr><td>Pi 5 (active)</td><td>~3A at 5V</td></tr>
+            <tr><td>Display + sensors</td><td>~200 mA</td></tr>
+            <tr><td>Runtime estimate</td><td>~60 min balanced</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOFTWARE -->
+    <div class="eng-pane" id="pane-software">
+      <div class="pid-row">
+        <div class="pid-card">
+          <div class="kchar">P</div>
+          <div class="kval">Kp = 25.0</div>
+          <div class="kname">Proportional</div>
+          <div class="kdesc">Immediate response proportional to error. Primary restoring force that pushes the robot back toward vertical.</div>
+        </div>
+        <div class="pid-card">
+          <div class="kchar">I</div>
+          <div class="kval">Ki = 1.0</div>
+          <div class="kname">Integral</div>
+          <div class="kdesc">Accumulates steady-state error over time. Corrects persistent lean from uneven weight distribution.</div>
+        </div>
+        <div class="pid-card">
+          <div class="kchar">D</div>
+          <div class="kval">Kd = 1.5</div>
+          <div class="kname">Derivative</div>
+          <div class="kdesc">Dampens oscillation by opposing the rate of change. Prevents overshoot during rapid corrections.</div>
+        </div>
+      </div>
+      <div class="code-block">
+        <div style="margin-bottom:12px; font-size:11px; color:var(--text-muted); letter-spacing:0.08em; text-transform:uppercase;">Balance Loop — 100 Hz</div>
+<span class="cm">// Complementary filter</span>
+<span class="kw">float</span> pitch = <span class="num">0.98</span> * (pitch + gyroY * dt) + <span class="num">0.02</span> * <span class="fn">atan2</span>(accelX, accelZ);
+
+<span class="cm">// PID compute</span>
+<span class="kw">float</span> error = targetAngle - pitch;
+integral += error * dt;
+<span class="kw">float</span> derivative = (error - prevError) / dt;
+<span class="kw">float</span> output = Kp * error + Ki * integral + Kd * derivative;
+
+<span class="cm">// Motor output</span>
+output = <span class="fn">constrain</span>(output, <span class="num">-255</span>, <span class="num">255</span>);
+<span class="fn">setMotors</span>(output);
+      </div>
+    </div>
+
+    <!-- VISION & AI -->
+    <div class="eng-pane" id="pane-vision">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:32px;">
+        <div>
+          <h4 style="font-family:var(--font-mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:16px;">Vision Pipeline</h4>
+          <table class="spec-table">
+            <tr><td>Compute</td><td>Raspberry Pi 5 &middot; 4 GB</td></tr>
+            <tr><td>Camera</td><td>USB webcam &middot; 640x480</td></tr>
+            <tr><td>Object Detection</td><td>YOLOv8n &middot; 20+ fps</td></tr>
+            <tr><td>Hand Tracking</td><td>MediaPipe Hands &middot; 20 fps</td></tr>
+            <tr><td>Pose Estimation</td><td>MediaPipe Pose &middot; 25 fps</td></tr>
+            <tr><td>Face Recognition</td><td>InsightFace &middot; 10 fps</td></tr>
+            <tr><td>Inference</td><td>100% local &middot; no cloud</td></tr>
+            <tr><td>Optional Accelerator</td><td>Hailo-8L &middot; 13 TOPS</td></tr>
+          </table>
+        </div>
+        <div>
+          <h4 style="font-family:var(--font-mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:16px;">AI Capabilities</h4>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:16px;">
+              <div style="font-size:14px; font-weight:600; margin-bottom:4px;">Person Following</div>
+              <div style="font-size:12px; color:var(--text-secondary);">YOLOv8n centroid tracking, turn + distance error at 10 Hz</div>
+            </div>
+            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:16px;">
+              <div style="font-size:14px; font-weight:600; margin-bottom:4px;">Gesture Control</div>
+              <div style="font-size:12px; color:var(--text-secondary);">Palm: STOP &middot; Fist: SIT &middot; Peace: STAND &middot; Point: GO</div>
+            </div>
+            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:16px;">
+              <div style="font-size:14px; font-weight:600; margin-bottom:4px;">Fall Detection</div>
+              <div style="font-size:12px; color:var(--text-secondary);">Pitch > 45&deg; triggers controlled sit in &lt;50 ms</div>
+            </div>
+            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:16px;">
+              <div style="font-size:14px; font-weight:600; margin-bottom:4px;">Face Recognition</div>
+              <div style="font-size:12px; color:var(--text-secondary);">Known/unknown face detection, Telegram alerts on intrusion</div>
+            </div>
+            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:16px;">
+              <div style="font-size:14px; font-weight:600; margin-bottom:4px;">Obstacle Avoidance</div>
+              <div style="font-size:12px; color:var(--text-secondary);">MiDaS monocular depth estimation for navigation</div>
+            </div>
+            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:16px;">
+              <div style="font-size:14px; font-weight:600; margin-bottom:4px;">State Machine</div>
+              <div style="font-size:12px; color:var(--text-secondary);">IDLE &rarr; STANDING &rarr; FOLLOWING &rarr; GESTURE &rarr; PATROL</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PCB ===================== -->
+<section id="pcb">
+  <div class="wrap">
+    <div class="section-eyebrow reveal">Electronics</div>
+    <h2 class="section-title reveal">Custom PCB</h2>
+    <p class="section-sub reveal" style="margin-bottom: 48px;">A purpose-built 4-layer board that replaces 40 jumper wires with a single, reliable PCB.</p>
+
+    <!-- PCB Stats Banner -->
+    <div class="pcb-hero-banner reveal">
+      <div class="pcb-stat">
+        <div class="val">94.6<span class="accent">mm</span></div>
+        <div class="desc">Board Width</div>
+      </div>
+      <div class="pcb-stat">
+        <div class="val">4</div>
+        <div class="desc">Copper Layers</div>
+      </div>
+      <div class="pcb-stat">
+        <div class="val">40</div>
+        <div class="desc">Components</div>
+      </div>
+      <div class="pcb-stat">
+        <div class="val" style="color:#22c55e;">0</div>
+        <div class="desc">DRC Violations</div>
+      </div>
+    </div>
+
+    <!-- PCB Feature Highlights -->
+    <div class="pcb-features reveal">
+      <div class="pcb-feature">
+        <div class="icon-mono">Protection</div>
+        <h4>Reverse Polarity</h4>
+        <p>IRF9540N P-MOSFET with 10k gate divider and SMBJ12A TVS clamp.</p>
+      </div>
+      <div class="pcb-feature">
+        <div class="icon-mono">Regulation</div>
+        <h4>3.3V LDO</h4>
+        <p>AMS1117-3.3 with 10uF + 100nF decoupling. Powers ESP32 and sensor logic.</p>
+      </div>
+      <div class="pcb-feature">
+        <div class="icon-mono">Signal</div>
+        <h4>RC Filtering</h4>
+        <p>4x encoder RC filters at 15.9 kHz cutoff for clean quadrature signals.</p>
+      </div>
+    </div>
+
+    <!-- On-Board Components Table -->
+    <div class="pcb-layout reveal">
+      <div class="pcb-table-wrap" style="margin-bottom:0;">
+        <h4>On-Board Components</h4>
+        <table class="comp-table">
+          <thead>
+            <tr><th>Component</th><th>Function</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>IRF9540N P-MOSFET</td><td>Reverse polarity protection</td><td>10k gate divider, SMBJ12A TVS</td></tr>
+            <tr><td>AMS1117-3.3 LDO</td><td>5V to 3.3V regulation</td><td>1A, 10uF + 100nF decoupling</td></tr>
+            <tr><td>ESP32 Headers (J12/J13)</td><td>MCU socket</td><td>2x15-pin, 22.86mm spacing</td></tr>
+            <tr><td>L298N Control (J9)</td><td>Motor driver interface</td><td>6-pin Phoenix 5.08mm terminal</td></tr>
+            <tr><td>GY-6500 IMU Socket (J5)</td><td>IMU SPI interface</td><td>4x33ohm series damping</td></tr>
+            <tr><td>PCA9685 Socket (J6)</td><td>Servo PWM driver</td><td>I2C, 4.7k pull-ups</td></tr>
+            <tr><td>Encoder RC Filters</td><td>Signal conditioning</td><td>4x RC at 15.9 kHz</td></tr>
+            <tr><td>Passives</td><td>Gate, pull-down, decoupling</td><td>14 resistors, 10 capacitors</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pcb-table-wrap" style="margin-bottom:0;">
+        <h4>External Modules (plug-in)</h4>
+        <table class="comp-table">
+          <thead>
+            <tr><th>Module</th><th>Role</th><th>Connection</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ESP32-WROOM-32</td><td>Real-time control MCU</td><td>J12/J13 headers</td></tr>
+            <tr><td>L298N H-Bridge</td><td>Motor driver</td><td>J9 control signals</td></tr>
+            <tr><td>GY-6500 (MPU-6500)</td><td>6-axis IMU</td><td>J5 SPI</td></tr>
+            <tr><td>PCA9685</td><td>Servo PWM driver</td><td>J6 I2C</td></tr>
+            <tr><td>2x XL4016 Buck</td><td>6V + 5V regulation</td><td>J2, J3</td></tr>
+            <tr><td>Raspberry Pi 5</td><td>Vision compute</td><td>J10 (5V), J11 (UART)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Board Specs -->
+    <div class="pcb-table-wrap reveal">
+      <h4>Board Specifications</h4>
+      <table class="spec-table">
+        <tr><td>Dimensions</td><td>94.6 x 58.1 mm</td></tr>
+        <tr><td>Layers</td><td>4 — F.Signal / GND / Power / B.Signal</td></tr>
+        <tr><td>Copper weight</td><td>1 oz all layers</td></tr>
+        <tr><td>Thickness</td><td>1.6 mm</td></tr>
+        <tr><td>Min trace / space</td><td>0.2 mm / 0.2 mm</td></tr>
+        <tr><td>Power traces</td><td>0.8 mm min, VBAT 2.0 mm</td></tr>
+        <tr><td>Min drill</td><td>0.3 mm</td></tr>
+        <tr><td>DRC</td><td style="color:#22c55e">0 violations, 0 unconnected</td></tr>
+        <tr><td>Revision</td><td>Rev C</td></tr>
+      </table>
+    </div>
+
+    <!-- Signal Flow -->
+    <div class="reveal" style="margin-bottom:48px;">
+      <h4 style="font-family:var(--font-mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:16px;">Signal Flow</h4>
+      <div class="signal-flow">
+        <div class="sf-node">
+          <div class="sf-label">Sensors</div>
+          <div class="sf-name">IMU &middot; ToF</div>
+        </div>
+        <div class="sf-arrow">
+          <span class="sf-proto">I2C / SPI</span>
+          <div class="sf-line"></div>
+        </div>
+        <div class="sf-node" style="border-color:rgba(255,107,53,0.4);">
+          <div class="sf-label">MCU</div>
+          <div class="sf-name" style="color:var(--accent);">ESP32</div>
+        </div>
+        <div class="sf-arrow">
+          <span class="sf-proto">PWM / GPIO</span>
+          <div class="sf-line"></div>
+        </div>
+        <div class="sf-node">
+          <div class="sf-label">Drivers</div>
+          <div class="sf-name">L298N &middot; PCA9685</div>
+        </div>
+        <div class="sf-arrow">
+          <span class="sf-proto">DC / Servo</span>
+          <div class="sf-line"></div>
+        </div>
+        <div class="sf-node">
+          <div class="sf-label">Actuators</div>
+          <div class="sf-name">Motors &middot; Servos</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Download KiCad Files -->
+    <h4 style="font-family:var(--font-mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:16px;" class="reveal">Design Files</h4>
+    <div class="dl-grid reveal">
+      <a class="dl-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/blob/main/pcb/robot%20pcb.kicad_pro" target="_blank" rel="noopener">
+        <div class="dl-icon">PRO</div>
+        <div><div class="dl-name">KiCad Project</div><div class="dl-ext">.kicad_pro</div></div>
+      </a>
+      <a class="dl-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/blob/main/pcb/robot%20pcb.kicad_sch" target="_blank" rel="noopener">
+        <div class="dl-icon">SCH</div>
+        <div><div class="dl-name">Schematic</div><div class="dl-ext">.kicad_sch</div></div>
+      </a>
+      <a class="dl-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/blob/main/pcb/robot%20pcb.kicad_pcb" target="_blank" rel="noopener">
+        <div class="dl-icon">PCB</div>
+        <div><div class="dl-name">Board Layout</div><div class="dl-ext">.kicad_pcb</div></div>
+      </a>
+      <a class="dl-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/blob/main/pcb/pcbBOM" target="_blank" rel="noopener">
+        <div class="dl-icon">BOM</div>
+        <div><div class="dl-name">Bill of Materials</div><div class="dl-ext">pcbBOM</div></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 3D MODELS ===================== -->
+<section id="models">
+  <div class="wrap">
+    <div class="section-eyebrow reveal">Mechanical</div>
+    <h2 class="section-title reveal">3D Models</h2>
+    <p class="section-sub reveal" style="margin-bottom: 48px;">Full assembly viewable in the browser. Orbit, zoom, and inspect all 24 printed parts.</p>
+
+    <div class="stl-viewer-wrap reveal">
+      <div class="stl-viewer-card">
+        <canvas id="stl-viewer-3d"></canvas>
+        <div class="stl-loader-bar" id="stl-loader">
+          <div class="stl-pct" id="stl-pct">Loading STL...</div>
+          <div class="stl-track"><div class="stl-fill" id="stl-fill"></div></div>
+        </div>
+        <div class="stl-toolbar">
+          <button id="stl-reset">Reset View</button>
+          <button id="stl-wire">Wireframe</button>
+          <button id="stl-fs">Fullscreen</button>
+        </div>
+      </div>
+      <div class="model-meta">
+        <h4>Model Info</h4>
+        <div class="meta-row"><span class="mk">Parts</span><span class="mv">24 printed</span></div>
+        <div class="meta-row"><span class="mk">Servos</span><span class="mv">4x MG996R</span></div>
+        <div class="meta-row"><span class="mk">Material</span><span class="mv">PLA / PETG</span></div>
+        <div class="meta-row"><span class="mk">Weight</span><span class="mv">~471 g</span></div>
+        <div class="meta-row"><span class="mk">Print time</span><span class="mv">~18 hrs</span></div>
+        <div class="meta-row"><span class="mk">Infill</span><span class="mv">30%</span></div>
+        <div class="meta-row"><span class="mk">Dimensions</span><span class="mv">180x150x220 mm</span></div>
+      </div>
+    </div>
+
+    <h4 style="font-family:var(--font-mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:16px;" class="reveal">Download Files</h4>
+    <div class="dl-grid reveal">
+      <a class="dl-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/blob/main/3d/self%20balancing%20robot_.stl" target="_blank" rel="noopener">
+        <div class="dl-icon">STL</div>
+        <div><div class="dl-name">Full Assembly</div><div class="dl-ext">46.5 MB</div></div>
+      </a>
+      <a class="dl-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/blob/main/3d/self%20balancing%20robot.f3z" target="_blank" rel="noopener">
+        <div class="dl-icon">F3Z</div>
+        <div><div class="dl-name">Fusion 360 Archive</div><div class="dl-ext">61.2 MB</div></div>
+      </a>
+      <a class="dl-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/blob/main/3d/robot.STEP" target="_blank" rel="noopener">
+        <div class="dl-icon">STEP</div>
+        <div><div class="dl-name">Robot Assembly</div><div class="dl-ext">STEP</div></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== GALLERY ===================== -->
+<section id="gallery">
+  <div class="wrap">
+    <div class="section-eyebrow reveal">Build Log</div>
+    <h2 class="section-title reveal">Gallery</h2>
+    <p class="section-sub reveal" style="margin-bottom: 32px;">Drag to explore reference views.</p>
+    <div class="reveal">
+      <div class="gallery-track" id="gallery-track">
+        <div class="g-card"><img src="images/angle.png" alt="SBR-01 robot 3/4 angle view showing full assembly" draggable="false"/></div>
+        <div class="g-card"><img src="images/standing-side.png" alt="SBR-01 standing side profile — articulated legs extended" draggable="false"/></div>
+        <div class="g-card"><img src="images/side-sitting.png" alt="SBR-01 sitting side profile — legs retracted to 66mm" draggable="false"/></div>
+        <div class="g-card"><img src="images/top-down.png" alt="SBR-01 top-down view showing custom PCB and ESP32" draggable="false"/></div>
+        <div class="g-card"><img src="images/front.png" alt="SBR-01 front view showing wheel assembly and body" draggable="false"/></div>
+        <div class="g-card"><img src="images/rear.png" alt="SBR-01 rear view showing motor mounts and wiring" draggable="false"/></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ROADMAP ===================== -->
+<section id="roadmap">
+  <div class="wrap">
+    <div class="section-eyebrow reveal">Progress</div>
+    <h2 class="section-title reveal">Roadmap</h2>
+    <div class="roadmap-header reveal">
+      <div class="progress-circle">
+        <svg viewBox="0 0 100 100">
+          <circle class="bg" cx="50" cy="50" r="42"/>
+          <circle class="fill" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="176"/>
+        </svg>
+        <div class="progress-label">6/18<br><small>done</small></div>
+      </div>
+      <div>
+        <p style="font-size:18px; font-weight:600; margin-bottom:4px;">33% Complete</p>
+        <p style="font-size:14px; color:var(--text-secondary);">Design phase complete. Entering physical build and firmware tuning.</p>
+      </div>
+    </div>
+
+    <div class="roadmap-phases reveal">
+      <div class="phase-card">
+        <h4>Phase 1: Design <span class="phase-tag done">Complete</span></h4>
+        <ul>
+          <li><span class="check">&#10003;</span> Mechanical CAD (Fusion 360)</li>
+          <li><span class="check">&#10003;</span> PCB design (KiCad 8)</li>
+          <li><span class="check">&#10003;</span> Schematic review</li>
+          <li><span class="check">&#10003;</span> BOM finalization</li>
+          <li><span class="check">&#10003;</span> Torque analysis</li>
+          <li><span class="check">&#10003;</span> Power budget</li>
+        </ul>
+      </div>
+      <div class="phase-card">
+        <h4>Phase 2: Build <span class="phase-tag active">Active</span></h4>
+        <ul>
+          <li><span class="pending">&#9675;</span> 3D print all parts</li>
+          <li><span class="pending">&#9675;</span> Order PCB (JLCPCB)</li>
+          <li><span class="pending">&#9675;</span> Solder and assemble</li>
+          <li><span class="pending">&#9675;</span> Wiring harness</li>
+          <li><span class="pending">&#9675;</span> Mechanical assembly</li>
+          <li><span class="pending">&#9675;</span> Initial power-on test</li>
+        </ul>
+      </div>
+      <div class="phase-card">
+        <h4>Phase 3: Software <span class="phase-tag planned">Planned</span></h4>
+        <ul>
+          <li><span class="pending">&#9675;</span> PID tuning</li>
+          <li><span class="pending">&#9675;</span> Stand-up sequence</li>
+          <li><span class="pending">&#9675;</span> Vision pipeline</li>
+          <li><span class="pending">&#9675;</span> Person following</li>
+          <li><span class="pending">&#9675;</span> Gesture control</li>
+          <li><span class="pending">&#9675;</span> Autonomous patrol</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== DOWNLOADS ===================== -->
+<section id="downloads">
+  <div class="wrap">
+    <div class="section-eyebrow reveal">Open Files</div>
+    <h2 class="section-title reveal">Downloads</h2>
+    <p class="section-sub reveal" style="margin-bottom: 48px;">Everything you need to build your own.</p>
+    <div class="downloads-grid reveal">
+      <a class="download-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot" target="_blank" rel="noopener">
+        <div class="icon">FW</div>
+        <div class="name">Firmware</div>
+        <div class="type">ESP32 Arduino / C++</div>
+      </a>
+      <a class="download-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/blob/main/pcb/robot%20pcb.kicad_pro" target="_blank" rel="noopener">
+        <div class="icon">PCB</div>
+        <div class="name">PCB Files</div>
+        <div class="type">KiCad 8 project</div>
+      </a>
+      <a class="download-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/blob/main/pcb/robot%20pcb.kicad_sch" target="_blank" rel="noopener">
+        <div class="icon">SCH</div>
+        <div class="name">Schematic</div>
+        <div class="type">.kicad_sch</div>
+      </a>
+      <a class="download-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/blob/main/3d/self%20balancing%20robot_.stl" target="_blank" rel="noopener">
+        <div class="icon">CAD</div>
+        <div class="name">CAD Files</div>
+        <div class="type">STL / F3Z / STEP</div>
+      </a>
+      <a class="download-card" href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot/blob/main/pcb/pcbBOM" target="_blank" rel="noopener">
+        <div class="icon">BOM</div>
+        <div class="name">Bill of Materials</div>
+        <div class="type">Component list</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="footer">
+  <div class="wrap">
+    <p>SBR-01 &middot; Designed & built by <a href="https://github.com/Abdelwadoud-ben-kridis" target="_blank" rel="noopener">Abdelwadoud Ben Kridis</a> &middot; 2026 &middot; <a href="https://github.com/Abdelwadoud-ben-kridis/smart-self-balancing-robot" target="_blank" rel="noopener">GitHub</a></p>
+  </div>
+</footer>
+
+<!-- ===================== JAVASCRIPT ===================== -->
+<script>
+(() => {
+  /* =================== 3D GLB VIEWER (Hero) =================== */
+  (async () => {
+    const canvas = document.getElementById('viewer-3d');
+    const viewer = document.getElementById('hero-viewer');
+    const loader = document.getElementById('viewer-loader');
+    const vlPct = document.getElementById('vl-pct');
+    const vlBar = document.getElementById('vl-bar');
+    if (!canvas) return;
+
+    let THREE, GLTFLoader, OrbitControls;
+    try {
+      THREE = await import('three');
+      ({ GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js'));
+      ({ OrbitControls } = await import('three/addons/controls/OrbitControls.js'));
+    } catch (e) {
+      console.warn('three.js failed to load', e);
+      if (loader) loader.classList.add('done');
+      return;
+    }
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(35, 1, 0.01, 100);
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    const key = new THREE.DirectionalLight(0xffffff, 1.4);
+    key.position.set(3, 4, 5);
+    scene.add(key);
+    const fill = new THREE.DirectionalLight(0x88ccff, 0.6);
+    fill.position.set(-4, 2, 3);
+    scene.add(fill);
+    const rim1 = new THREE.DirectionalLight(0xff6b35, 0.7);
+    rim1.position.set(-3, 1, -4);
+    scene.add(rim1);
+    const rim2 = new THREE.DirectionalLight(0xffa500, 0.5);
+    rim2.position.set(4, -1, -3);
+    scene.add(rim2);
+    scene.add(new THREE.HemisphereLight(0xb6e8ff, 0x111111, 0.4));
+
+    function fit() {
+      const r = canvas.getBoundingClientRect();
+      renderer.setSize(r.width, r.height, false);
+      camera.aspect = r.width / r.height;
+      camera.updateProjectionMatrix();
+    }
+    fit();
+    window.addEventListener('resize', fit);
+
+    const controls = new OrbitControls(camera, canvas);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.enablePan = false;
+    controls.minDistance = 0.4;
+    controls.maxDistance = 6;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.8;
+    canvas.addEventListener('pointerdown', () => { controls.autoRotate = false; });
+
+    let loaded = false;
+    function startLoad() {
+      if (loaded) return;
+      loaded = true;
+      const gltfLoader = new GLTFLoader();
+      gltfLoader.load(
+        'robot.glb',
+        (gltf) => {
+          const model = gltf.scene;
+          const box = new THREE.Box3().setFromObject(model);
+          const size = new THREE.Vector3();
+          const center = new THREE.Vector3();
+          box.getSize(size);
+          box.getCenter(center);
+          model.position.sub(center);
+          const maxDim = Math.max(size.x, size.y, size.z);
+          model.scale.setScalar(2 / maxDim);
+          scene.add(model);
+
+          camera.position.set(2.4, 1.4, 3.2);
+          controls.target.set(0, 0, 0);
+          controls.update();
+
+          canvas.classList.add('ready');
+          viewer.classList.add('viewer-ready');
+          loader.classList.add('done');
+
+          const toggle = document.getElementById('view-toggle');
+          const btnPhoto = document.getElementById('btn-photo');
+          const btn3d = document.getElementById('btn-3d');
+          toggle.classList.add('show');
+          let showing3d = true;
+          btnPhoto.addEventListener('click', () => {
+            if (!showing3d) return;
+            showing3d = false;
+            btnPhoto.classList.add('active');
+            btn3d.classList.remove('active');
+            canvas.style.opacity = '0';
+            canvas.style.pointerEvents = 'none';
+            viewer.querySelector('img').style.opacity = '1';
+          });
+          btn3d.addEventListener('click', () => {
+            if (showing3d) return;
+            showing3d = true;
+            btn3d.classList.add('active');
+            btnPhoto.classList.remove('active');
+            canvas.style.opacity = '1';
+            canvas.style.pointerEvents = 'auto';
+            viewer.querySelector('img').style.opacity = '0';
+          });
+        },
+        (ev) => {
+          if (ev.lengthComputable) {
+            const pct = Math.round((ev.loaded / ev.total) * 100);
+            vlPct.textContent = pct + '%';
+            vlBar.style.width = pct + '%';
+          } else {
+            const mb = (ev.loaded / 1024 / 1024).toFixed(1);
+            vlPct.textContent = mb + ' MB';
+            vlBar.style.width = Math.min(95, (ev.loaded / 2100000) * 100) + '%';
+          }
+        },
+        (err) => {
+          console.warn('GLB load failed', err);
+          loader.classList.add('done');
+        }
+      );
+    }
+    setTimeout(startLoad, 250);
+
+    function animate() {
+      controls.update();
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    animate();
+  })();
+
+  /* =================== STL VIEWER =================== */
+  (async () => {
+    const stlCanvas = document.getElementById('stl-viewer-3d');
+    if (!stlCanvas) return;
+
+    let THREE, STLLoader, OrbitControls;
+    try {
+      THREE = await import('three');
+      ({ STLLoader } = await import('three/addons/loaders/STLLoader.js'));
+      ({ OrbitControls } = await import('three/addons/controls/OrbitControls.js'));
+    } catch (e) {
+      console.warn('STL viewer deps failed', e);
+      return;
+    }
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 2000);
+    const renderer = new THREE.WebGLRenderer({ canvas: stlCanvas, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    const keyL = new THREE.DirectionalLight(0xffffff, 1.3);
+    keyL.position.set(3, 4, 5);
+    scene.add(keyL);
+    const fillL = new THREE.DirectionalLight(0x88ccff, 0.6);
+    fillL.position.set(-4, 2, 3);
+    scene.add(fillL);
+    const rimCL = new THREE.DirectionalLight(0xff6b35, 0.7);
+    rimCL.position.set(-3, 1, -4);
+    scene.add(rimCL);
+    scene.add(new THREE.HemisphereLight(0xb6e8ff, 0x111111, 0.4));
+
+    function fitSTL() {
+      const r = stlCanvas.getBoundingClientRect();
+      renderer.setSize(r.width, r.height, false);
+      camera.aspect = r.width / r.height;
+      camera.updateProjectionMatrix();
+    }
+    fitSTL();
+    window.addEventListener('resize', fitSTL);
+
+    const ctrl = new OrbitControls(camera, stlCanvas);
+    ctrl.enableDamping = true;
+    ctrl.dampingFactor = 0.08;
+    ctrl.enablePan = true;
+    ctrl.minDistance = 50;
+    ctrl.maxDistance = 800;
+    ctrl.autoRotate = true;
+    ctrl.autoRotateSpeed = 0.6;
+    stlCanvas.addEventListener('pointerdown', () => { ctrl.autoRotate = false; });
+
+    const defaultCamPos = [250, 180, 350];
+    camera.position.set(...defaultCamPos);
+    ctrl.target.set(0, 0, 0);
+    ctrl.update();
+
+    let stlMesh = null;
+    let isWireframe = false;
+
+    const loaderEl = document.getElementById('stl-loader');
+    const pctEl = document.getElementById('stl-pct');
+    const fillEl = document.getElementById('stl-fill');
+    let stlLoaded = false;
+
+    function loadSTL() {
+      if (stlLoaded) return;
+      stlLoaded = true;
+      const loader = new STLLoader();
+      loader.load(
+        '3d/self balancing robot_.stl',
+        (geometry) => {
+          geometry.computeVertexNormals();
+          const mat = new THREE.MeshStandardMaterial({
+            color: 0xb8bcc6,
+            metalness: 0.3,
+            roughness: 0.55,
+            flatShading: false
+          });
+          stlMesh = new THREE.Mesh(geometry, mat);
+          geometry.computeBoundingBox();
+          const box = geometry.boundingBox;
+          const center = new THREE.Vector3();
+          box.getCenter(center);
+          stlMesh.position.sub(center);
+          scene.add(stlMesh);
+
+          const size = new THREE.Vector3();
+          box.getSize(size);
+          const maxDim = Math.max(size.x, size.y, size.z);
+          camera.position.set(maxDim * 1.2, maxDim * 0.8, maxDim * 1.5);
+          ctrl.target.set(0, 0, 0);
+          ctrl.update();
+          defaultCamPos[0] = camera.position.x;
+          defaultCamPos[1] = camera.position.y;
+          defaultCamPos[2] = camera.position.z;
+
+          loaderEl.classList.add('done');
+        },
+        (xhr) => {
+          if (xhr.total) {
+            const p = Math.round(xhr.loaded / xhr.total * 100);
+            pctEl.textContent = p + '%';
+            fillEl.style.width = p + '%';
+          }
+        },
+        (err) => {
+          console.warn('STL load failed', err);
+          pctEl.textContent = 'Load failed';
+        }
+      );
+    }
+
+    const stlIo = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        loadSTL();
+        stlIo.disconnect();
+      }
+    }, { threshold: 0.1 });
+    stlIo.observe(stlCanvas);
+
+    document.getElementById('stl-reset').addEventListener('click', () => {
+      camera.position.set(...defaultCamPos);
+      ctrl.target.set(0, 0, 0);
+      ctrl.autoRotate = true;
+      ctrl.update();
+    });
+    document.getElementById('stl-wire').addEventListener('click', function() {
+      if (!stlMesh) return;
+      isWireframe = !isWireframe;
+      stlMesh.material.wireframe = isWireframe;
+      this.classList.toggle('active', isWireframe);
+    });
+    document.getElementById('stl-fs').addEventListener('click', () => {
+      const card = stlCanvas.closest('.stl-viewer-card');
+      if (!document.fullscreenElement) {
+        card.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    function animateSTL() {
+      ctrl.update();
+      renderer.render(scene, camera);
+      requestAnimationFrame(animateSTL);
+    }
+    animateSTL();
+  })();
+
+  /* =================== SCROLL PROGRESS =================== */
+  const prog = document.getElementById('scroll-progress');
+  function updateProgress() {
+    const h = document.documentElement;
+    const pct = h.scrollTop / (h.scrollHeight - h.clientHeight);
+    prog.style.width = (pct * 100) + '%';
+  }
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  updateProgress();
+
+  /* =================== NAV ACTIVE LINK =================== */
+  const navLinks = document.querySelectorAll('.nav-link');
+  const sectionIds = ['overview', 'architecture', 'engineering', 'pcb', 'models', 'gallery', 'roadmap', 'downloads'];
+  const sections = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
+
+  function updateNav() {
+    let active = null;
+    for (const s of sections) {
+      const r = s.getBoundingClientRect();
+      if (r.top < window.innerHeight * 0.4) active = s.id;
+    }
+    navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + active));
+  }
+  window.addEventListener('scroll', updateNav, { passive: true });
+  updateNav();
+
+  /* =================== GALLERY DRAG SCROLL =================== */
+  const track = document.getElementById('gallery-track');
+  if (track) {
+    let down = false, startX = 0, startLeft = 0;
+    track.addEventListener('mousedown', e => {
+      down = true;
+      track.classList.add('dragging');
+      startX = e.clientX;
+      startLeft = track.scrollLeft;
+    });
+    window.addEventListener('mousemove', e => {
+      if (!down) return;
+      const dx = e.clientX - startX;
+      track.scrollLeft = startLeft - dx;
+    });
+    window.addEventListener('mouseup', () => {
+      down = false;
+      track.classList.remove('dragging');
+    });
+    let tx = 0, tl = 0;
+    track.addEventListener('touchstart', e => {
+      tx = e.touches[0].clientX;
+      tl = track.scrollLeft;
+    });
+    track.addEventListener('touchmove', e => {
+      const dx = e.touches[0].clientX - tx;
+      track.scrollLeft = tl - dx;
+    });
+  }
+
+  /* =================== SMOOTH SCROLL =================== */
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+
+  /* =================== ENGINEERING TABS =================== */
+  const engTabs = document.querySelectorAll('.eng-tab');
+  engTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      engTabs.forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.eng-pane').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      const pane = document.getElementById('pane-' + tab.dataset.eng);
+      if (pane) pane.classList.add('active');
+    });
+  });
+
+  /* =================== SCROLL REVEAL =================== */
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  /* =================== MOBILE NAV =================== */
+  const hamburger = document.getElementById('nav-hamburger');
+  if (hamburger) {
+    hamburger.addEventListener('click', () => {
+      const links = document.querySelector('.nav-links');
+      if (links) {
+        const isVisible = links.style.display === 'flex';
+        links.style.display = isVisible ? 'none' : 'flex';
+        links.style.position = 'absolute';
+        links.style.top = '64px';
+        links.style.left = '0';
+        links.style.right = '0';
+        links.style.background = 'rgba(0,0,0,0.95)';
+        links.style.backdropFilter = 'blur(20px)';
+        links.style.flexDirection = 'column';
+        links.style.padding = '16px';
+        links.style.borderBottom = '1px solid rgba(255,255,255,0.08)';
+      }
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
