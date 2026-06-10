@@ -248,10 +248,10 @@ At 12.6V: Vgs = −6.3V   IRF9540N threshold: −2V to −4V → FET ON ✓
 | 2 | GND | |
 | 3 | /I2C_SDA | Shared I2C bus |
 | 4 | /I2C_SCL | Shared I2C bus |
-| 5 | ❌ **+5V in PCB — MUST BE +6V_SERVO** | Servo power V+ — PCB schematic error, fix before ordering |
+| 5 | +6V_SERVO | Servo power V+ — corrected from +5V (former schematic error, fixed) |
 | 6 | GND | Servo power return |
 
-> ❌ **J6.P5 PCB ERROR:** The schematic connects J6.P5 to +5V. It must be changed to +6V_SERVO so PCA9685 V+ receives 6V for MG996R servos. Servos will operate at reduced torque on 5V. Fix in schematic, re-run DRC, re-export Gerbers.
+> ✅ **J6.P5 FIXED:** J6.P5 now connects to +6V_SERVO so PCA9685 V+ receives 6V for the MG996R servos. Re-run DRC and re-export Gerbers to capture the change before ordering.
 
 ---
 
@@ -323,7 +323,7 @@ At 12.6V: Vgs = −6.3V   IRF9540N threshold: −2V to −4V → FET ON ✓
 
 | # | Severity | Component | Issue | Fix |
 |---|----------|-----------|-------|-----|
-| 1 | ❌ Critical | J6.P5 | Net is +5V — must be +6V_SERVO | Change net in schematic, re-DRC, re-export Gerbers |
+| 1 | ✅ Fixed | J6.P5 | Net was +5V — changed to +6V_SERVO | Done — re-DRC and re-export Gerbers to capture the change |
 | 2 | ⚠ High | J1, J2, J3 | 2.54mm headers rated ~3A, carrying 10–15A | Replace footprints with XT-60 / 5.08mm screw terminals |
 | 3 | ⚠ High | F1 | Pin header footprint — cannot mount blade fuse | Replace with proper ATC blade fuse holder footprint |
 
@@ -368,10 +368,10 @@ At 12.6V: Vgs = −6.3V   IRF9540N threshold: −2V to −4V → FET ON ✓
 | L298N H-bridge | J9 (signals only) | Power VBAT/GND wired directly to L298N — not through PCB |
 | RPi 5 | J10 (power), J11 (UART) | 5V via GPIO pins 2/4; UART TX → J11 |
 | GY-6500 (MPU-6500) | J5 | SPI mode — verify NCS LOW |
-| PCA9685 | J6 | I2C addr 0x40; V+ from +6V_SERVO via J6.P5 (after fix) |
+| PCA9685 | J6 | I2C addr 0x40; V+ from +6V_SERVO via J6.P5 |
 | ESP32-WROOM-32 30-pin | J12 + J13 | 22.86mm row spacing; left header top→bottom; right header **bottom→top** |
 
 ---
 
 *End of BOM — Revision C*
-*One fix remaining: J6.P5 → +6V_SERVO in schematic. Then export Gerbers and order.*
+*J6.P5 → +6V_SERVO fix applied. Remaining before order: high-current connector footprints (J1–J3), fuse holder footprint (F1), then re-export Gerbers.*

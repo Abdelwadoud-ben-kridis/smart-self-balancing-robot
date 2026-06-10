@@ -380,7 +380,7 @@ footer { border-top: 1px solid var(--line); padding: 30px 40px; background: var(
     <tr><td><b>Design rule check</b></td><td class="t-ok">✓ Pass</td><td>0 violations, 0 unconnected nets</td></tr>
     <tr><td><b>Gerber export</b></td><td class="t-ok">✓ Complete</td><td>JLCPCB 1.6 mm 4-layer spec</td></tr>
     <tr><td><b>Firmware</b></td><td class="t-ok">✓ v1.0</td><td>Balance, stance, comms &amp; safety implemented</td></tr>
-    <tr><td><b>J6.P5 servo rail fix</b></td><td class="t-warn">⚠ Pending</td><td>See <a href="#safety">§10 Known Issues</a></td></tr>
+    <tr><td><b>J6.P5 servo rail fix</b></td><td class="t-ok">✓ Fixed</td><td>PCA9685 V+ now on +6V_SERVO — see <a href="#safety">§10</a></td></tr>
   </table></div>
 
   <h3>Document set</h3>
@@ -584,7 +584,7 @@ footer { border-top: 1px solid var(--line); padding: 30px 40px; background: var(
     <tr><td class="pin">J2</td><td>4-pin 2.54 mm</td><td>Buck A loop: VBAT_SWITCHED out / +6V_SERVO in</td></tr>
     <tr><td class="pin">J3</td><td>2-pin 2.54 mm</td><td>+5V input from XL4016-B</td></tr>
     <tr><td class="pin">J5</td><td>8-pin socket</td><td>GY-6500 IMU module (SPI + INT)</td></tr>
-    <tr><td class="pin">J6</td><td>6-pin socket</td><td>PCA9685 module (I²C + power) — <span class="t-warn">P5 fix pending</span></td></tr>
+    <tr><td class="pin">J6</td><td>6-pin socket</td><td>PCA9685 module (I²C + power) — P5 on +6V_SERVO</td></tr>
     <tr><td class="pin">J7 / J8</td><td>4-pin Phoenix 5.08 mm</td><td>Left / right wheel encoders (filtered)</td></tr>
     <tr><td class="pin">J9</td><td>6-pin Phoenix 5.08 mm</td><td>L298N control signals only — no power</td></tr>
     <tr><td class="pin">J10</td><td>2-pin 2.54 mm</td><td>Raspberry Pi 5 V power feed</td></tr>
@@ -745,10 +745,10 @@ footer { border-top: 1px solid var(--line); padding: 30px 40px; background: var(
   </table></div>
 
   <h3>Known issues — Rev C</h3>
-  <div class="callout danger">
-    <b>J6.P5 servo rail error (open):</b> the PCA9685 V+ pin is currently wired to +5V on the PCB schematic
-    instead of +6V_SERVO. Servos would run undervolted, losing torque exactly when the legs load up.
-    <b>The schematic must be corrected before ordering boards.</b>
+  <div class="callout ok">
+    <b>J6.P5 servo rail error (resolved):</b> the PCA9685 V+ pin was originally wired to +5V in the schematic
+    instead of +6V_SERVO, which would have undervolted the servos exactly when the legs load up.
+    The net has been corrected to +6V_SERVO — re-run DRC and re-export Gerbers after the schematic change.
   </div>
   <div class="callout warn">
     <b>GPIO15 boot-strap:</b> ESP32 GPIO15 (L298N IN4) carries an internal pull-up and is sampled HIGH at boot.
@@ -767,7 +767,7 @@ footer { border-top: 1px solid var(--line); padding: 30px 40px; background: var(
     <li><b>L298N VSS</b> wired directly to the 11.1 V rail, not through the PCB</li>
     <li><b>GY-6500 CSB/NCS</b> confirmed LOW (SPI mode active)</li>
     <li><b>Motor GPIOs LOW</b> in setup() before the L298N is enabled</li>
-    <li><b>J6.P5 fix</b> confirmed in schematic before any board order</li>
+    <li><b>PCA9685 V+</b> measures 6 V (J6.P5 on the +6V_SERVO rail)</li>
   </ul>
 </section>
 

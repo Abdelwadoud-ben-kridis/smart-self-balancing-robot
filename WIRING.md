@@ -27,7 +27,7 @@ Two-floor robot body (18×15cm).
         │
         ├──→ XL4016-A (set to 6.0V before connecting)
         │       → +6V_SERVO rail
-        │           → PCA9685 V+ (via PCB J2.P2/P3)    [⚠ pending J6.P5 fix]
+        │           → PCA9685 V+ (via PCB J2.P2/P3 and J6.P5)
         │           → 4× MG996R servo red wire
         │
         ├──→ XL4016-B (set to 5.0V before connecting)
@@ -101,10 +101,10 @@ Two-floor robot body (18×15cm).
 | 2 | GND | GND | |
 | 3 | /I2C_SDA | SDA | Shared I2C bus |
 | 4 | /I2C_SCL | SCL | Shared I2C bus |
-| 5 | ⚠ +5V (must be +6V_SERVO) | V+ | Servo power — PCB error pending fix in schematic |
+| 5 | +6V_SERVO | V+ | Servo power — corrected from +5V (former PCB error, now fixed) |
 | 6 | GND | GND | Servo power return |
 
-> ⚠ **J6.P5 PCB error not yet fixed.** Servos currently receive 5V, not 6V. Fix schematic before ordering.
+> ✅ **J6.P5 fixed.** V+ is now wired to +6V_SERVO — servos receive 6V as designed. Re-run DRC and re-export Gerbers after the schematic change.
 
 ---
 
@@ -208,7 +208,7 @@ One-way: RPi → ESP32 only. ESP32 receives on GPIO35 (input-only pin).
 
 ## 5. PCA9685 SERVO DRIVER
 
-I2C address 0x40. Logic VCC = 5V. Servo power V+ = 6V (via J6.P5 after fix).
+I2C address 0x40. Logic VCC = 5V. Servo power V+ = 6V via J6.P5.
 I2C from ESP32 GPIO21/22 via PCB.
 
 | Channel | Servo | Mounting | Pulse range |
@@ -308,7 +308,7 @@ Before powering on:
 - [ ] L298N VSS wired directly to **11.1V** (not through PCB)
 - [ ] GY-6500 CSB/NCS pin confirmed **LOW** (SPI mode active)
 - [ ] ESP32 setup() drives all motor GPIOs **LOW** before L298N enable
-- [ ] J6.P5 schematic fix confirmed before ordering PCB
+- [ ] PCA9685 V+ measures 6V (J6.P5 on +6V_SERVO rail — fix applied)
 
 ---
 
