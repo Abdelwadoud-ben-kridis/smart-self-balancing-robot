@@ -586,7 +586,7 @@ td .tbd {
 <section class="hero" id="top">
   <div class="hero-label">&#9670; Hardware Documentation</div>
   <h1>Complete <em>Wiring</em> Plan</h1>
-  <p class="hero-sub">Two-floor robot body (18&times;15 cm). Floor&nbsp;1 (top): Raspberry Pi 5, ESP32, MPU-6500 GY module, 3.5&Prime; SPI screen. Floor&nbsp;2 (bottom): 3S battery, BMS, buck converters, L298N, PCA9685, signal conditioning PCB.</p>
+  <p class="hero-sub">Two-floor robot body (18&times;15 cm). Floor&nbsp;1 (top): Raspberry Pi 5, ESP32, MPU-6500 GY module, 3.5&Prime; SPI screen. Floor&nbsp;2 (bottom): 3S battery, BMS, buck converters, TB6612FNG, PCA9685, signal conditioning PCB.</p>
 </section>
 
 <!-- TABLE OF CONTENTS -->
@@ -594,7 +594,7 @@ td .tbd {
   <a href="#power"><span class="dot" style="background:var(--accent)"></span><span class="num">01</span>Power Chain</a>
   <a href="#signal-pcb"><span class="dot" style="background:var(--cyan)"></span><span class="num">02</span>Signal PCB</a>
   <a href="#esp32"><span class="dot" style="background:var(--yellow)"></span><span class="num">03</span>ESP32 GPIOs</a>
-  <a href="#l298n"><span class="dot" style="background:var(--rose)"></span><span class="num">04</span>L298N Driver</a>
+  <a href="#l298n"><span class="dot" style="background:var(--rose)"></span><span class="num">04</span>TB6612FNG Driver</a>
   <a href="#pca9685"><span class="dot" style="background:var(--green)"></span><span class="num">05</span>PCA9685 Servos</a>
   <a href="#imu"><span class="dot" style="background:var(--purple)"></span><span class="num">06</span>MPU-6500 IMU</a>
   <a href="#rpi"><span class="dot" style="background:var(--cyan)"></span><span class="num">07</span>Raspberry Pi 5</a>
@@ -640,7 +640,7 @@ td .tbd {
     <div class="split-card">
       <div class="label">Direct</div>
       <div class="val" style="color:var(--rose)">11.1V</div>
-      <div class="desc">L298N VSS motor power — bypasses regulation</div>
+      <div class="desc">TB6612FNG VM motor power — bypasses regulation</div>
     </div>
   </div>
 
@@ -760,12 +760,12 @@ td .tbd {
         <tr><td><code>18</code></td><td>MPU-6500 CLK</td><td>SPI clock (VSPI)</td></tr>
         <tr><td><code>19</code></td><td>MPU-6500 MISO</td><td>SPI MISO (VSPI)</td></tr>
         <tr><td><code>23</code></td><td>MPU-6500 MOSI</td><td>SPI MOSI (VSPI)</td></tr>
-        <tr><td><code>25</code></td><td>L298N ENA</td><td>Left motor speed (PWM, 1 kHz)</td></tr>
-        <tr><td><code>26</code></td><td>L298N ENB</td><td>Right motor speed (PWM, 1 kHz)</td></tr>
-        <tr><td><code>27</code></td><td>L298N IN1</td><td>Left motor direction 1</td></tr>
-        <tr><td><code>32</code></td><td>L298N IN2</td><td>Left motor direction 2</td></tr>
-        <tr><td><code>33</code></td><td>L298N IN3</td><td>Right motor direction 1</td></tr>
-        <tr><td><code>15</code></td><td>L298N IN4</td><td>Right motor direction 2 (HIGH at boot &mdash; drive LOW in setup)</td></tr>
+        <tr><td><code>25</code></td><td>TB6612FNG PWMA</td><td>Left motor speed (PWM, 1 kHz)</td></tr>
+        <tr><td><code>26</code></td><td>TB6612FNG PWMB</td><td>Right motor speed (PWM, 1 kHz)</td></tr>
+        <tr><td><code>27</code></td><td>TB6612FNG AIN1</td><td>Left motor direction 1</td></tr>
+        <tr><td><code>32</code></td><td>TB6612FNG AIN2</td><td>Left motor direction 2</td></tr>
+        <tr><td><code>33</code></td><td>TB6612FNG BIN1</td><td>Right motor direction 1</td></tr>
+        <tr><td><code>15</code></td><td>TB6612FNG BIN2</td><td>Right motor direction 2 (HIGH at boot &mdash; drive LOW in setup)</td></tr>
         <tr><td><code>4</code></td><td>MPU-6500 INT</td><td>IMU interrupt</td></tr>
         <tr><td><code>13</code></td><td>ENC1_A</td><td>Encoder 1 channel A</td></tr>
         <tr><td><code>14</code></td><td>ENC1_B</td><td>Encoder 1 channel B</td></tr>
@@ -777,32 +777,33 @@ td .tbd {
 </section>
 
 <!-- ============================================================= -->
-<!-- L298N -->
+<!-- TB6612FNG -->
 <!-- ============================================================= -->
 <section class="section" id="l298n">
   <div class="section-head">
     <div class="section-icon" style="background:rgba(200,112,112,0.1); color:var(--rose);">&#9211;</div>
-    <h2>L298N Motor Driver</h2>
-    <span class="tag">Dual H-Bridge</span>
+    <h2>TB6612FNG Motor Driver</h2>
+    <span class="tag">Dual MOSFET H-Bridge</span>
   </div>
 
   <div class="table-wrap">
     <table>
       <thead>
-        <tr><th>L298N Pin</th><th>Connects to</th><th>Notes</th></tr>
+        <tr><th>TB6612FNG Pin</th><th>Connects to</th><th>Notes</th></tr>
       </thead>
       <tbody>
-        <tr><td><span class="pin">VSS</span></td><td>11.1V battery</td><td>Motor power</td></tr>
-        <tr><td><span class="pin">VCC</span></td><td>5V</td><td>Logic power</td></tr>
+        <tr><td><span class="pin">VM</span></td><td>11.1V battery</td><td>Motor power (max 15V — OK at 12.6V full charge)</td></tr>
+        <tr><td><span class="pin">VCC</span></td><td>+3V3</td><td>Logic power</td></tr>
+        <tr><td><span class="pin">STBY</span></td><td>+3V3</td><td>Tied HIGH — driver always enabled</td></tr>
         <tr><td><span class="pin">GND</span></td><td>GND</td><td>&mdash;</td></tr>
-        <tr><td><span class="pin">ENA</span></td><td><code>GPIO 25</code></td><td>Left motor enable / speed (PWM)</td></tr>
-        <tr><td><span class="pin">IN1</span></td><td><code>GPIO 27</code></td><td>Left motor direction</td></tr>
-        <tr><td><span class="pin">IN2</span></td><td><code>GPIO 32</code></td><td>Left motor direction</td></tr>
-        <tr><td><span class="pin">ENB</span></td><td><code>GPIO 26</code></td><td>Right motor enable / speed (PWM)</td></tr>
-        <tr><td><span class="pin">IN3</span></td><td><code>GPIO 33</code></td><td>Right motor direction</td></tr>
-        <tr><td><span class="pin">IN4</span></td><td><code>GPIO 15</code></td><td>Right motor direction (HIGH at boot)</td></tr>
-        <tr><td><span class="pin">OUT1+2</span></td><td>Left JGB37-520</td><td>Motor terminals</td></tr>
-        <tr><td><span class="pin">OUT3+4</span></td><td>Right JGB37-520</td><td>Motor terminals</td></tr>
+        <tr><td><span class="pin">PWMA</span></td><td><code>GPIO 25</code></td><td>Left motor speed (PWM, 1 kHz)</td></tr>
+        <tr><td><span class="pin">AIN1</span></td><td><code>GPIO 27</code></td><td>Left motor direction</td></tr>
+        <tr><td><span class="pin">AIN2</span></td><td><code>GPIO 32</code></td><td>Left motor direction</td></tr>
+        <tr><td><span class="pin">PWMB</span></td><td><code>GPIO 26</code></td><td>Right motor speed (PWM, 1 kHz)</td></tr>
+        <tr><td><span class="pin">BIN1</span></td><td><code>GPIO 33</code></td><td>Right motor direction</td></tr>
+        <tr><td><span class="pin">BIN2</span></td><td><code>GPIO 15</code></td><td>Right motor direction (HIGH at boot)</td></tr>
+        <tr><td><span class="pin">AO1+AO2</span></td><td>Left JGB37-520</td><td>Motor terminals</td></tr>
+        <tr><td><span class="pin">BO1+BO2</span></td><td>Right JGB37-520</td><td>Motor terminals</td></tr>
       </tbody>
     </table>
   </div>
@@ -924,8 +925,8 @@ td .tbd {
         <tr><th>Wire</th><th>Color</th><th>Connects to</th></tr>
       </thead>
       <tbody>
-        <tr><td>Motor +</td><td>&mdash;</td><td>L298N OUT pins</td></tr>
-        <tr><td>Motor &minus;</td><td>&mdash;</td><td>L298N OUT pins</td></tr>
+        <tr><td>Motor +</td><td>&mdash;</td><td>TB6612FNG AO/BO pins</td></tr>
+        <tr><td>Motor &minus;</td><td>&mdash;</td><td>TB6612FNG AO/BO pins</td></tr>
         <tr><td>Encoder VCC</td><td><span class="wire red">Red</span></td><td>Signal PCB J1/J2 pin 1 (+3V3)</td></tr>
         <tr><td>Encoder GND</td><td><span class="wire black">Black</span></td><td>Signal PCB J1/J2 pin 2 (GND)</td></tr>
         <tr><td>Channel A</td><td><span class="wire green">Green</span></td><td>Signal PCB J1/J2 pin 3</td></tr>

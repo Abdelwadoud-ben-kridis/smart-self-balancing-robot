@@ -49,7 +49,7 @@
         │         → U1 (AMS1117-3.3) → +3V3
         │         → J10.P1 → RPi 5V
         │         → J13.P15 → ESP32 VIN
-        └──→ J9 (L298N control signals ONLY — no power through J9)
+        └──→ J9 (TB6612FNG control signals ONLY — no power through J9)
 ```
 
 ### Power Rails
@@ -139,7 +139,7 @@ At 12.6V: Vgs = −6.3V   IRF9540N threshold: −2V to −4V → FET ON ✓
 |-----|-----|-----------|-------|------|------|-------|
 | J2 | 1 | 4-pin header | VBAT_SW / 6V_SERVO | 4-pin 2.54mm | /VBAT_SWITCHED, +6V_SERVO×2, GND | P1=input to XL4016-A; P2+P3=6V output back; P4=GND. ⚠ 2.54mm undersized for 10A+ |
 | J3 | 1 | 2-pin header | 5V_IN | 2-pin 2.54mm | +5V, GND | From XL4016-B. ⚠ 2.54mm undersized for 10A |
-| J9 | 1 | Screw terminal | L298N control | 6-pin Phoenix 5.08mm | /H_ENA, /H_ENB, /H_IN1–4 | **Control signals only — NO power through J9** |
+| J9 | 1 | Screw terminal | TB6612FNG control | 6-pin Phoenix 5.08mm | /H_ENA, /H_ENB, /H_IN1–4 | **Control signals only — NO power through J9** (→ PWMA/PWMB/AIN1/AIN2/BIN1/BIN2) |
 
 **J2 Pinout:**
 
@@ -167,7 +167,7 @@ At 12.6V: Vgs = −6.3V   IRF9540N threshold: −2V to −4V → FET ON ✓
 |---------|-----|------|----------|-------|
 | 1 | +3V3 | 3V3 | Power out | |
 | 2 | GND | GND | Ground | |
-| 3 | /H_IN4 | GPIO15 | L298N IN4 | ⚠ GPIO15 has internal pull-up — H_IN4 = HIGH at boot. Write LOW in setup() immediately |
+| 3 | /H_IN4 | GPIO15 | TB6612FNG BIN2 | ⚠ GPIO15 has internal pull-up — H_IN4 = HIGH at boot. Write LOW in setup() immediately |
 | 4 | NC | GPIO2 | — | Unused. Has onboard LED on some DevKits |
 | 5 | /IMU_INT | GPIO4 | MPU-6500 interrupt | |
 | 6 | /ENC2_A | GPIO16 | Encoder 2 Ch A | Shared with UART2 RX — used as GPIO input |
@@ -190,18 +190,18 @@ At 12.6V: Vgs = −6.3V   IRF9540N threshold: −2V to −4V → FET ON ✓
 | 3 | NC | GPIO39/VN | — | Input-only — unused |
 | 4 | NC | GPIO34 | — | Input-only — unused |
 | 5 | /RPi_RX | GPIO35 | UART from RPi | Input-only GPIO — perfect for one-way RX |
-| 6 | /H_IN2 | GPIO32 | L298N IN2 | |
-| 7 | /H_IN3 | GPIO33 | L298N IN3 | |
-| 8 | /H_ENA | GPIO25 | L298N Enable A | |
-| 9 | /H_ENB | GPIO26 | L298N Enable B | |
-| 10 | /H_IN1 | GPIO27 | L298N IN1 | |
+| 6 | /H_IN2 | GPIO32 | TB6612FNG AIN2 | |
+| 7 | /H_IN3 | GPIO33 | TB6612FNG BIN1 | |
+| 8 | /H_ENA | GPIO25 | TB6612FNG PWMA | |
+| 9 | /H_ENB | GPIO26 | TB6612FNG PWMB | |
+| 10 | /H_IN1 | GPIO27 | TB6612FNG AIN1 | |
 | 11 | /ENC1_B | GPIO14 | Encoder 1 Ch B | |
 | 12 | NC | GPIO12 | — | Boot-strap: NC, internal pull-down → LOW at boot ✓ No external resistor needed |
 | 13 | /ENC1_A | GPIO13 | Encoder 1 Ch A | |
 | 14 | GND | GND | Ground | |
 | 15 | +5V | VIN | ESP32 power | 5V in via VIN pin |
 
-> ⚠ **Boot-up firmware note:** GPIO15 (/H_IN4) is HIGH at boot due to internal pull-up. In `setup()`, drive all motor control GPIOs LOW before enabling the L298N to prevent a rogue motor pulse at startup.
+> ⚠ **Boot-up firmware note:** GPIO15 (/H_IN4) is HIGH at boot due to internal pull-up. In `setup()`, drive all motor control GPIOs LOW before the TB6612FNG is active (STBY HIGH) to prevent a rogue motor pulse at startup.
 
 ---
 
@@ -365,7 +365,7 @@ At 12.6V: Vgs = −6.3V   IRF9540N threshold: −2V to −4V → FET ON ✓
 |--------|-----------|-------|
 | XL4016-A (6V/10A) | J2 | Set to 6.0V BEFORE connecting. Input from J2.P1, output back to J2.P2/P3 |
 | XL4016-B (5V/10A) | J3 | Set to 5.0V BEFORE connecting |
-| L298N H-bridge | J9 (signals only) | Power VBAT/GND wired directly to L298N — not through PCB |
+| TB6612FNG H-bridge | J9 (signals only) | VM/GND wired directly to battery — not through PCB. VCC + STBY from +3V3 |
 | RPi 5 | J10 (power), J11 (UART) | 5V via GPIO pins 2/4; UART TX → J11 |
 | GY-6500 (MPU-6500) | J5 | SPI mode — verify NCS LOW |
 | PCA9685 | J6 | I2C addr 0x40; V+ from +6V_SERVO via J6.P5 |

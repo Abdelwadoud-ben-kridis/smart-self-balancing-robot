@@ -3,7 +3,7 @@
 
 Two-floor robot body (18×15cm).
 - **Floor 1 (top):** Raspberry Pi 5, ESP32 DevKit, GY-6500 IMU module, 3.5" SPI screen
-- **Floor 2 (bottom):** 3S 18650 battery + BMS, power switch, 2× XL4016 buck converters, L298N H-bridge, PCA9685 PWM driver, distribution/interface PCB
+- **Floor 2 (bottom):** 3S 18650 battery + BMS, power switch, 2× XL4016 buck converters, TB6612FNG dual H-bridge, PCA9685 PWM driver, distribution/interface PCB
 
 > **Changes from previous wiring doc:**
 > - PCB correctly identified as 4-layer distribution board (94.6 × 58.1mm), not "57×60mm signal conditioning PCB"
@@ -36,7 +36,7 @@ Two-floor robot body (18×15cm).
         │           → PCB J3 → ESP32 VIN (via PCB J13.P15)
         │           → PCB J3 → RPi 5 GPIO pin 4 (via PCB J10)
         │
-        └──→ L298N VSS (11.1V motor power, direct — NOT through PCB)
+        └──→ TB6612FNG VM (11.1V motor power, direct — NOT through PCB)
 ```
 
 **+3V3 generation:** AMS1117-3.3 on PCB takes +5V → outputs +3V3/1A.
@@ -57,7 +57,7 @@ Two-floor robot body (18×15cm).
 | J6 | 6-pin 2.54mm socket | PCA9685 module (I2C + power) |
 | J7 | 4-pin Phoenix 5.08mm | Encoder 1 (left motor) |
 | J8 | 4-pin Phoenix 5.08mm | Encoder 2 (right motor) |
-| J9 | 6-pin Phoenix 5.08mm | L298N control signals only (no power) |
+| J9 | 6-pin Phoenix 5.08mm | TB6612FNG control signals only (no power) |
 | J10 | 2-pin 2.54mm | RPi 5V power |
 | J11 | 2-pin 2.54mm | RPi → ESP32 UART |
 | J12 | 15-pin socket 2.54mm | ESP32 left header |
@@ -121,18 +121,18 @@ RC filter: 1kΩ series + 10nF shunt → fc = 15.9kHz (kills motor PWM noise)
 
 ---
 
-### J9 — L298N Control (Phoenix 5.08mm, 6-pin)
+### J9 — TB6612FNG Control (Phoenix 5.08mm, 6-pin)
 
-**No power through J9. L298N VSS and GND wire directly to battery.**
+**No power through J9. TB6612FNG VM and GND wire directly to battery; VCC and STBY come from +3V3.**
 
-| Pin | Net | L298N pin |
-|-----|-----|-----------|
-| 1 | /H_ENA | ENA |
-| 2 | /H_ENB | ENB |
-| 3 | /H_IN1 | IN1 |
-| 4 | /H_IN2 | IN2 |
-| 5 | /H_IN3 | IN3 |
-| 6 | /H_IN4 | IN4 |
+| Pin | Net | TB6612FNG pin |
+|-----|-----|---------------|
+| 1 | /H_ENA | PWMA |
+| 2 | /H_ENB | PWMB |
+| 3 | /H_IN1 | AIN1 |
+| 4 | /H_IN2 | AIN2 |
+| 5 | /H_IN3 | BIN1 |
+| 6 | /H_IN4 | BIN2 |
 
 ---
 
@@ -164,7 +164,7 @@ One-way: RPi → ESP32 only. ESP32 receives on GPIO35 (input-only pin).
 | 5 | /SPI_CS_IMU | J5.P6 via R10 | IMU chip select (HIGH = idle) |
 | 13 | /ENC1_A | J7 via R13+C7 | Encoder 1 Ch A |
 | 14 | /ENC1_B | J7 via R14+C8 | Encoder 1 Ch B |
-| 15 | /H_IN4 | J9.P6 → L298N IN4 | ⚠ HIGH at boot (internal pull-up) — write LOW in setup() |
+| 15 | /H_IN4 | J9.P6 → TB6612FNG BIN2 | ⚠ HIGH at boot (internal pull-up) — write LOW in setup() |
 | 16 | /ENC2_A | J8 via R15+C9 | Encoder 2 Ch A (RX2 pin, used as GPIO) |
 | 17 | /ENC2_B | J8 via R16+C10 | Encoder 2 Ch B (TX2 pin, used as GPIO) |
 | 18 | /SPI_CLK | J5.P3 via R7 | SPI clock to IMU |
@@ -172,37 +172,42 @@ One-way: RPi → ESP32 only. ESP32 receives on GPIO35 (input-only pin).
 | 21 | /I2C_SDA | J6.P3, PCA9685 | I2C data (400kHz) |
 | 22 | /I2C_SCL | J6.P4, PCA9685 | I2C clock (400kHz) |
 | 23 | /SPI_MOSI | J5.P4 via R8 | SPI MOSI to IMU |
-| 25 | /H_ENA | J9.P1 → L298N ENA | Left motor enable / PWM speed |
-| 26 | /H_ENB | J9.P2 → L298N ENB | Right motor enable / PWM speed |
-| 27 | /H_IN1 | J9.P3 → L298N IN1 | Left motor direction A |
-| 32 | /H_IN2 | J9.P4 → L298N IN2 | Left motor direction B |
-| 33 | /H_IN3 | J9.P5 → L298N IN3 | Right motor direction A |
+| 25 | /H_ENA | J9.P1 → TB6612FNG PWMA | Left motor PWM speed |
+| 26 | /H_ENB | J9.P2 → TB6612FNG PWMB | Right motor PWM speed |
+| 27 | /H_IN1 | J9.P3 → TB6612FNG AIN1 | Left motor direction A |
+| 32 | /H_IN2 | J9.P4 → TB6612FNG AIN2 | Left motor direction B |
+| 33 | /H_IN3 | J9.P5 → TB6612FNG BIN1 | Right motor direction A |
 | 35 | /RPi_RX | J11.P1 → RPi TX | UART from RPi (input-only GPIO) |
 | 12 | NC | — | Boot-strap: NC, internal pull-down → LOW at boot ✓ |
 | 2 | NC | — | Unused (onboard LED on some DevKits) |
 
 ---
 
-## 4. L298N MOTOR DRIVER
+## 4. TB6612FNG MOTOR DRIVER
 
-| L298N pin | Connects to | Notes |
-|-----------|------------|-------|
-| VSS | 11.1V battery (direct) | Motor power — NOT through PCB |
-| VCC | +5V rail | Logic power |
+| TB6612FNG pin | Connects to | Notes |
+|---------------|------------|-------|
+| VM | 11.1V battery (direct) | Motor power — NOT through PCB. Max 15V (OK at 12.6V full charge) |
+| VCC | +3V3 rail | Logic power (2.7–5.5V range) |
+| STBY | +3V3 rail | Tied HIGH — driver always enabled |
 | GND | GND | |
-| ENA | ESP32 GPIO25 via PCB J9.P1 | Left motor enable / PWM (1kHz) |
-| IN1 | ESP32 GPIO27 via PCB J9.P3 | Left motor direction A |
-| IN2 | ESP32 GPIO32 via PCB J9.P4 | Left motor direction B |
-| ENB | ESP32 GPIO26 via PCB J9.P2 | Right motor enable / PWM (1kHz) |
-| IN3 | ESP32 GPIO33 via PCB J9.P5 | Right motor direction A |
-| IN4 | ESP32 GPIO15 via PCB J9.P6 | Right motor direction B — ⚠ HIGH at boot |
-| OUT1 + OUT2 | Left JGB37-520 motor terminals | |
-| OUT3 + OUT4 | Right JGB37-520 motor terminals | |
+| PWMA | ESP32 GPIO25 via PCB J9.P1 | Left motor PWM (1kHz) |
+| AIN1 | ESP32 GPIO27 via PCB J9.P3 | Left motor direction A |
+| AIN2 | ESP32 GPIO32 via PCB J9.P4 | Left motor direction B |
+| PWMB | ESP32 GPIO26 via PCB J9.P2 | Right motor PWM (1kHz) |
+| BIN1 | ESP32 GPIO33 via PCB J9.P5 | Right motor direction A |
+| BIN2 | ESP32 GPIO15 via PCB J9.P6 | Right motor direction B — ⚠ HIGH at boot |
+| AO1 + AO2 | Left JGB37-520 motor terminals | |
+| BO1 + BO2 | Right JGB37-520 motor terminals | |
 
 > **Motor control logic:**
-> - Forward: ENA/ENB PWM, IN1=HIGH IN2=LOW, IN3=HIGH IN4=LOW
-> - Reverse: ENA/ENB PWM, IN1=LOW IN2=HIGH, IN3=LOW IN4=HIGH
-> - Stop: ENA=ENB=LOW
+> - Forward: PWMA/PWMB PWM, AIN1=HIGH AIN2=LOW, BIN1=HIGH BIN2=LOW
+> - Reverse: PWMA/PWMB PWM, AIN1=LOW AIN2=HIGH, BIN1=LOW BIN2=HIGH
+> - Stop: both INx LOW (coast) · both INx HIGH = short brake
+>
+> **Ratings:** 1.2A continuous / 3.2A peak per channel, MOSFET bridge (near-zero
+> voltage drop vs the old L298N's 2–4V). JGB37-520 stall current can exceed the
+> peak rating — ramp acceleration in firmware and avoid commanding hard reversals.
 
 ---
 
@@ -273,8 +278,8 @@ Each motor has 6 wires:
 
 | Wire colour | Connects to | Via |
 |-------------|------------|-----|
-| Motor power A | L298N OUT1 or OUT3 | Direct |
-| Motor power B | L298N OUT2 or OUT4 | Direct |
+| Motor power A | TB6612FNG AO1 or BO1 | Direct |
+| Motor power B | TB6612FNG AO2 or BO2 | Direct |
 | Red | +3V3 | PCB J7/J8 pin 1 |
 | Black | GND | PCB J7/J8 pin 2 |
 | Green | Encoder Ch A | PCB J7/J8 pin 3 → 1kΩ → 10nF filter → ESP32 |
@@ -304,10 +309,10 @@ Encoder GPIO summary:
 Before powering on:
 - [ ] XL4016-A output set to **6.00V** (measure before connecting)
 - [ ] XL4016-B output set to **5.00V** (measure before connecting)
-- [ ] L298N ENA/ENB jumpers **removed** (controlled by PCB)
-- [ ] L298N VSS wired directly to **11.1V** (not through PCB)
+- [ ] TB6612FNG STBY tied to **+3V3** (driver enabled) and VCC on +3V3
+- [ ] TB6612FNG VM wired directly to **11.1V** (not through PCB)
 - [ ] GY-6500 CSB/NCS pin confirmed **LOW** (SPI mode active)
-- [ ] ESP32 setup() drives all motor GPIOs **LOW** before L298N enable
+- [ ] ESP32 setup() drives all motor GPIOs **LOW** before the TB6612FNG sees STBY HIGH
 - [ ] PCA9685 V+ measures 6V (J6.P5 on +6V_SERVO rail — fix applied)
 
 ---

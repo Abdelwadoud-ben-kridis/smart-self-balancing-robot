@@ -407,7 +407,7 @@ footer { border-top: 1px solid var(--line); padding: 30px 40px; background: var(
 │  ──────────────────────────  │  <o>UART</o>    │  ──────────────────────────  │
 │  · Vision: YOLOv8n/MediaPipe │  <o>115200</o>  │  · 100 Hz balance loop       │
 │  · Behaviour state machine   │ ───────► │  · Complementary filter      │
-│  · 3.5" TFT dashboard        │ <m>commands</m> │  · PID → L298N motor PWM     │
+│  · 3.5" TFT dashboard        │ <m>commands</m> │  · PID → TB6612 motor PWM    │
 │  · USB webcam input          │          │  · Stance interpolation      │
 │                              │ ◄─────── │  · Encoder counting          │
 │                              │ <c>telemetry</c>│  · Safety supervisor         │
@@ -415,7 +415,7 @@ footer { border-top: 1px solid var(--line); padding: 30px 40px; background: var(
                                                           │
                             ┌─────────────┬───────────────┼───────────────┐
                             ▼             ▼               ▼               ▼
-                      <g>MPU-6500 IMU</g>  <g>PCA9685</g>      <g>L298N H-bridge</g>  <g>2× encoders</g>
+                      <g>MPU-6500 IMU</g>  <g>PCA9685</g>      <g>TB6612FNG bridge</g> <g>2× encoders</g>
                       <m>pitch sensing</m> <m>4× MG996R</m>    <m>2× JGB37-520</m>    <m>quadrature</m></pre></div>
 
   <h3>Why two brains</h3>
@@ -530,14 +530,14 @@ footer { border-top: 1px solid var(--line); padding: 30px 40px; background: var(
    │                              └─► <c>AMS1117-3.3</c> → <b>+3V3</b> (on PCB)
    │                                       └─► IMU · encoders · I²C pull-ups
    │
-   └──► <g>L298N VSS</g>  (11.1 V motor power — direct, NOT through PCB)</pre></div>
+   └──► <g>TB6612FNG VM</g>  (11.1 V motor power — direct, NOT through PCB)</pre></div>
 
   <div class="tbl-wrap"><table>
     <tr><th>Rail</th><th>Source</th><th>Consumers</th><th>Notes</th></tr>
-    <tr><td><b>11.1 V VBAT</b></td><td>Battery, post-protection</td><td>L298N VSS (motors), both bucks</td><td class="mono">VBAT_SWITCHED trace: 2.0 mm</td></tr>
+    <tr><td><b>11.1 V VBAT</b></td><td>Battery, post-protection</td><td>TB6612FNG VM (motors), both bucks</td><td class="mono">VBAT_SWITCHED trace: 2.0 mm</td></tr>
     <tr><td><b>+6V_SERVO</b></td><td>XL4016-A (set 6.00 V)</td><td>PCA9685 V+ → 4× MG996R</td><td>Servo stall transients isolated from logic</td></tr>
-    <tr><td><b>+5V</b></td><td>XL4016-B (set 5.00 V)</td><td>Pi 5, ESP32 VIN, PCA9685 logic, L298N logic</td><td>≥3 A headroom for the Pi</td></tr>
-    <tr><td><b>+3V3</b></td><td>AMS1117 on PCB (1 A)</td><td>IMU, encoder supply, I²C pull-ups, ESP32 3V3</td><td>Generated on-board for a quiet sensor rail</td></tr>
+    <tr><td><b>+5V</b></td><td>XL4016-B (set 5.00 V)</td><td>Pi 5, ESP32 VIN, PCA9685 logic</td><td>≥3 A headroom for the Pi</td></tr>
+    <tr><td><b>+3V3</b></td><td>AMS1117 on PCB (1 A)</td><td>IMU, encoder supply, I²C pull-ups, TB6612FNG VCC + STBY</td><td>Generated on-board for a quiet sensor rail</td></tr>
   </table></div>
 
   <div class="callout warn">
@@ -586,7 +586,7 @@ footer { border-top: 1px solid var(--line); padding: 30px 40px; background: var(
     <tr><td class="pin">J5</td><td>8-pin socket</td><td>GY-6500 IMU module (SPI + INT)</td></tr>
     <tr><td class="pin">J6</td><td>6-pin socket</td><td>PCA9685 module (I²C + power) — P5 on +6V_SERVO</td></tr>
     <tr><td class="pin">J7 / J8</td><td>4-pin Phoenix 5.08 mm</td><td>Left / right wheel encoders (filtered)</td></tr>
-    <tr><td class="pin">J9</td><td>6-pin Phoenix 5.08 mm</td><td>L298N control signals only — no power</td></tr>
+    <tr><td class="pin">J9</td><td>6-pin Phoenix 5.08 mm</td><td>TB6612FNG control signals only — no power</td></tr>
     <tr><td class="pin">J10</td><td>2-pin 2.54 mm</td><td>Raspberry Pi 5 V power feed</td></tr>
     <tr><td class="pin">J11</td><td>2-pin 2.54 mm</td><td>Pi → ESP32 UART (one-way)</td></tr>
     <tr><td class="pin">J12 / J13</td><td>2× 15-pin sockets</td><td>ESP32 DevKit headers — board plugs straight in</td></tr>
@@ -603,7 +603,7 @@ footer { border-top: 1px solid var(--line); padding: 30px 40px; background: var(
     <tr><td class="pin">5</td><td class="mono">/SPI_CS_IMU</td><td>J5.P6 via R10</td><td>IMU chip select (HIGH = idle)</td></tr>
     <tr><td class="pin">13</td><td class="mono">/ENC1_A</td><td>J7 via RC filter</td><td>Left encoder channel A</td></tr>
     <tr><td class="pin">14</td><td class="mono">/ENC1_B</td><td>J7 via RC filter</td><td>Left encoder channel B</td></tr>
-    <tr><td class="pin">15</td><td class="mono">/H_IN4</td><td>J9.P6 → L298N IN4</td><td>Right dir B — <span class="t-warn">HIGH at boot, write LOW in setup()</span></td></tr>
+    <tr><td class="pin">15</td><td class="mono">/H_IN4</td><td>J9.P6 → TB6612FNG BIN2</td><td>Right dir B — <span class="t-warn">HIGH at boot, write LOW in setup()</span></td></tr>
     <tr><td class="pin">16</td><td class="mono">/ENC2_A</td><td>J8 via RC filter</td><td>Right encoder channel A</td></tr>
     <tr><td class="pin">17</td><td class="mono">/ENC2_B</td><td>J8 via RC filter</td><td>Right encoder channel B</td></tr>
     <tr><td class="pin">18</td><td class="mono">/SPI_CLK</td><td>J5.P3 via R7</td><td>SPI clock → IMU</td></tr>
@@ -611,11 +611,11 @@ footer { border-top: 1px solid var(--line); padding: 30px 40px; background: var(
     <tr><td class="pin">21</td><td class="mono">/I2C_SDA</td><td>J6.P3 → PCA9685</td><td>I²C data, 400 kHz</td></tr>
     <tr><td class="pin">22</td><td class="mono">/I2C_SCL</td><td>J6.P4 → PCA9685</td><td>I²C clock, 400 kHz</td></tr>
     <tr><td class="pin">23</td><td class="mono">/SPI_MOSI</td><td>J5.P4 via R8</td><td>SPI data → IMU</td></tr>
-    <tr><td class="pin">25</td><td class="mono">/H_ENA</td><td>J9.P1 → L298N ENA</td><td>Left motor PWM enable (1 kHz)</td></tr>
-    <tr><td class="pin">26</td><td class="mono">/H_ENB</td><td>J9.P2 → L298N ENB</td><td>Right motor PWM enable (1 kHz)</td></tr>
-    <tr><td class="pin">27</td><td class="mono">/H_IN1</td><td>J9.P3 → L298N IN1</td><td>Left motor direction A</td></tr>
-    <tr><td class="pin">32</td><td class="mono">/H_IN2</td><td>J9.P4 → L298N IN2</td><td>Left motor direction B</td></tr>
-    <tr><td class="pin">33</td><td class="mono">/H_IN3</td><td>J9.P5 → L298N IN3</td><td>Right motor direction A</td></tr>
+    <tr><td class="pin">25</td><td class="mono">/H_ENA</td><td>J9.P1 → TB6612FNG PWMA</td><td>Left motor PWM (1 kHz)</td></tr>
+    <tr><td class="pin">26</td><td class="mono">/H_ENB</td><td>J9.P2 → TB6612FNG PWMB</td><td>Right motor PWM (1 kHz)</td></tr>
+    <tr><td class="pin">27</td><td class="mono">/H_IN1</td><td>J9.P3 → TB6612FNG AIN1</td><td>Left motor direction A</td></tr>
+    <tr><td class="pin">32</td><td class="mono">/H_IN2</td><td>J9.P4 → TB6612FNG AIN2</td><td>Left motor direction B</td></tr>
+    <tr><td class="pin">33</td><td class="mono">/H_IN3</td><td>J9.P5 → TB6612FNG BIN1</td><td>Right motor direction A</td></tr>
     <tr><td class="pin">35</td><td class="mono">/RPi_RX</td><td>J11.P1 → Pi TXD</td><td>UART in from Pi (input-only pin — perfect for RX)</td></tr>
     <tr><td class="pin">2</td><td class="mono">—</td><td>On-board LED</td><td>Status: off = SIT · blink = STANDING · solid = BALANCE</td></tr>
     <tr><td class="pin">12</td><td class="mono">NC</td><td>—</td><td>Boot-strap pin left unconnected (internal pull-down ✓)</td></tr>
@@ -633,13 +633,14 @@ footer { border-top: 1px solid var(--line); padding: 30px 40px; background: var(
     <tr><td><b>Motors</b></td><td class="mono">2× JGB37-520</td><td>37 mm geared DC, 12 V class run at 11.1 V, hall encoders</td></tr>
     <tr><td><b>Wheels</b></td><td class="mono">65 mm rubber</td><td>Hub-mounted on motor shafts</td></tr>
     <tr><td><b>Encoders</b></td><td class="mono">Quadrature, 3V3</td><td>Hall, ch A/B per motor through PCB RC filters</td></tr>
-    <tr><td><b>Driver</b></td><td class="mono">L298N dual H-bridge</td><td>2 A/channel · VSS direct to battery · ENA/ENB jumpers removed</td></tr>
+    <tr><td><b>Driver</b></td><td class="mono">TB6612FNG dual H-bridge</td><td>MOSFET, 1.2 A cont / 3.2 A peak per ch · VM direct to battery · VCC + STBY on +3V3</td></tr>
     <tr><td><b>PWM</b></td><td class="mono">1 kHz · 8-bit</td><td>0–255 command range = PID output range</td></tr>
   </table></div>
   <p>
-    Direction logic: forward = <code>IN1·IN3 HIGH, IN2·IN4 LOW</code> with PWM on ENA/ENB; reverse inverts the
-    pairs; stop drops both enables. The 1&nbsp;kHz PWM fundamental is what the encoder RC filters (fc ≈ 15.9 kHz)
-    are sized against.
+    Direction logic: forward = <code>AIN1·BIN1 HIGH, AIN2·BIN2 LOW</code> with PWM on PWMA/PWMB; reverse inverts
+    the pairs; both inputs LOW coasts, both HIGH short-brakes. Unlike the old L298N's bipolar bridge (2–4&nbsp;V drop),
+    the TB6612FNG's MOSFETs pass nearly the full battery voltage to the motors. The 1&nbsp;kHz PWM fundamental is
+    what the encoder RC filters (fc ≈ 15.9 kHz) are sized against.
   </p>
 
   <h3>Leg servos</h3>
@@ -670,7 +671,7 @@ footer { border-top: 1px solid var(--line); padding: 30px 40px; background: var(
   <div class="tbl-wrap"><table>
     <tr><th>Floor</th><th>Contents</th><th>Rationale</th></tr>
     <tr><td><b>Floor 1 (top)</b></td><td>Raspberry Pi 5, ESP32 DevKit, GY-6500 IMU, 3.5″ SPI screen</td><td>Logic high and away from motor noise; IMU near the body's rotation axis</td></tr>
-    <tr><td><b>Floor 2 (bottom)</b></td><td>3S battery + BMS, power switch, 2× XL4016 bucks, L298N, PCA9685, distribution PCB</td><td>Heavy components low → lower centre of gravity → gentler balance dynamics</td></tr>
+    <tr><td><b>Floor 2 (bottom)</b></td><td>3S battery + BMS, power switch, 2× XL4016 bucks, TB6612FNG, PCA9685, distribution PCB</td><td>Heavy components low → lower centre of gravity → gentler balance dynamics</td></tr>
   </table></div>
 
   <h3>Print profile — eSUN PETG, Ender 3 Max</h3>
@@ -707,7 +708,7 @@ footer { border-top: 1px solid var(--line); padding: 30px 40px; background: var(
     <tr><td class="pin">control.ino</td><td>Main 100 Hz loop: state machine, PID, safety rules, gain tuning</td></tr>
     <tr><td class="pin">config.h</td><td>Every pin, gain, threshold and timing constant in one place</td></tr>
     <tr><td class="pin">sensors.h</td><td>MPU-6500 init + read, complementary-filter pitch estimate</td></tr>
-    <tr><td class="pin">motors.h</td><td>L298N direction logic + LEDC PWM (1 kHz, 8-bit)</td></tr>
+    <tr><td class="pin">motors.h</td><td>TB6612FNG direction logic + LEDC PWM (1 kHz, 8-bit)</td></tr>
     <tr><td class="pin">servos.h</td><td>PCA9685 driver, stance mirroring, cosine stand/sit interpolation</td></tr>
     <tr><td class="pin">comms.h</td><td>UART/USB command parser + 20 Hz telemetry encoder</td></tr>
   </table></div>
@@ -741,7 +742,7 @@ footer { border-top: 1px solid var(--line); padding: 30px 40px; background: var(
     <tr><td><b>Board</b></td><td>15 A blade fuse + IRF9540N P-MOSFET</td><td>Short circuit, reversed battery</td></tr>
     <tr><td><b>Firmware</b></td><td><code>E:</code> emergency stop — checked first, every cycle</td><td>Runaway behaviour; motors off + fold in &lt;10 ms</td></tr>
     <tr><td><b>Firmware</b></td><td>Fall detection at |pitch| &gt; 45°</td><td>Wheels spinning at full power while down</td></tr>
-    <tr><td><b>Boot</b></td><td>All motor GPIOs driven LOW in <code>setup()</code> before L298N enable</td><td>Motor twitch on power-up (GPIO15 boots HIGH)</td></tr>
+    <tr><td><b>Boot</b></td><td>All motor GPIOs driven LOW in <code>setup()</code> before the TB6612FNG is active</td><td>Motor twitch on power-up (GPIO15 boots HIGH)</td></tr>
   </table></div>
 
   <h3>Known issues — Rev C</h3>
@@ -751,7 +752,7 @@ footer { border-top: 1px solid var(--line); padding: 30px 40px; background: var(
     The net has been corrected to +6V_SERVO — re-run DRC and re-export Gerbers after the schematic change.
   </div>
   <div class="callout warn">
-    <b>GPIO15 boot-strap:</b> ESP32 GPIO15 (L298N IN4) carries an internal pull-up and is sampled HIGH at boot.
+    <b>GPIO15 boot-strap:</b> ESP32 GPIO15 (TB6612FNG BIN2) carries an internal pull-up and is sampled HIGH at boot.
     Firmware writes it LOW in <code>setup()</code> before the driver is enabled — keep this if the pin map ever changes.
   </div>
   <div class="callout info">
@@ -763,10 +764,10 @@ footer { border-top: 1px solid var(--line); padding: 30px 40px; background: var(
   <ul class="checklist">
     <li><b>XL4016-A</b> output measured at 6.00 V before connecting servos</li>
     <li><b>XL4016-B</b> output measured at 5.00 V before connecting Pi / ESP32</li>
-    <li><b>L298N ENA/ENB jumpers removed</b> — enables are PWM-driven from the PCB</li>
-    <li><b>L298N VSS</b> wired directly to the 11.1 V rail, not through the PCB</li>
+    <li><b>TB6612FNG STBY and VCC</b> on the +3V3 rail — driver enabled, 3.3 V logic levels</li>
+    <li><b>TB6612FNG VM</b> wired directly to the 11.1 V rail, not through the PCB</li>
     <li><b>GY-6500 CSB/NCS</b> confirmed LOW (SPI mode active)</li>
-    <li><b>Motor GPIOs LOW</b> in setup() before the L298N is enabled</li>
+    <li><b>Motor GPIOs LOW</b> in setup() before the TB6612FNG drives the motors</li>
     <li><b>PCA9685 V+</b> measures 6 V (J6.P5 on the +6V_SERVO rail)</li>
   </ul>
 </section>

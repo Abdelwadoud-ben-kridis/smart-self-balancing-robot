@@ -19,13 +19,13 @@
 | # | Component | Spec | Qty | Notes |
 |---|-----------|------|:---:|-------|
 | 5 | MG996R Servo Motor | 11.0 kg-cm torque, metal gear | 4 | Hip (x2) and knee (x2) joints |
-| 6 | JGB37-520 DC Geared Motor | 12V class (run at 11.1V), hall encoder, 37mm gearbox | 2 | Wheel drive motors — verify stall current vs L298N 2A/ch rating |
+| 6 | JGB37-520 DC Geared Motor | 12V class (run at 11.1V), hall encoder, 37mm gearbox | 2 | Wheel drive motors — verify stall current vs TB6612FNG 3.2A peak rating |
 
 ## 4. Motor Drivers & PWM
 
 | # | Component | Spec | Qty | Notes |
 |---|-----------|------|:---:|-------|
-| 7 | L298N Dual H-Bridge Module | 2-ch, up to 2A/ch | 1 | PWM+DIR for 2x JGB37-520 |
+| 7 | TB6612FNG Dual Motor Driver | 2-ch MOSFET, 1.2A cont / 3.2A peak per ch, VM ≤15V | 1 | PWM+DIR for 2x JGB37-520; VCC + STBY on +3V3 |
 | 8 | PCA9685 16-Ch PWM Driver | I2C, 12-bit resolution | 1 | 4 channels used for MG996R servos |
 
 ## 5. Power System
@@ -72,7 +72,7 @@
 |---|-----------|------|:---:|-------|
 | 27 | Dupont Jumper Wires (M-F) | 20 cm assorted | ~30 | I2C, SPI, GPIO connections |
 | 28 | Dupont Jumper Wires (F-F) | 20 cm assorted | ~10 | Sensor/display hookup |
-| 29 | Silicone Wire 18 AWG (Red) | High-current power runs | ~1 m | Battery to BMS to buck to L298N |
+| 29 | Silicone Wire 18 AWG (Red) | High-current power runs | ~1 m | Battery to BMS to buck to TB6612FNG VM |
 | 30 | Silicone Wire 18 AWG (Black) | Ground runs | ~1 m | Power ground distribution |
 | 31 | Silicone Wire 22 AWG (assorted) | Signal-level wiring | ~2 m | Servo, UART, misc |
 | 32 | JST-XH Connectors (2/3/4-pin) | Crimp connectors | ~10 | Clean modular connections |

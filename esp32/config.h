@@ -34,7 +34,7 @@
 #define STANDUP_STEP_MS     10      // 200 × 10 ms = 2 s total
 #define PID_ENABLE_STEP     100     // PID on at 50 % of sequence
 
-// ── L298N motor driver ──────────────────────────────────────────────
+// ── TB6612FNG motor driver (PWMA/PWMB + AIN/BIN, STBY tied high) ────
 #define PIN_ENA             25      // left motor PWM
 #define PIN_IN1             26      // left motor dir A
 #define PIN_IN2             27      // left motor dir B
