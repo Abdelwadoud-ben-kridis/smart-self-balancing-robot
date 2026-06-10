@@ -6,30 +6,30 @@
 <title>Wiring Plan · SBR-01</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 <style>
 /* =====================================================================
    TOKENS
 ====================================================================== */
 :root {
-  --bg: #0a0c10;
-  --bg-2: #12141a;
-  --bg-3: #1a1d25;
-  --bg-card: #10121a;
+  --bg: #0c1014;
+  --bg-2: #131920;
+  --bg-3: #1a212b;
+  --bg-card: #141b22;
   --line: rgba(255,255,255,0.06);
   --line-2: rgba(255,255,255,0.12);
   --text: #ecedef;
   --text-dim: #a8abb3;
   --text-mute: #5a5d66;
 
-  --accent: #d97757;
-  --cyan: #4dd4e8;
-  --green: #87a96b;
-  --yellow: #f5d949;
-  --rose: #c87070;
+  --accent: #ff6b2b;
+  --cyan: #38bdf8;
+  --green: #4ade80;
+  --yellow: #fbbf24;
+  --rose: #f87171;
   --purple: #a78bfa;
 
-  --font-display: 'Fraunces', 'Times New Roman', serif;
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
@@ -46,7 +46,7 @@ body {
   overflow-x: hidden;
 }
 
-::selection { background: rgba(77,212,232,0.2); color: #fff; }
+::selection { background: rgba(56,189,248,0.2); color: #fff; }
 
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -54,7 +54,7 @@ body {
   background: rgba(255,255,255,0.08);
   border-radius: 99px;
 }
-::-webkit-scrollbar-thumb:hover { background: rgba(77,212,232,0.3); }
+::-webkit-scrollbar-thumb:hover { background: rgba(56,189,248,0.3); }
 
 /* =====================================================================
    SCANLINE
@@ -70,7 +70,7 @@ body::after {
   height: 6px;
   z-index: 9998;
   pointer-events: none;
-  background: linear-gradient(transparent, rgba(77,212,232,0.03), transparent);
+  background: linear-gradient(transparent, rgba(56,189,248,0.03), transparent);
   animation: scanline 8s linear infinite;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -150,7 +150,7 @@ body::after {
 }
 .tb-nav a.active {
   color: var(--cyan);
-  background: rgba(77,212,232,0.08);
+  background: rgba(56,189,248,0.08);
 }
 
 /* =====================================================================
@@ -317,17 +317,17 @@ body::after {
 .flow-node.highlight {
   border-color: var(--cyan);
   color: var(--cyan);
-  background: rgba(77,212,232,0.05);
+  background: rgba(56,189,248,0.05);
 }
 .flow-node.volt {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(217,119,87,0.06);
+  background: rgba(255,107,43,0.06);
 }
 .flow-node.gnd {
   border-color: var(--green);
   color: var(--green);
-  background: rgba(135,169,107,0.06);
+  background: rgba(74,222,128,0.06);
 }
 .flow-arrow {
   color: var(--text-mute);
@@ -412,7 +412,7 @@ td code {
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--cyan);
-  background: rgba(77,212,232,0.08);
+  background: rgba(56,189,248,0.08);
   padding: 2px 6px;
   border-radius: 3px;
 }
@@ -497,7 +497,7 @@ td .tbd {
 .callout {
   padding: 16px 20px;
   border-left: 3px solid var(--cyan);
-  background: rgba(77,212,232,0.04);
+  background: rgba(56,189,248,0.04);
   border-radius: 0 6px 6px 0;
   margin: 16px 0;
   font-size: 13.5px;
@@ -609,7 +609,7 @@ td .tbd {
 <!-- ============================================================= -->
 <section class="section" id="power">
   <div class="section-head">
-    <div class="section-icon" style="background:rgba(217,119,87,0.1); color:var(--accent);">&#9889;</div>
+    <div class="section-icon" style="background:rgba(255,107,43,0.1); color:var(--accent);">&#9889;</div>
     <h2>Power Chain</h2>
     <span class="tag">11.1V &middot; 3S</span>
   </div>
@@ -654,7 +654,7 @@ td .tbd {
 <!-- ============================================================= -->
 <section class="section" id="signal-pcb">
   <div class="section-head">
-    <div class="section-icon" style="background:rgba(77,212,232,0.1); color:var(--cyan);">&#9783;</div>
+    <div class="section-icon" style="background:rgba(56,189,248,0.1); color:var(--cyan);">&#9783;</div>
     <h2>Signal Conditioning PCB</h2>
     <span class="tag">57&times;60 mm</span>
   </div>
@@ -667,7 +667,7 @@ td .tbd {
 
   <div class="connector-grid">
     <div class="connector-card">
-      <div class="name">J1 &mdash; Encoder 1 <span class="badge" style="background:rgba(135,169,107,0.15); color:var(--green)">Left Motor</span></div>
+      <div class="name">J1 &mdash; Encoder 1 <span class="badge" style="background:rgba(74,222,128,0.15); color:var(--green)">Left Motor</span></div>
       <ul class="pin-list">
         <li><span class="p">1</span> +3V3 &rarr; encoder VCC</li>
         <li><span class="p">2</span> GND</li>
@@ -676,7 +676,7 @@ td .tbd {
       </ul>
     </div>
     <div class="connector-card">
-      <div class="name">J2 &mdash; Encoder 2 <span class="badge" style="background:rgba(135,169,107,0.15); color:var(--green)">Right Motor</span></div>
+      <div class="name">J2 &mdash; Encoder 2 <span class="badge" style="background:rgba(74,222,128,0.15); color:var(--green)">Right Motor</span></div>
       <ul class="pin-list">
         <li><span class="p">1</span> +3V3 &rarr; encoder VCC</li>
         <li><span class="p">2</span> GND</li>
@@ -695,7 +695,7 @@ td .tbd {
       </ul>
     </div>
     <div class="connector-card">
-      <div class="name">J3 &mdash; PCA9685 I2C <span class="badge" style="background:rgba(77,212,232,0.12); color:var(--cyan)">4-pin</span></div>
+      <div class="name">J3 &mdash; PCA9685 I2C <span class="badge" style="background:rgba(56,189,248,0.12); color:var(--cyan)">4-pin</span></div>
       <ul class="pin-list">
         <li><span class="p">1</span> +3V3</li>
         <li><span class="p">2</span> GND</li>
@@ -704,7 +704,7 @@ td .tbd {
       </ul>
     </div>
     <div class="connector-card">
-      <div class="name">J4 &mdash; PCA9685 Power <span class="badge" style="background:rgba(217,119,87,0.12); color:var(--accent)">2-pin</span></div>
+      <div class="name">J4 &mdash; PCA9685 Power <span class="badge" style="background:rgba(255,107,43,0.12); color:var(--accent)">2-pin</span></div>
       <ul class="pin-list">
         <li><span class="p">1</span> +6V</li>
         <li><span class="p">2</span> GND</li>
@@ -743,7 +743,7 @@ td .tbd {
 <!-- ============================================================= -->
 <section class="section" id="esp32">
   <div class="section-head">
-    <div class="section-icon" style="background:rgba(245,217,73,0.1); color:var(--yellow);">&#9881;</div>
+    <div class="section-icon" style="background:rgba(251,191,36,0.1); color:var(--yellow);">&#9881;</div>
     <h2>ESP32 GPIO Assignments</h2>
     <span class="tag">WROOM-32D</span>
   </div>
@@ -813,7 +813,7 @@ td .tbd {
 <!-- ============================================================= -->
 <section class="section" id="pca9685">
   <div class="section-head">
-    <div class="section-icon" style="background:rgba(135,169,107,0.1); color:var(--green);">&#8635;</div>
+    <div class="section-icon" style="background:rgba(74,222,128,0.1); color:var(--green);">&#8635;</div>
     <h2>PCA9685 Servo Driver</h2>
     <span class="tag">I2C 0x40</span>
   </div>
@@ -856,7 +856,7 @@ td .tbd {
   <div class="split-grid" style="grid-template-columns: 1fr 1fr;">
     <div class="split-card">
       <div class="label">Axis Convention</div>
-      <div class="desc">Pitch rate = <code style="font-family:var(--font-mono); color:var(--cyan); background:rgba(77,212,232,0.08); padding:2px 6px; border-radius:3px;">gyro Y (gy)</code><br>Pitch angle = <code style="font-family:var(--font-mono); color:var(--cyan); background:rgba(77,212,232,0.08); padding:2px 6px; border-radius:3px;">atan2(ax, az)</code></div>
+      <div class="desc">Pitch rate = <code style="font-family:var(--font-mono); color:var(--cyan); background:rgba(56,189,248,0.08); padding:2px 6px; border-radius:3px;">gyro Y (gy)</code><br>Pitch angle = <code style="font-family:var(--font-mono); color:var(--cyan); background:rgba(56,189,248,0.08); padding:2px 6px; border-radius:3px;">atan2(ax, az)</code></div>
     </div>
     <div class="split-card">
       <div class="label">Interrupt</div>
@@ -870,7 +870,7 @@ td .tbd {
 <!-- ============================================================= -->
 <section class="section" id="rpi">
   <div class="section-head">
-    <div class="section-icon" style="background:rgba(77,212,232,0.1); color:var(--cyan);">&#960;</div>
+    <div class="section-icon" style="background:rgba(56,189,248,0.1); color:var(--cyan);">&#960;</div>
     <h2>Raspberry Pi 5</h2>
     <span class="tag">Floor 1</span>
   </div>
@@ -911,7 +911,7 @@ td .tbd {
 <!-- ============================================================= -->
 <section class="section" id="motors">
   <div class="section-head">
-    <div class="section-icon" style="background:rgba(217,119,87,0.1); color:var(--accent);">&#9881;</div>
+    <div class="section-icon" style="background:rgba(255,107,43,0.1); color:var(--accent);">&#9881;</div>
     <h2>JGA25-370 Motors</h2>
     <span class="tag">With Encoders</span>
   </div>
@@ -940,7 +940,7 @@ td .tbd {
 <!-- ============================================================= -->
 <section class="section" id="servos">
   <div class="section-head">
-    <div class="section-icon" style="background:rgba(135,169,107,0.1); color:var(--green);">&#9678;</div>
+    <div class="section-icon" style="background:rgba(74,222,128,0.1); color:var(--green);">&#9678;</div>
     <h2>MG996R Servos</h2>
     <span class="tag">4&times; Joints</span>
   </div>
