@@ -350,7 +350,7 @@ footer { border-top: 1px solid var(--line); padding: 30px 40px; background: var(
   <div class="doc-meta">
     <span>Doc <b>SBR-ENG-001</b></span>
     <span>Hardware Rev <b>C</b></span>
-    <span>Firmware <b>SBR control v1.0</b></span>
+    <span>Firmware <b>SBR control v1.1</b></span>
     <span>Author <b>Abdelwadoud Ben Kridis</b></span>
   </div>
   <div class="spec-strip">
@@ -698,8 +698,10 @@ footer { border-top: 1px solid var(--line); padding: 30px 40px; background: var(
 <section id="firmware" class="reveal">
   <div class="sec-head"><span class="num">09</span><h2>Firmware</h2></div>
   <p class="lead">
-    <strong>SBR control v1.0</strong> — Arduino/ESP32, organised as small single-purpose headers around one
-    non-blocking control loop. No RTOS, no delays, no dynamic allocation in the loop path.
+    <strong>SBR control v1.1</strong> — Arduino/ESP32, organised as small single-purpose headers around one
+    non-blocking control loop. No RTOS, no delays, no dynamic allocation in the loop path. v1.1 retargets the
+    firmware to the Rev C PCB: SPI IMU with boot-time gyro calibration, TB6612FNG pin map with GPIO15 boot
+    failsafe, interrupt-driven encoder counting, and derivative-on-measurement PID with D-term filtering.
   </p>
 
   <h3>Module structure</h3>
@@ -707,7 +709,8 @@ footer { border-top: 1px solid var(--line); padding: 30px 40px; background: var(
     <tr><th>File</th><th>Responsibility</th></tr>
     <tr><td class="pin">control.ino</td><td>Main 100 Hz loop: state machine, PID, safety rules, gain tuning</td></tr>
     <tr><td class="pin">config.h</td><td>Every pin, gain, threshold and timing constant in one place</td></tr>
-    <tr><td class="pin">sensors.h</td><td>MPU-6500 init + read, complementary-filter pitch estimate</td></tr>
+    <tr><td class="pin">sensors.h</td><td>MPU-6500 SPI driver, boot gyro calibration, complementary-filter pitch</td></tr>
+    <tr><td class="pin">encoders.h</td><td>Interrupt-driven quadrature counting for both wheel encoders</td></tr>
     <tr><td class="pin">motors.h</td><td>TB6612FNG direction logic + LEDC PWM (1 kHz, 8-bit)</td></tr>
     <tr><td class="pin">servos.h</td><td>PCA9685 driver, stance mirroring, cosine stand/sit interpolation</td></tr>
     <tr><td class="pin">comms.h</td><td>UART/USB command parser + 20 Hz telemetry encoder</td></tr>

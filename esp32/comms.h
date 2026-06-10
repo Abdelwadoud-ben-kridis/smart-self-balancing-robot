@@ -39,6 +39,8 @@ static void _comms_parse_line(const char *buf, Command &cmd) {
 
 static void comms_init() {
     Serial.begin(UART_BAUD);
+    // Rev C harness: Pi TX → GPIO35 only. TX = -1 leaves the pin
+    // unassigned until an ESP32→Pi telemetry wire is added.
     Serial2.begin(UART_BAUD, SERIAL_8N1, PIN_UART_RX, PIN_UART_TX);
     _rx_idx = 0;
     _last_telem = 0;
@@ -98,12 +100,16 @@ static void comms_send_telemetry(float pitch, int16_t motor_l, int16_t motor_r, 
         default:             s = "UNK"; break;
     }
 
+#if (PIN_UART_TX >= 0)
     Serial2.printf("T:%.1f,%d,%d,%s\n", pitch, motor_l, motor_r, s);
+#endif
     Serial.printf("T:%.1f,%d,%d,%s\n", pitch, motor_l, motor_r, s);
 }
 
-static void comms_print_debug(float pitch, float kp, float ki, float kd) {
-    Serial.printf("Pitch: %.2f  Kp: %.1f  Ki: %.1f  Kd: %.1f\n", pitch, kp, ki, kd);
+static void comms_print_debug(float pitch, float kp, float ki, float kd,
+                              int32_t enc_l, int32_t enc_r, bool imu_ok) {
+    Serial.printf("Pitch: %.2f  Kp: %.1f  Ki: %.1f  Kd: %.1f  EncL: %ld  EncR: %ld  IMU: %s\n",
+                  pitch, kp, ki, kd, (long)enc_l, (long)enc_r, imu_ok ? "OK" : "FAULT");
 }
 
 #endif // COMMS_H

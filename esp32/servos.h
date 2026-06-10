@@ -10,6 +10,9 @@ static int8_t   _interp_dir  = 0;
 
 static void servo_write_angle(uint8_t channel, uint16_t angle) {
     uint16_t pulse_us = map(angle, 0, 180, SERVO_MIN_US, SERVO_MAX_US);
+    // never command past the MG996R's safe window — a jammed servo
+    // stalls at full current on the 6 V rail
+    pulse_us = constrain(pulse_us, SERVO_SAFE_MIN_US, SERVO_SAFE_MAX_US);
     uint16_t tick = (uint16_t)((uint32_t)pulse_us * 4096 / 20000);
     _pca.setPWM(channel, 0, tick);
 }
