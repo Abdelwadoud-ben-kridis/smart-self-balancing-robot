@@ -1,86 +1,94 @@
 # SBR-01 — PCB Component Buy List
 
-**Distribution & Interface Board** · Rev C · Board 94.6 × 58.1 mm · 4-layer · JLCPCB
-Consolidated by component value. Buy quantities include spares. Fill in **Price** / **Supplier** as you order.
+> **Distribution & Interface Board** · Rev C · 94.6 × 58.1 mm · 4-layer · JLCPCB
+> Consolidated by value. Buy quantities include spares.
+
+**Contents:** [Resistors](#resistors) · [Capacitors](#capacitors) · [Semiconductors](#semiconductors) · [Connectors](#connectors) · [High-current (must replace)](#high-current-connectors--must-replace) · [Modules](#external-modules) · [Totals](#totals)
 
 ---
 
-## Resistors — THT axial, ¼ W metal-film 1%
+## Resistors
 
-| Value | Package | Qty on Board | Suggested Buy | Refs | Notes | Price |
-|---|---|:--:|:--:|---|---|---|
-| 10 kΩ | Axial THT ¼W | 4 | 10 | R5, R6, R17, R18 | Gate divider (R5/R6) + ENA/ENB boot pull-downs (R17/R18) | |
-| 4.7 kΩ | Axial THT ¼W | 2 | 10 | R11, R12 | I²C SDA/SCL pull-ups to 3V3 | |
-| 1 kΩ | Axial THT ¼W | 4 | 10 | R13, R14, R15, R16 | Encoder RC-filter series resistors | |
-| 33 Ω | Axial THT ¼W | 4 | 10 | R7, R8, R9, R10 | SPI series damping — CLK / MOSI / MISO / CS | |
+_THT axial, ¼ W metal-film 1%_
 
-## Capacitors — Electrolytic (radial)
+| Value  | Package      | Qty | Buy | Refs            | Use                               |
+|:-------|:-------------|:---:|:---:|:----------------|:----------------------------------|
+| 10 kΩ  | Axial THT ¼W |  4  |  10 | R5 R6 R17 R18   | Gate divider + ENA/ENB pull-downs |
+| 4.7 kΩ | Axial THT ¼W |  2  |  10 | R11 R12         | I²C SDA/SCL pull-ups              |
+| 1 kΩ   | Axial THT ¼W |  4  |  10 | R13 R14 R15 R16 | Encoder RC series                 |
+| 33 Ω   | Axial THT ¼W |  4  |  10 | R7 R8 R9 R10    | SPI series damping                |
 
-| Value | Package | Qty on Board | Suggested Buy | Refs | Notes | Price |
-|---|---|:--:|:--:|---|---|---|
-| 10 µF / ≥25 V | CP Radial D5.0mm P2.5mm | 3 | 6 | C1, C3, C5 | Bulk: 3V3 out, 5V in, IMU VCC. 10 µF min for AMS1117 stability | |
+## Capacitors
 
-## Capacitors — Ceramic (disc, 2.5 mm pitch)
+**Electrolytic (radial)**
 
-| Value | Package | Qty on Board | Suggested Buy | Refs | Notes | Price |
-|---|---|:--:|:--:|---|---|---|
-| 100 nF (0.1 µF) | Disc 2.5mm pitch | 3 | 10 | C2, C4, C6 | HF decoupling — 3V3, 5V, IMU | |
-| 10 nF | Disc 2.5mm pitch | 4 | 10 | C7, C8, C9, C10 | Encoder shunt caps (15.9 kHz RC corner) | |
+| Value         | Package          | Qty | Buy | Refs     | Use                |
+|:--------------|:-----------------|:---:|:---:|:---------|:-------------------|
+| 10 µF / ≥25 V | Radial D5.0 P2.5 |  3  |  6  | C1 C3 C5 | Bulk: 3V3, 5V, IMU |
+
+**Ceramic (disc, 2.5 mm pitch)**
+
+| Value  | Package     | Qty | Buy | Refs         | Use           |
+|:-------|:------------|:---:|:---:|:-------------|:--------------|
+| 100 nF | Disc 2.5 mm |  3  |  10 | C2 C4 C6     | HF decoupling |
+| 10 nF  | Disc 2.5 mm |  4  |  10 | C7 C8 C9 C10 | Encoder shunt |
 
 ## Semiconductors
 
-| Component | Value | Package | Qty on Board | Suggested Buy | Refs | Notes | Price |
-|---|---|---|:--:|:--:|---|---|---|
-| P-MOSFET | IRF9540N | TO-220-3 vertical | 1 | 2 | Q1 | Reverse-polarity protection | |
-| LDO regulator | AMS1117-3.3 | SOT-223-3 | 1 | 2 | U1 | 5V → 3V3 @ 1 A | |
-| TVS diode | SMBJ12A | DO-214AA (SMB) | 1 | 2 | D1 | ⚠ Hard to source locally — board runs without it; leave footprint unpopulated if unavailable | |
+| Part      | Value       | Package  | Qty | Buy | Refs | Use                         |
+|:----------|:------------|:---------|:---:|:---:|:-----|:----------------------------|
+| P-MOSFET  | IRF9540N    | TO-220-3 |  1  |  2  | Q1   | Reverse-polarity protection |
+| LDO       | AMS1117-3.3 | SOT-223  |  1  |  2  | U1   | 5V → 3V3 @ 1 A              |
+| TVS diode | SMBJ12A     | SMB      |  1  |  2  | D1   | Optional — see note         |
 
-## Connectors — as designed
+## Connectors
 
-| Component | Value | Package | Qty on Board | Suggested Buy | Refs | Notes | Price |
-|---|---|---|:--:|:--:|---|---|---|
-| Female pin socket | 1×8, 2.54 mm | THT | 1 | 2 | J5 | GY-6500 IMU module socket | |
-| Female pin socket | 1×6, 2.54 mm | THT | 1 | 2 | J6 | PCA9685 module socket | |
-| Female pin socket | 1×15, 2.54 mm | THT | 2 | 3 | J12, J13 | ESP32 DevKit (15/side, 22.86 mm row spacing) | |
-| Male pin header | 2-pin, 2.54 mm | THT | 2 | 5 | J10, J11 | RPi power + UART (low current — 2.54 mm OK) | |
-| Screw terminal | 4-pin, 5.08 mm Phoenix | THT | 2 | 3 | J7, J8 | Encoder 1 & Encoder 2 | |
-| Screw terminal | 6-pin, 5.08 mm Phoenix | THT | 1 | 2 | J9 | TB6612FNG control signals only — no power | |
+| Part          | Value         | Package | Qty | Buy | Refs    | Use            |
+|:--------------|:--------------|:--------|:---:|:---:|:--------|:---------------|
+| Female socket | 1×8 2.54 mm   | THT     |  1  |  2  | J5      | GY-6500 IMU    |
+| Female socket | 1×6 2.54 mm   | THT     |  1  |  2  | J6      | PCA9685        |
+| Female socket | 1×15 2.54 mm  | THT     |  2  |  3  | J12 J13 | ESP32 DevKit   |
+| Pin header    | 2-pin 2.54 mm | THT     |  2  |  5  | J10 J11 | RPi pwr + UART |
+| Screw term.   | 4-pin 5.08 mm | THT     |  2  |  3  | J7 J8   | Encoders 1 & 2 |
+| Screw term.   | 6-pin 5.08 mm | THT     |  1  |  2  | J9      | TB6612 signals |
 
-## High-current connectors — ⚠ replace the 2.54 mm footprints before relying on the board
+## High-current connectors — must replace
 
-| Component | Value | Package | Qty on Board | Suggested Buy | Refs | Notes | Price |
-|---|---|---|:--:|:--:|---|---|---|
-| Power connector | XT60 or 5.08 mm screw | THT / panel | 1 | 2 | J1 | ⚠ VBAT input 15 A — 2.54 mm header is badly undersized | |
-| Screw terminal (HC) | 4-pin, 5.08 mm | THT | 1 | 2 | J2 | ⚠ Carries 10 A+ — replace 2.54 mm | |
-| Screw terminal (HC) | 2-pin, 5.08 mm | THT | 1 | 2 | J3 | ⚠ 5V input 10 A — replace 2.54 mm | |
-| Inline fuse holder | ATC/ATO blade, 15 A | Wiring harness | 1 | 1 | F1 | ⚠ Use inline blade-fuse holder in harness — PCB footprint is only a pin header | |
-| Blade fuse | ATC 15 A | — | 1 | 5 | F1 | Buy spares | |
+> [!WARNING]
+> The board ships with **2.54 mm headers (~3 A)** on `J1` / `J2` / `J3`, which carry **10–15 A**. Replace them with XT60 / 5.08 mm terminals, and run the 15 A fuse (`F1`) on an **inline blade-fuse holder in the harness**, not the PCB pin header — before powering the board.
 
-## External modules — skip any you already own
+| Part        | Value          | Package | Qty | Buy | Refs | Use             |
+|:------------|:---------------|:--------|:---:|:---:|:-----|:----------------|
+| Power conn. | XT60 / 5.08 mm | THT     |  1  |  2  | J1   | VBAT in 15 A    |
+| Screw term. | 4-pin 5.08 mm  | THT     |  1  |  2  | J2   | 10 A+ rail      |
+| Screw term. | 2-pin 5.08 mm  | THT     |  1  |  2  | J3   | 5V in 10 A      |
+| Fuse holder | ATC blade 15 A | Harness |  1  |  1  | F1   | Inline, not PCB |
+| Blade fuse  | ATC 15 A       | —       |  1  |  5  | F1   | Spares          |
 
-| Component | Value | Package | Qty on Board | Suggested Buy | Refs | Notes | Price |
-|---|---|---|:--:|:--:|---|---|---|
-| ESP32 DevKit | WROOM-32, 30-pin | Module | 1 | 1 | J12 / J13 | Main MCU | |
-| IMU module | GY-6500 (MPU-6500) | Module | 1 | 1 | J5 | SPI mode | |
-| PWM servo driver | PCA9685, 16-ch | Module | 1 | 1 | J6 | I²C addr 0x40; V+ = 6 V servo rail | |
-| Buck converter | XL4016, 10 A adjustable | Module | 2 | 2 | J2 / J3 | Set ONE to 6.0 V (servos), ONE to 5.0 V — set voltage BEFORE connecting | |
-| Motor driver | TB6612FNG | Module | 1 | 1 | J9 | VM/GND direct to battery; VCC + STBY from 3V3 | |
+## External modules
 
----
+_Skip any you already own._
 
-## Quick totals
+| Part         | Value              | Package | Qty | Buy | Refs    | Use               |
+|:-------------|:-------------------|:--------|:---:|:---:|:--------|:------------------|
+| ESP32 DevKit | WROOM-32 30-pin    | Module  |  1  |  1  | J12 J13 | Main MCU          |
+| IMU          | GY-6500 (MPU-6500) | Module  |  1  |  1  | J5      | SPI mode          |
+| PWM driver   | PCA9685 16-ch      | Module  |  1  |  1  | J6      | I²C 0x40, V+ 6 V  |
+| Buck conv.   | XL4016 10 A adj.   | Module  |  2  |  2  | J2 J3   | 6.0 V + 5.0 V     |
+| Motor driver | TB6612FNG          | Module  |  1  |  1  | J9      | VM direct to batt |
 
-- **Resistors:** 14 total across 4 values (10 kΩ ×4, 1 kΩ ×4, 33 Ω ×4, 4.7 kΩ ×2)
-- **Capacitors:** 3 electrolytic (all 10 µF) + 7 ceramic (100 nF ×3, 10 nF ×4)
-- **Semiconductors:** 3 (Q1, U1, D1 — D1 optional)
-- **Connectors:** 6 line items as designed + 5 high-current replacements/fuse
-- **Modules:** 5 plug-in boards
+## Totals
 
-## Notes & sourcing
+| Category | Count |
+|:----------------|:----------------------------------------------|
+| Resistors       | 14 — 10 kΩ ×4, 1 kΩ ×4, 33 Ω ×4, 4.7 kΩ ×2     |
+| Capacitors      | 10 — 10 µF ×3, 100 nF ×3, 10 nF ×4             |
+| Semiconductors  | 3 — Q1, U1, D1 (D1 optional)                   |
+| Connectors      | 6 as-designed + 5 high-current / fuse          |
+| Modules         | 5 plug-in boards                               |
 
-- All resistors are ¼ W, 1% metal-film, axial THT. Buy quantities rounded to common pack sizes — passives are cheap, keep spares.
-- 10 µF electrolytics sit on 3V3 / 5V rails; ≥16 V rated works, 25 V gives margin. Keep the D5.0 mm body / 2.5 mm lead pitch to fit the footprint.
-- Q1, U1, D1 are the only non-module semiconductors. **D1 (SMBJ12A TVS) is optional** — the board is functional without it; leave the SMB pad empty if you can't get one.
-- ⚠ **Before trusting the board at full current:** replace **J1 / J2 / J3** (2.54 mm headers rated ~3 A) with XT60 / 5.08 mm screw terminals, and put **F1** (15 A) on an inline blade-fuse holder in the harness — not the PCB pin header.
-- **XL4016 buck modules:** set output voltage with a multimeter **before** wiring to the board — 6.0 V for the servo rail, 5.0 V for the 5 V rail.
-- **Encoders run on +3V3 ONLY** — 5 V on an ESP32 GPIO permanently damages it.
+> [!NOTE]
+> - **D1 (SMBJ12A TVS) is optional** — the board is functional without it; leave the SMB pad empty if you can't source one locally.
+> - **XL4016 buck modules:** set output voltage with a multimeter **before** wiring — 6.0 V for the servo rail, 5.0 V for the 5 V rail.
+> - **Encoders run on +3V3 only** — 5 V on an ESP32 GPIO permanently damages it.
+> - 10 µF electrolytics: ≥16 V works, 25 V for margin. Keep the D5.0 mm body / 2.5 mm pitch to fit the footprint.
