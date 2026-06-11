@@ -59,7 +59,6 @@ _THT axial, ¼ W metal-film 1%_
 
 | Part        | Value          | Package | Qty | Buy | Refs | Use             |
 |:------------|:---------------|:--------|:---:|:---:|:-----|:----------------|
-| Power conn. | XT60 / 5.08 mm | THT     |  1  |  2  | J1   | VBAT in 15 A    |
 | Screw term. | 4-pin 5.08 mm  | THT     |  1  |  2  | J2   | 10 A+ rail      |
 | Screw term. | 2-pin 5.08 mm  | THT     |  1  |  2  | J3   | 5V in 10 A      |
 | Fuse holder | ATC blade 15 A | Harness |  1  |  1  | F1   | Inline, not PCB |
@@ -88,7 +87,6 @@ _Skip any you already own._
 | Modules         | 5 plug-in boards                               |
 
 > [!NOTE]
-> - **D1 (SMBJ12A TVS) is optional** — the board is functional without it; leave the SMB pad empty if you can't source one locally.
 > - **XL4016 buck modules:** set output voltage with a multimeter **before** wiring — 6.0 V for the servo rail, 5.0 V for the 5 V rail.
 > - **Encoders run on +3V3 only** — 5 V on an ESP32 GPIO permanently damages it.
 > - 10 µF electrolytics: ≥16 V works, 25 V for margin. Keep the D5.0 mm body / 2.5 mm pitch to fit the footprint.
