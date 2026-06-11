@@ -39,7 +39,7 @@ _THT axial, ¼ W metal-film 1%_
 |:----------|:------------|:---------|:---:|:---:|:-----|:----------------------------|
 | P-MOSFET  | IRF9540N    | TO-220-3 |  1  |  2  | Q1   | Reverse-polarity protection |
 | LDO       | AMS1117-3.3 | SOT-223  |  1  |  2  | U1   | 5V → 3V3 @ 1 A              |
-| TVS diode | SMBJ12A     | SMB      |  1  |  2  | D1   | Optional — see note         |
+
 
 ## Connectors
 
