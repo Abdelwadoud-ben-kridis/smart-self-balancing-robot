@@ -1,377 +1,86 @@
-# PCB Bill of Materials — Self-Balancing Articulated Leg Robot
-**Distribution & Interface Board — 4-Layer, Compact**
-**Designer:** DOUDOU | **Revision:** C | **Date:** 2026-05-31
+# SBR-01 — PCB Component Buy List
 
-> **Revision C changes from Rev B:**
-> - Board dimensions corrected (94.6 × 58.1 mm, not 100 × 56 mm)
-> - ESP32 J12/J13 pin mapping completely rewritten — Rev B table was wrong
-> - J2 corrected to 4-pin
-> - J9 description corrected — carries control signals only, no power
-> - C1/C3 and C2/C4 descriptions corrected (were swapped)
-> - J6.P5 flagged as PCB error (currently +5V, must be changed to +6V_SERVO)
-> - GPIO15 boot-strap warning added
-> - GPIO12 pull-down note corrected (NC with internal pull-down, no external resistor needed)
+**Distribution & Interface Board** · Rev C · Board 94.6 × 58.1 mm · 4-layer · JLCPCB
+Consolidated by component value. Buy quantities include spares. Fill in **Price** / **Supplier** as you order.
 
 ---
 
-## PROJECT STATUS — REVISION C
+## Resistors — THT axial, ¼ W metal-film 1%
 
-| Phase | Status |
-|-------|--------|
-| Schematic | ✅ COMPLETE — 0 ERC errors |
-| Footprint assignment | ✅ COMPLETE |
-| Board outline | ✅ COMPLETE — 94.6 × 58.1 mm Edge.Cuts |
-| 4-layer stackup | ✅ COMPLETE — 1.6mm JLCPCB spec |
-| Design rules | ✅ COMPLETE — net classes configured |
-| Component placement | ✅ COMPLETE |
-| GND plane (In1.Cu) | ✅ COMPLETE — solid fill, priority 4 |
-| Power zones (In2.Cu) | ✅ COMPLETE — VBAT(p=1), 3V3(p=3), 5V(p=1), 6V_SERVO(p=2) |
-| Power traces | ✅ COMPLETE — 0.8mm min, VBAT_SWITCHED 2.0mm |
-| Signal traces | ✅ COMPLETE — F.Signal + B.Signal |
-| DRC | ✅ COMPLETE — 0 violations, 0 unconnected |
-| Gerber export | ✅ COMPLETE |
+| Value | Package | Qty on Board | Suggested Buy | Refs | Notes | Price |
+|---|---|:--:|:--:|---|---|---|
+| 10 kΩ | Axial THT ¼W | 4 | 10 | R5, R6, R17, R18 | Gate divider (R5/R6) + ENA/ENB boot pull-downs (R17/R18) | |
+| 4.7 kΩ | Axial THT ¼W | 2 | 10 | R11, R12 | I²C SDA/SCL pull-ups to 3V3 | |
+| 1 kΩ | Axial THT ¼W | 4 | 10 | R13, R14, R15, R16 | Encoder RC-filter series resistors | |
+| 33 Ω | Axial THT ¼W | 4 | 10 | R7, R8, R9, R10 | SPI series damping — CLK / MOSI / MISO / CS | |
 
----
+## Capacitors — Electrolytic (radial)
 
-## 1. Project Overview
+| Value | Package | Qty on Board | Suggested Buy | Refs | Notes | Price |
+|---|---|:--:|:--:|---|---|---|
+| 10 µF / ≥25 V | CP Radial D5.0mm P2.5mm | 3 | 6 | C1, C3, C5 | Bulk: 3V3 out, 5V in, IMU VCC. 10 µF min for AMS1117 stability | |
 
-### System Topology
-```
-3S Li-ion 18650 ×3 (9V–12.6V, 11.1V nom)
-        │
-        [F1: 15A Blade Fuse]
-        │
-        [Q1: IRF9540N TO-220 P-MOSFET — Reverse Polarity Protection]
-        │
-        ├──→ J2.P1 (VBAT_SWITCHED) → [XL4016-A external] → 6V/10A → J2.P2/P3 (+6V_SERVO)
-        │                                                             → J6.P5 → PCA9685 V+
-        ├──→ J3.P1 (+5V) ← [XL4016-B external] → 5V/10A
-        │         → U1 (AMS1117-3.3) → +3V3
-        │         → J10.P1 → RPi 5V
-        │         → J13.P15 → ESP32 VIN
-        └──→ J9 (TB6612FNG control signals ONLY — no power through J9)
-```
+## Capacitors — Ceramic (disc, 2.5 mm pitch)
 
-### Power Rails
+| Value | Package | Qty on Board | Suggested Buy | Refs | Notes | Price |
+|---|---|:--:|:--:|---|---|---|
+| 100 nF (0.1 µF) | Disc 2.5mm pitch | 3 | 10 | C2, C4, C6 | HF decoupling — 3V3, 5V, IMU | |
+| 10 nF | Disc 2.5mm pitch | 4 | 10 | C7, C8, C9, C10 | Encoder shunt caps (15.9 kHz RC corner) | |
 
-| Rail | Source | Max Current | Consumers |
-|------|--------|-------------|-----------|
-| +VBAT | 3S Li-ion | 15A (fused) | Q1 input |
-| /VBAT_SWITCHED | Q1 output | 15A | J2.P1 → XL4016-A input |
-| +6V_SERVO | XL4016-A external | 10A | J2.P2/P3 → J6.P5 → PCA9685 V+ → MG996R servos |
-| +5V | XL4016-B external | 10A | RPi 5, ESP32 VIN, U1 input |
-| +3V3 | AMS1117-3.3 on PCB | 1A | ESP32 VCC, IMU, I2C pull-ups |
-| GND | Solid plane In1.Cu | — | All returns |
+## Semiconductors
 
----
+| Component | Value | Package | Qty on Board | Suggested Buy | Refs | Notes | Price |
+|---|---|---|:--:|:--:|---|---|---|
+| P-MOSFET | IRF9540N | TO-220-3 vertical | 1 | 2 | Q1 | Reverse-polarity protection | |
+| LDO regulator | AMS1117-3.3 | SOT-223-3 | 1 | 2 | U1 | 5V → 3V3 @ 1 A | |
+| TVS diode | SMBJ12A | DO-214AA (SMB) | 1 | 2 | D1 | ⚠ Hard to source locally — board runs without it; leave footprint unpopulated if unavailable | |
 
-## 2. Board Specifications
+## Connectors — as designed
 
-| Parameter | Value |
-|-----------|-------|
-| Size | **94.6 × 58.1 mm** (Edge.Cuts measured) |
-| Layers | 4 |
-| Stackup | F.Signal / GND(In1) / Power(In2) / B.Signal |
-| Thickness | 1.6mm |
-| Copper weight | 1oz all layers |
-| Fabricator | JLCPCB |
-| Min track width | 0.2mm |
-| Min clearance | 0.2mm |
-| Min drill | 0.3mm |
+| Component | Value | Package | Qty on Board | Suggested Buy | Refs | Notes | Price |
+|---|---|---|:--:|:--:|---|---|---|
+| Female pin socket | 1×8, 2.54 mm | THT | 1 | 2 | J5 | GY-6500 IMU module socket | |
+| Female pin socket | 1×6, 2.54 mm | THT | 1 | 2 | J6 | PCA9685 module socket | |
+| Female pin socket | 1×15, 2.54 mm | THT | 2 | 3 | J12, J13 | ESP32 DevKit (15/side, 22.86 mm row spacing) | |
+| Male pin header | 2-pin, 2.54 mm | THT | 2 | 5 | J10, J11 | RPi power + UART (low current — 2.54 mm OK) | |
+| Screw terminal | 4-pin, 5.08 mm Phoenix | THT | 2 | 3 | J7, J8 | Encoder 1 & Encoder 2 | |
+| Screw terminal | 6-pin, 5.08 mm Phoenix | THT | 1 | 2 | J9 | TB6612FNG control signals only — no power | |
 
-### Layer Functions
+## High-current connectors — ⚠ replace the 2.54 mm footprints before relying on the board
 
-| Layer | KiCad Name | Function | Priority |
-|-------|-----------|----------|----------|
-| Top | F.Signal | Signal traces + components | — |
-| Inner 1 | GND | Solid GND plane only — never routed through | 4 |
-| Inner 2 | Power | +VBAT, +3V3, +5V, +6V_SERVO zones only — never routed through | see below |
-| Bottom | B.Signal | Secondary signal traces | — |
+| Component | Value | Package | Qty on Board | Suggested Buy | Refs | Notes | Price |
+|---|---|---|:--:|:--:|---|---|---|
+| Power connector | XT60 or 5.08 mm screw | THT / panel | 1 | 2 | J1 | ⚠ VBAT input 15 A — 2.54 mm header is badly undersized | |
+| Screw terminal (HC) | 4-pin, 5.08 mm | THT | 1 | 2 | J2 | ⚠ Carries 10 A+ — replace 2.54 mm | |
+| Screw terminal (HC) | 2-pin, 5.08 mm | THT | 1 | 2 | J3 | ⚠ 5V input 10 A — replace 2.54 mm | |
+| Inline fuse holder | ATC/ATO blade, 15 A | Wiring harness | 1 | 1 | F1 | ⚠ Use inline blade-fuse holder in harness — PCB footprint is only a pin header | |
+| Blade fuse | ATC 15 A | — | 1 | 5 | F1 | Buy spares | |
 
-### In2.Cu Zone Priorities
+## External modules — skip any you already own
 
-| Zone | Priority | X Coverage |
-|------|----------|------------|
-| +3V3 | 3 (highest) | Left-centre |
-| +6V_SERVO | 2 | Far right |
-| +VBAT | 1 | Left |
-| +5V | 1 | Right |
+| Component | Value | Package | Qty on Board | Suggested Buy | Refs | Notes | Price |
+|---|---|---|:--:|:--:|---|---|---|
+| ESP32 DevKit | WROOM-32, 30-pin | Module | 1 | 1 | J12 / J13 | Main MCU | |
+| IMU module | GY-6500 (MPU-6500) | Module | 1 | 1 | J5 | SPI mode | |
+| PWM servo driver | PCA9685, 16-ch | Module | 1 | 1 | J6 | I²C addr 0x40; V+ = 6 V servo rail | |
+| Buck converter | XL4016, 10 A adjustable | Module | 2 | 2 | J2 / J3 | Set ONE to 6.0 V (servos), ONE to 5.0 V — set voltage BEFORE connecting | |
+| Motor driver | TB6612FNG | Module | 1 | 1 | J9 | VM/GND direct to battery; VCC + STBY from 3V3 | |
 
 ---
 
-## 3. Bill of Materials — AS PLACED
+## Quick totals
 
-### 3.1 Power Input & Protection
+- **Resistors:** 14 total across 4 values (10 kΩ ×4, 1 kΩ ×4, 33 Ω ×4, 4.7 kΩ ×2)
+- **Capacitors:** 3 electrolytic (all 10 µF) + 7 ceramic (100 nF ×3, 10 nF ×4)
+- **Semiconductors:** 3 (Q1, U1, D1 — D1 optional)
+- **Connectors:** 6 line items as designed + 5 high-current replacements/fuse
+- **Modules:** 5 plug-in boards
 
-| Ref | Qty | Component | Value | Package | Nets | Notes |
-|-----|-----|-----------|-------|---------|------|-------|
-| J1 | 1 | 2-pin header | VBAT_IN | 2-pin 2.54mm | +VBAT, GND | ⚠ 2.54mm header rated ~3A — undersized for 15A. Replace with XT-60 or 5.08mm screw terminal before use |
-| F1 | 1 | Fuse holder | 15A blade | 2-pin 2.54mm | +VBAT, Net-(Q1-S) | ⚠ PCB footprint is pin header — must use proper blade fuse holder in harness |
-| Q1 | 1 | P-MOSFET | IRF9540N | TO-220-3_Vertical | Net-(Q1-G), /VBAT_SWITCHED, Net-(Q1-S) | Reverse polarity protection |
-| D1 | 1 | TVS Diode | SMBJ12A | D_SMB | GND, /VBAT_SWITCHED | Transient suppression — clamp at 12V |
-| R5 | 1 | Resistor | 10kΩ | Axial THT | +VBAT, Net-(Q1-G) | Gate divider upper |
-| R6 | 1 | Resistor | 10kΩ | Axial THT | Net-(Q1-G), GND | Gate divider lower |
+## Notes & sourcing
 
-**Gate Divider — IRF9540N:**
-```
-VBAT → [R5: 10kΩ] → Gate ← [R6: 10kΩ] ← GND
-Vgs = -(VBAT × 0.5)
-At 12.6V: Vgs = −6.3V   IRF9540N threshold: −2V to −4V → FET ON ✓
-```
-
----
-
-### 3.2 Voltage Regulation (On-Board)
-
-| Ref | Qty | Component | Value | Package | Nets | Notes |
-|-----|-----|-----------|-------|---------|------|-------|
-| U1 | 1 | LDO | AMS1117-3.3 | SOT-223-3_TabPin2 | GND, +3V3, +5V | Input: +5V → Output: +3V3/1A |
-| C3 | 1 | Electrolytic | 10µF | CP_Radial_D5.0mm_P2.50mm | +5V, GND | U1 **input** bulk cap |
-| C4 | 1 | Ceramic | 100nF | C_Disc_D3.8mm_W2.6mm_P2.50mm | +5V, GND | U1 **input** HF decoupling |
-| C1 | 1 | Electrolytic | 10µF | CP_Radial_D5.0mm_P2.50mm | +3V3, GND | U1 **output** bulk cap — 10µF min required for AMS1117 stability |
-| C2 | 1 | Ceramic | 100nF | C_Disc_D3.8mm_W2.6mm_P2.50mm | +3V3, GND | U1 **output** HF decoupling |
-
----
-
-### 3.3 Power Connectors
-
-| Ref | Qty | Component | Value | Pins | Nets | Notes |
-|-----|-----|-----------|-------|------|------|-------|
-| J2 | 1 | 4-pin header | VBAT_SW / 6V_SERVO | 4-pin 2.54mm | /VBAT_SWITCHED, +6V_SERVO×2, GND | P1=input to XL4016-A; P2+P3=6V output back; P4=GND. ⚠ 2.54mm undersized for 10A+ |
-| J3 | 1 | 2-pin header | 5V_IN | 2-pin 2.54mm | +5V, GND | From XL4016-B. ⚠ 2.54mm undersized for 10A |
-| J9 | 1 | Screw terminal | TB6612FNG control | 6-pin Phoenix 5.08mm | /H_ENA, /H_ENB, /H_IN1–4 | **Control signals only — NO power through J9** (→ PWMA/PWMB/AIN1/AIN2/BIN1/BIN2) |
-
-**J2 Pinout:**
-
-| Pin | Net | Direction | Notes |
-|-----|-----|-----------|-------|
-| 1 | /VBAT_SWITCHED | OUT to XL4016-A input | Battery voltage after Q1 |
-| 2 | +6V_SERVO | IN from XL4016-A output | 6V regulated |
-| 3 | +6V_SERVO | IN from XL4016-A output | Parallel — to PCA9685 V+ |
-| 4 | GND | — | Return |
-
----
-
-### 3.4 ESP32 Headers
-
-| Ref | Qty | Component | Package | Notes |
-|-----|-----|-----------|---------|-------|
-| J12 | 1 | Female pin socket | 1×15 2.54mm | Left column of ESP32 DevKit |
-| J13 | 1 | Female pin socket | 1×15 2.54mm | Right column of ESP32 DevKit |
-
-**Compatible board:** ESP32-WROOM-32 30-pin DevKit (15 pins per side, 22.86mm row spacing)
-
-#### J12 Pin Mapping — Left Header, Top to Bottom
-
-| J12 Pin | Net | GPIO | Function | Notes |
-|---------|-----|------|----------|-------|
-| 1 | +3V3 | 3V3 | Power out | |
-| 2 | GND | GND | Ground | |
-| 3 | /H_IN4 | GPIO15 | TB6612FNG BIN2 | ⚠ GPIO15 has internal pull-up — H_IN4 = HIGH at boot. Write LOW in setup() immediately |
-| 4 | NC | GPIO2 | — | Unused. Has onboard LED on some DevKits |
-| 5 | /IMU_INT | GPIO4 | MPU-6500 interrupt | |
-| 6 | /ENC2_A | GPIO16 | Encoder 2 Ch A | Shared with UART2 RX — used as GPIO input |
-| 7 | /ENC2_B | GPIO17 | Encoder 2 Ch B | Shared with UART2 TX — used as GPIO input |
-| 8 | /SPI_CS_IMU | GPIO5 | IMU chip select | Must be HIGH at boot — CS idle-HIGH satisfies this ✓ |
-| 9 | /SPI_CLK | GPIO18 | SPI clock | Standard VSPI CLK |
-| 10 | /SPI_MISO | GPIO19 | SPI MISO | Standard VSPI MISO |
-| 11 | /I2C_SDA | GPIO21 | I2C data | Standard I2C SDA |
-| 12 | NC | GPIO3/RX0 | — | UART0 RX — handled by USB-serial chip on DevKit |
-| 13 | NC | GPIO1/TX0 | — | UART0 TX — handled by USB-serial chip on DevKit |
-| 14 | /I2C_SCL | GPIO22 | I2C clock | Standard I2C SCL |
-| 15 | /SPI_MOSI | GPIO23 | SPI MOSI | Standard VSPI MOSI |
-
-#### J13 Pin Mapping — Right Header, **Bottom to Top**
-
-| J13 Pin | Net | GPIO | Function | Notes |
-|---------|-----|------|----------|-------|
-| 1 | NC | EN | Reset | Do not connect |
-| 2 | NC | GPIO36/VP | — | Input-only — unused |
-| 3 | NC | GPIO39/VN | — | Input-only — unused |
-| 4 | NC | GPIO34 | — | Input-only — unused |
-| 5 | /RPi_RX | GPIO35 | UART from RPi | Input-only GPIO — perfect for one-way RX |
-| 6 | /H_IN2 | GPIO32 | TB6612FNG AIN2 | |
-| 7 | /H_IN3 | GPIO33 | TB6612FNG BIN1 | |
-| 8 | /H_ENA | GPIO25 | TB6612FNG PWMA | |
-| 9 | /H_ENB | GPIO26 | TB6612FNG PWMB | |
-| 10 | /H_IN1 | GPIO27 | TB6612FNG AIN1 | |
-| 11 | /ENC1_B | GPIO14 | Encoder 1 Ch B | |
-| 12 | NC | GPIO12 | — | Boot-strap: NC, internal pull-down → LOW at boot ✓ No external resistor needed |
-| 13 | /ENC1_A | GPIO13 | Encoder 1 Ch A | |
-| 14 | GND | GND | Ground | |
-| 15 | +5V | VIN | ESP32 power | 5V in via VIN pin |
-
-> ⚠ **Boot-up firmware note:** GPIO15 (/H_IN4) is HIGH at boot due to internal pull-up. In `setup()`, drive all motor control GPIOs LOW before the TB6612FNG is active (STBY HIGH) to prevent a rogue motor pulse at startup.
-
----
-
-### 3.5 IMU — GY-6500 (MPU-6500, SPI Mode)
-
-| Ref | Qty | Component | Value | Package | Nets | Notes |
-|-----|-----|-----------|-------|---------|------|-------|
-| J5 | 1 | Female pin socket | GY6500_SPI | 1×8 2.54mm | See below | GY-6500 module socket |
-| R7 | 1 | Resistor | 33Ω | Axial THT | /SPI_CLK, Net-(J5-Pin_3) | Series damping — CLK |
-| R8 | 1 | Resistor | 33Ω | Axial THT | /SPI_MOSI, Net-(J5-Pin_4) | Series damping — MOSI |
-| R9 | 1 | Resistor | 33Ω | Axial THT | /SPI_MISO, Net-(J5-Pin_5) | Series damping — MISO |
-| R10 | 1 | Resistor | 33Ω | Axial THT | /SPI_CS_IMU, Net-(J5-Pin_6) | Series damping — CS |
-| C5 | 1 | Electrolytic | 10µF | CP_Radial_D5.0mm_P2.50mm | +3V3, GND | IMU VCC bulk cap |
-| C6 | 1 | Ceramic | 100nF | C_Disc_D3.8mm_W2.6mm_P2.50mm | +3V3, GND | IMU VCC HF decoupling |
-
-**J5 Pinout:**
-
-| Pin | Net | Notes |
-|-----|-----|-------|
-| 1 | +3V3 | Module VCC |
-| 2 | GND | |
-| 3 | Net-(J5-Pin_3) | → R7 → /SPI_CLK |
-| 4 | Net-(J5-Pin_4) | → R8 → /SPI_MOSI |
-| 5 | Net-(J5-Pin_5) | → R9 → /SPI_MISO |
-| 6 | Net-(J5-Pin_6) | → R10 → /SPI_CS_IMU — LOW = SPI mode active |
-| 7 | /IMU_INT | → GPIO4 |
-| 8 | GND | FSYNC tied to GND |
-
----
-
-### 3.6 PCA9685 PWM Driver (I2C)
-
-| Ref | Qty | Component | Value | Package | Nets | Notes |
-|-----|-----|-----------|-------|---------|------|-------|
-| J6 | 1 | Female pin socket | PCA9685 | 1×6 2.54mm | See below | PCA9685 module socket |
-| R11 | 1 | Resistor | 4.7kΩ | Axial THT | +3V3, /I2C_SDA | SDA pull-up to 3V3 |
-| R12 | 1 | Resistor | 4.7kΩ | Axial THT | +3V3, /I2C_SCL | SCL pull-up to 3V3 |
-
-**J6 Pinout:**
-
-| Pin | Net | Notes |
-|-----|-----|-------|
-| 1 | +5V | Module logic VCC |
-| 2 | GND | |
-| 3 | /I2C_SDA | Shared I2C bus |
-| 4 | /I2C_SCL | Shared I2C bus |
-| 5 | +6V_SERVO | Servo power V+ — corrected from +5V (former schematic error, fixed) |
-| 6 | GND | Servo power return |
-
-> ✅ **J6.P5 FIXED:** J6.P5 now connects to +6V_SERVO so PCA9685 V+ receives 6V for the MG996R servos. Re-run DRC and re-export Gerbers to capture the change before ordering.
-
----
-
-### 3.7 Encoder Connectors
-
-| Ref | Qty | Component | Value | Package | Notes |
-|-----|-----|-----------|-------|---------|-------|
-| J7 | 1 | Screw terminal | ENC1 | Phoenix 4-pin 5.08mm | Encoder 1 (JGB37-520) |
-| J8 | 1 | Screw terminal | ENC2 | Phoenix 4-pin 5.08mm | Encoder 2 (JGB37-520) |
-| R13 | 1 | Resistor | 1kΩ | Axial THT | /ENC1_A RC filter series |
-| R14 | 1 | Resistor | 1kΩ | Axial THT | /ENC1_B RC filter series |
-| R15 | 1 | Resistor | 1kΩ | Axial THT | /ENC2_A RC filter series |
-| R16 | 1 | Resistor | 1kΩ | Axial THT | /ENC2_B RC filter series |
-| C7 | 1 | Ceramic | 10nF | C_Disc_D3.8mm_W2.6mm_P2.50mm | /ENC1_A shunt cap |
-| C8 | 1 | Ceramic | 10nF | C_Disc_D3.8mm_W2.6mm_P2.50mm | /ENC1_B shunt cap |
-| C9 | 1 | Ceramic | 10nF | C_Disc_D3.8mm_W2.6mm_P2.50mm | /ENC2_A shunt cap |
-| C10 | 1 | Ceramic | 10nF | C_Disc_D3.8mm_W2.6mm_P2.50mm | /ENC2_B shunt cap |
-
-**RC Filter:** fc = 1/(2π × 1kΩ × 10nF) = **15.9 kHz**
-
-> ⚠ Encoders MUST be powered from **+3V3** — 5V on ESP32 GPIO = permanent damage
-
-**J7 / J8 Pinout (identical):**
-
-| Pin | Net | Notes |
-|-----|-----|-------|
-| 1 | +3V3 | Encoder VCC |
-| 2 | GND | |
-| 3 | Net-(Jx-Pin_3) | Ch A → series R → /ENCx_A |
-| 4 | Net-(Jx-Pin_4) | Ch B → series R → /ENCx_B |
-
----
-
-### 3.8 H-Bridge Pull-downs
-
-| Ref | Qty | Component | Value | Package | Nets | Notes |
-|-----|-----|-----------|-------|---------|------|-------|
-| R17 | 1 | Resistor | 10kΩ | Axial THT | GND, /H_ENA | ENA pull-down — prevents float at boot |
-| R18 | 1 | Resistor | 10kΩ | Axial THT | GND, /H_ENB | ENB pull-down — prevents float at boot |
-
----
-
-### 3.9 RPi & Misc Connectors
-
-| Ref | Qty | Component | Value | Package | Nets | Notes |
-|-----|-----|-----------|-------|---------|------|-------|
-| J10 | 1 | 2-pin header | RPI_PWR | 2-pin 2.54mm | +5V, GND | +5V → RPi GPIO pins 2/4 |
-| J11 | 1 | 2-pin header | RPI_UART | 2-pin 2.54mm | /RPi_RX, GND | RPi UART TX → ESP32 GPIO35 |
-
----
-
-## 4. Component Count
-
-| Category | Refs | Count |
-|----------|------|-------|
-| Connectors / Headers | J1–J3, J5–J13 | 12 |
-| MOSFETs | Q1 | 1 |
-| Voltage regulator | U1 | 1 |
-| TVS diode | D1 | 1 |
-| Fuse | F1 | 1 |
-| Resistors THT | R5–R18 | 14 |
-| Capacitors electrolytic | C1, C3, C5 | 3 |
-| Capacitors ceramic | C2, C4, C6–C10 | 7 |
-| **TOTAL** | | **40** |
-
----
-
-## 5. Known Issues — Must Fix Before Ordering
-
-| # | Severity | Component | Issue | Fix |
-|---|----------|-----------|-------|-----|
-| 1 | ✅ Fixed | J6.P5 | Net was +5V — changed to +6V_SERVO | Done — re-DRC and re-export Gerbers to capture the change |
-| 2 | ⚠ High | J1, J2, J3 | 2.54mm headers rated ~3A, carrying 10–15A | Replace footprints with XT-60 / 5.08mm screw terminals |
-| 3 | ⚠ High | F1 | Pin header footprint — cannot mount blade fuse | Replace with proper ATC blade fuse holder footprint |
-
----
-
-## 6. DRC Sign-off
-
-| Check | Result | Date |
-|-------|--------|------|
-| ERC (Schematic) | 0 errors | 2026-05-26 |
-| DRC Violations | 0 | 2026-05-31 |
-| Unconnected nets | 0 | 2026-05-31 |
-| Pad-net map (120 connections) | All correct | 2026-05-31 |
-| Inner layer traces | 0 (clean) | 2026-05-31 |
-| Power trace widths | All pass | 2026-05-31 |
-
----
-
-## 7. Gerber Export Checklist (JLCPCB) — After fixing J6.P5
-
-| File | Layer |
-|------|-------|
-| F.Signal.gbr | Top copper |
-| GND.gbr | Inner 1 (GND plane) |
-| Power.gbr | Inner 2 (power pours) |
-| B.Signal.gbr | Bottom copper |
-| F.Mask.gbr | Top soldermask |
-| B.Mask.gbr | Bottom soldermask |
-| F.Silkscreen.gbr | Top silkscreen |
-| B.Silkscreen.gbr | Bottom silkscreen |
-| Edge.Cuts.gbr | Board outline |
-| drill.drl | Excellon drill file |
-
----
-
-## 8. External Modules
-
-| Module | Connector | Notes |
-|--------|-----------|-------|
-| XL4016-A (6V/10A) | J2 | Set to 6.0V BEFORE connecting. Input from J2.P1, output back to J2.P2/P3 |
-| XL4016-B (5V/10A) | J3 | Set to 5.0V BEFORE connecting |
-| TB6612FNG H-bridge | J9 (signals only) | VM/GND wired directly to battery — not through PCB. VCC + STBY from +3V3 |
-| RPi 5 | J10 (power), J11 (UART) | 5V via GPIO pins 2/4; UART TX → J11 |
-| GY-6500 (MPU-6500) | J5 | SPI mode — verify NCS LOW |
-| PCA9685 | J6 | I2C addr 0x40; V+ from +6V_SERVO via J6.P5 |
-| ESP32-WROOM-32 30-pin | J12 + J13 | 22.86mm row spacing; left header top→bottom; right header **bottom→top** |
-
----
-
-*End of BOM — Revision C*
-*J6.P5 → +6V_SERVO fix applied. Remaining before order: high-current connector footprints (J1–J3), fuse holder footprint (F1), then re-export Gerbers.*
+- All resistors are ¼ W, 1% metal-film, axial THT. Buy quantities rounded to common pack sizes — passives are cheap, keep spares.
+- 10 µF electrolytics sit on 3V3 / 5V rails; ≥16 V rated works, 25 V gives margin. Keep the D5.0 mm body / 2.5 mm lead pitch to fit the footprint.
+- Q1, U1, D1 are the only non-module semiconductors. **D1 (SMBJ12A TVS) is optional** — the board is functional without it; leave the SMB pad empty if you can't get one.
+- ⚠ **Before trusting the board at full current:** replace **J1 / J2 / J3** (2.54 mm headers rated ~3 A) with XT60 / 5.08 mm screw terminals, and put **F1** (15 A) on an inline blade-fuse holder in the harness — not the PCB pin header.
+- **XL4016 buck modules:** set output voltage with a multimeter **before** wiring to the board — 6.0 V for the servo rail, 5.0 V for the 5 V rail.
+- **Encoders run on +3V3 ONLY** — 5 V on an ESP32 GPIO permanently damages it.
